@@ -26,7 +26,7 @@ const Navbar = () => {
             <Link to="/" className="flex items-center space-x-2 group">
               <Heart className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
               <span className="text-2xl font-serif font-semibold text-gray-900">
-                Hearth Tales
+                Huy's
               </span>
             </Link>
           </div>
