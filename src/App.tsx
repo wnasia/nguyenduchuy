@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Stories from "./pages/Stories";
 import Gallery from "./pages/Gallery";
@@ -21,17 +22,20 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen" style={{ backgroundColor: '#E0F2FE' }}>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#E0F2FE' }}>
           <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/stories" element={<Stories />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/videos" element={<Videos />} />
-            <Route path="/submit" element={<Submit />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/stories" element={<Stories />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/videos" element={<Videos />} />
+              <Route path="/submit" element={<Submit />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+          <Footer />
         </div>
       </BrowserRouter>
     </TooltipProvider>
