@@ -38,7 +38,7 @@ const Footer = () => {
         
         <div className="mt-6 pt-6 border-t border-gray-200 text-center">
           <p className="text-xs text-gray-500">
-            © 2024 Hearth Tales. A warm place to share your stories.
+            © 2025 Nguyen Duc Huy. A warm place to share your stories.
           </p>
         </div>
       </div>
