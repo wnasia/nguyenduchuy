@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,11 +8,16 @@ import { Separator } from "@/components/ui/separator";
 import { Heart, Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const { toast } = useToast();
   const { t } = useI18n();
+  const { user, signInWithEmail, signUpWithEmail, signInWithProvider } = useAuth();
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -20,29 +25,88 @@ const Login = () => {
     name: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
-    if (!isLogin && formData.password !== formData.confirmPassword) {
+    try {
+      if (!isLogin) {
+        if (formData.password !== formData.confirmPassword) {
+          toast({
+            title: t("auth.password_mismatch"),
+            description: t("auth.password_mismatch_desc"),
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const { error } = await signUpWithEmail(formData.email, formData.password, formData.name);
+        if (error) {
+          toast({
+            title: t("common.error"),
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: t("auth.account_created"),
+            description: t("auth.account_created_desc"),
+          });
+        }
+      } else {
+        const { error } = await signInWithEmail(formData.email, formData.password);
+        if (error) {
+          toast({
+            title: t("common.error"),
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: t("common.welcome"),
+            description: t("auth.login_success"),
+          });
+          navigate('/', { replace: true });
+        }
+      }
+    } catch (error: any) {
       toast({
-        title: t("auth.password_mismatch"),
-        description: t("auth.password_mismatch_desc"),
+        title: t("common.error"),
+        description: error.message,
         variant: "destructive",
       });
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    toast({
-      title: isLogin ? t("common.welcome") : t("auth.account_created"),
-      description: isLogin ? t("auth.login_success") : t("auth.account_created_desc"),
-    });
   };
 
-  const handleSocialLogin = (provider: string) => {
-    toast({
-      title: `${provider} ${t("common.login")}`,
-      description: `You would be redirected to ${provider} for authentication.`,
-    });
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    setLoading(true);
+    try {
+      const { error } = await signInWithProvider(provider);
+      if (error) {
+        toast({
+          title: t("common.error"),
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: t("common.error"),
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -82,7 +146,8 @@ const Login = () => {
               <Button
                 variant="outline"
                 className="w-full flex items-center justify-center gap-3 py-6"
-                onClick={() => handleSocialLogin("Google")}
+                onClick={() => handleSocialLogin("google")}
+                disabled={loading}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -96,23 +161,13 @@ const Login = () => {
               <Button
                 variant="outline"
                 className="w-full flex items-center justify-center gap-3 py-6"
-                onClick={() => handleSocialLogin("Facebook")}
+                onClick={() => handleSocialLogin("facebook")}
+                disabled={loading}
               >
                 <svg className="h-5 w-5" fill="#1877F2" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
                 {t("auth.continue_with_facebook")}
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="w-full flex items-center justify-center gap-3 py-6"
-                onClick={() => handleSocialLogin("TikTok")}
-              >
-                <svg className="h-5 w-5" fill="#000000" viewBox="0 0 24 24">
-                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
-                </svg>
-                {t("auth.continue_with_tiktok")}
               </Button>
             </div>
 
@@ -137,6 +192,7 @@ const Login = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder={t("auth.enter_full_name")}
                     required={!isLogin}
+                    disabled={loading}
                   />
                 </div>
               )}
@@ -153,6 +209,7 @@ const Login = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   placeholder={t("auth.enter_email")}
                   required
+                  disabled={loading}
                 />
               </div>
               
@@ -168,6 +225,7 @@ const Login = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   placeholder={t("auth.enter_password")}
                   required
+                  disabled={loading}
                 />
               </div>
               
@@ -181,12 +239,13 @@ const Login = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                     placeholder={t("auth.confirm_your_password")}
                     required={!isLogin}
+                    disabled={loading}
                   />
                 </div>
               )}
 
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-                {isLogin ? t("auth.sign_in") : t("auth.create_account")}
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
+                {loading ? t("common.loading") : (isLogin ? t("auth.sign_in") : t("auth.create_account"))}
               </Button>
             </form>
 
@@ -197,6 +256,7 @@ const Login = () => {
                   type="button"
                   onClick={() => setIsLogin(!isLogin)}
                   className="text-primary hover:underline font-medium"
+                  disabled={loading}
                 >
                   {isLogin ? t("auth.sign_up") : t("auth.sign_in")}
                 </button>
@@ -212,6 +272,7 @@ const Login = () => {
                     title: t("auth.password_reset"),
                     description: t("auth.password_reset_desc"),
                   })}
+                  disabled={loading}
                 >
                   {t("auth.forgot_password")}
                 </button>

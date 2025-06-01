@@ -2,14 +2,23 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart, Menu, X } from "lucide-react";
+import { Heart, Menu, X, LogOut, User } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
+import { useAuth } from "@/contexts/AuthContext";
 import LanguageSelector from "./LanguageSelector";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { t } = useI18n();
+  const { user, signOut, loading } = useAuth();
 
   const navigation = [
     { name: t("common.home"), href: "/" },
@@ -20,6 +29,19 @@ const Navbar = () => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const getUserInitials = (name: string | null | undefined) => {
+    if (!name) return "U";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
 
   return (
     <nav className="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50">
@@ -50,11 +72,39 @@ const Navbar = () => {
               </Link>
             ))}
             <LanguageSelector />
-            <Link to="/login">
-              <Button className="bg-primary hover:bg-primary/90">
-                {t("common.login")}
-              </Button>
-            </Link>
+            
+            {loading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
+                      <AvatarFallback>
+                        {getUserInitials(user.user_metadata?.full_name || user.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem className="flex flex-col items-start">
+                    <div className="text-sm font-medium">{user.user_metadata?.full_name || 'User'}</div>
+                    <div className="text-xs text-gray-500">{user.email}</div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t("common.logout")}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/login">
+                <Button className="bg-primary hover:bg-primary/90">
+                  {t("common.login")}
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -88,11 +138,46 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
-              <Link to="/login" onClick={() => setIsOpen(false)}>
-                <Button className="w-full mt-2 bg-primary hover:bg-primary/90">
-                  {t("common.login")}
-                </Button>
-              </Link>
+              
+              {loading ? (
+                <div className="flex justify-center py-2">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : user ? (
+                <div className="space-y-1 pt-2 border-t border-gray-200">
+                  <div className="px-3 py-2">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
+                        <AvatarFallback>
+                          {getUserInitials(user.user_metadata?.full_name || user.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="text-sm font-medium">{user.user_metadata?.full_name || 'User'}</div>
+                        <div className="text-xs text-gray-500">{user.email}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      handleSignOut();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {t("common.logout")}
+                  </Button>
+                </div>
+              ) : (
+                <Link to="/login" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full mt-2 bg-primary hover:bg-primary/90">
+                    {t("common.login")}
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         )}
