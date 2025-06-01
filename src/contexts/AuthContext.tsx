@@ -73,16 +73,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInWithProvider = async (provider: 'google' | 'facebook') => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: redirectUrl,
-      }
-    });
-    return { error };
-  };
+  const redirectUrl = `${window.location.origin}/auth/v1/callback`;
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: redirectUrl,
+    },
+  });
+
+  return { error };
+};
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
