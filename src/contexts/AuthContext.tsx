@@ -68,16 +68,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
-  const signInWithProvider = async (provider: 'google' | 'facebook') => {
-    const redirectUrl = `${window.location.origin}/auth/v1/callback`.toLowerCase(); // fix chuẩn
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: redirectUrl,
-      },
-    });
-    return { error };
-  };
+ const signInWithProvider = async (provider: 'google' | 'facebook') => {
+  const redirectUrl = `${window.location.origin}/`; // hoặc /login
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: redirectUrl,
+    },
+  });
+
+  return { error };
+};
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
