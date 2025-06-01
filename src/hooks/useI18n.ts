@@ -1,6 +1,12 @@
 
 import { useState, useEffect } from 'react';
 
+// Import JSON files using ES6 imports
+import enTranslations from '../locales/en.json';
+import viTranslations from '../locales/vi.json';
+import zhTranslations from '../locales/zh.json';
+import jaTranslations from '../locales/ja.json';
+
 export type Language = 'en' | 'vi' | 'zh' | 'ja';
 
 interface Translations {
@@ -8,10 +14,10 @@ interface Translations {
 }
 
 const translations: Record<Language, Translations> = {
-  en: require('../locales/en.json'),
-  vi: require('../locales/vi.json'),
-  zh: require('../locales/zh.json'),
-  ja: require('../locales/ja.json'),
+  en: enTranslations,
+  vi: viTranslations,
+  zh: zhTranslations,
+  ja: jaTranslations,
 };
 
 const STORAGE_KEY = 'preferred-language';
@@ -37,13 +43,13 @@ export const useI18n = () => {
 
   const t = (key: string): string => {
     const keys = key.split('.');
-    let value = translations[currentLanguage];
+    let value: any = translations[currentLanguage];
     
     for (const k of keys) {
       value = value?.[k];
     }
     
-    return value || key;
+    return typeof value === 'string' ? value : key;
   };
 
   const changeLanguage = (language: Language) => {
