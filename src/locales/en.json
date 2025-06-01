@@ -1,0 +1,55 @@
+
+{
+  "common": {
+    "welcome": "Welcome",
+    "home": "Home",
+    "stories": "Stories",
+    "gallery": "Gallery",
+    "videos": "Videos",
+    "submit_story": "Submit Your Story",
+    "login": "Login",
+    "logout": "Logout",
+    "language": "Language",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "auth": {
+    "welcome_back": "Welcome Back",
+    "join_community": "Join Our Community",
+    "sign_in": "Sign In",
+    "create_account": "Create Account",
+    "sign_in_description": "Sign in to continue sharing and reading stories",
+    "create_account_description": "Create an account to start sharing your stories",
+    "enter_credentials": "Enter your credentials to access your account",
+    "fill_details": "Fill in your details to get started",
+    "continue_with_google": "Continue with Google",
+    "continue_with_facebook": "Continue with Facebook",
+    "continue_with_tiktok": "Continue with TikTok",
+    "continue_with_email": "Or continue with email",
+    "full_name": "Full Name",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "forgot_password": "Forgot your password?",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "sign_up": "Sign up",
+    "terms_privacy": "By continuing, you agree to our Terms of Service and Privacy Policy.",
+    "enter_full_name": "Enter your full name",
+    "enter_email": "Enter your email",
+    "enter_password": "Enter your password",
+    "confirm_your_password": "Confirm your password",
+    "password_mismatch": "Password Mismatch",
+    "password_mismatch_desc": "Please make sure your passwords match.",
+    "login_success": "You've successfully logged in.",
+    "account_created": "Account created!",
+    "account_created_desc": "Your account has been created successfully.",
+    "password_reset": "Password Reset",
+    "password_reset_desc": "Password reset link would be sent to your email."
+  },
+  "brand": {
+    "name": "Huy's",
+    "tagline": "Share Your Story"
+  }
+}

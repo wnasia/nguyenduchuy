@@ -1,0 +1,55 @@
+
+{
+  "common": {
+    "welcome": "ようこそ",
+    "home": "ホーム",
+    "stories": "ストーリー",
+    "gallery": "ギャラリー",
+    "videos": "動画",
+    "submit_story": "あなたのストーリーを投稿",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "language": "言語",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功"
+  },
+  "auth": {
+    "welcome_back": "おかえりなさい",
+    "join_community": "コミュニティに参加",
+    "sign_in": "サインイン",
+    "create_account": "アカウント作成",
+    "sign_in_description": "ストーリーの共有と読書を続けるためにサインインしてください",
+    "create_account_description": "あなたのストーリーを共有するためにアカウントを作成してください",
+    "enter_credentials": "認証情報を入力してください",
+    "fill_details": "開始するために詳細を入力してください",
+    "continue_with_google": "Googleで続行",
+    "continue_with_facebook": "Facebookで続行",
+    "continue_with_tiktok": "TikTokで続行",
+    "continue_with_email": "またはメールで続行",
+    "full_name": "フルネーム",
+    "email": "メール",
+    "password": "パスワード",
+    "confirm_password": "パスワード確認",
+    "forgot_password": "パスワードを忘れましたか？",
+    "no_account": "アカウントをお持ちでない方は？",
+    "have_account": "すでにアカウントをお持ちですか？",
+    "sign_up": "サインアップ",
+    "terms_privacy": "続行することで、利用規約およびプライバシーポリシーに同意したものとみなされます。",
+    "enter_full_name": "フルネームを入力してください",
+    "enter_email": "メールアドレスを入力してください",
+    "enter_password": "パスワードを入力してください",
+    "confirm_your_password": "パスワードを確認してください",
+    "password_mismatch": "パスワードが一致しません",
+    "password_mismatch_desc": "パスワードが一致することを確認してください。",
+    "login_success": "正常にログインしました。",
+    "account_created": "アカウントが作成されました！",
+    "account_created_desc": "アカウントが正常に作成されました。",
+    "password_reset": "パスワードリセット",
+    "password_reset_desc": "パスワードリセットリンクがメールに送信されます。"
+  },
+  "brand": {
+    "name": "Huy's",
+    "tagline": "あなたのストーリーを共有"
+  }
+}

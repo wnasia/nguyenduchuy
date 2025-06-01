@@ -1,0 +1,55 @@
+
+{
+  "common": {
+    "welcome": "Chào mừng",
+    "home": "Trang chủ",
+    "stories": "Câu chuyện",
+    "gallery": "Thư viện ảnh",
+    "videos": "Video",
+    "submit_story": "Gửi câu chuyện",
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "language": "Ngôn ngữ",
+    "loading": "Đang tải...",
+    "error": "Lỗi",
+    "success": "Thành công"
+  },
+  "auth": {
+    "welcome_back": "Chào mừng trở lại",
+    "join_community": "Tham gia cộng đồng",
+    "sign_in": "Đăng nhập",
+    "create_account": "Tạo tài khoản",
+    "sign_in_description": "Đăng nhập để tiếp tục chia sẻ và đọc các câu chuyện",
+    "create_account_description": "Tạo tài khoản để bắt đầu chia sẻ câu chuyện của bạn",
+    "enter_credentials": "Nhập thông tin đăng nhập của bạn",
+    "fill_details": "Điền thông tin chi tiết để bắt đầu",
+    "continue_with_google": "Tiếp tục với Google",
+    "continue_with_facebook": "Tiếp tục với Facebook",
+    "continue_with_tiktok": "Tiếp tục với TikTok",
+    "continue_with_email": "Hoặc tiếp tục với email",
+    "full_name": "Họ và tên",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "confirm_password": "Xác nhận mật khẩu",
+    "forgot_password": "Quên mật khẩu?",
+    "no_account": "Chưa có tài khoản?",
+    "have_account": "Đã có tài khoản?",
+    "sign_up": "Đăng ký",
+    "terms_privacy": "Bằng cách tiếp tục, bạn đồng ý với Điều khoản dịch vụ và Chính sách quyền riêng tư của chúng tôi.",
+    "enter_full_name": "Nhập họ và tên của bạn",
+    "enter_email": "Nhập email của bạn",
+    "enter_password": "Nhập mật khẩu của bạn",
+    "confirm_your_password": "Xác nhận mật khẩu của bạn",
+    "password_mismatch": "Mật khẩu không khớp",
+    "password_mismatch_desc": "Vui lòng đảm bảo mật khẩu của bạn khớp nhau.",
+    "login_success": "Bạn đã đăng nhập thành công.",
+    "account_created": "Tài khoản đã được tạo!",
+    "account_created_desc": "Tài khoản của bạn đã được tạo thành công.",
+    "password_reset": "Đặt lại mật khẩu",
+    "password_reset_desc": "Liên kết đặt lại mật khẩu sẽ được gửi đến email của bạn."
+  },
+  "brand": {
+    "name": "Huy's",
+    "tagline": "Chia sẻ câu chuyện của bạn"
+  }
+}

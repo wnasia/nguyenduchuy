@@ -3,17 +3,20 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Heart, Menu, X } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
+import LanguageSelector from "./LanguageSelector";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { t } = useI18n();
 
   const navigation = [
-    { name: "Home", href: "/" },
-    { name: "Stories", href: "/stories" },
-    { name: "Gallery", href: "/gallery" },
-    { name: "Videos", href: "/videos" },
-    { name: "Submit Your Story", href: "/submit" },
+    { name: t("common.home"), href: "/" },
+    { name: t("common.stories"), href: "/stories" },
+    { name: t("common.gallery"), href: "/gallery" },
+    { name: t("common.videos"), href: "/videos" },
+    { name: t("common.submit_story"), href: "/submit" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -26,7 +29,7 @@ const Navbar = () => {
             <Link to="/" className="flex items-center space-x-2 group">
               <Heart className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
               <span className="text-2xl font-serif font-semibold text-gray-900">
-                Huy's
+                {t("brand.name")}
               </span>
             </Link>
           </div>
@@ -46,15 +49,17 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+            <LanguageSelector />
             <Link to="/login">
               <Button className="bg-primary hover:bg-primary/90">
-                Login
+                {t("common.login")}
               </Button>
             </Link>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-2">
+            <LanguageSelector />
             <Button
               variant="ghost"
               size="icon"
@@ -85,7 +90,7 @@ const Navbar = () => {
               ))}
               <Link to="/login" onClick={() => setIsOpen(false)}>
                 <Button className="w-full mt-2 bg-primary hover:bg-primary/90">
-                  Login
+                  {t("common.login")}
                 </Button>
               </Link>
             </div>
