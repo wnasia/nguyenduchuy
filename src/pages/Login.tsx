@@ -87,27 +87,29 @@ const Login = () => {
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
-    setLoading(true);
-    try {
-      const { error } = await signInWithProvider(provider);
-      if (error) {
-        toast({
-          title: t("common.error"),
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
+ const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+  setLoading(true);
+  try {
+    const { error } = await signInWithProvider(provider, {
+      redirectTo: 'https://nguyenduchuy.io.vn/auth/v1/callback',
+    });
+    if (error) {
       toast({
         title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error: any) {
+    toast({
+      title: t("common.error"),
+      description: error.message,
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center py-8 px-4">
