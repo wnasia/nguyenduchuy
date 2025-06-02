@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart, Menu, X, LogOut, User } from "lucide-react";
+import { Heart, Menu, X, LogOut, User, LayoutDashboard } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
 import LanguageSelector from "./LanguageSelector";
@@ -92,6 +92,12 @@ const Navbar = () => {
                     <div className="text-sm font-medium">{user.user_metadata?.full_name || 'User'}</div>
                     <div className="text-xs text-gray-500">{user.email}</div>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="flex items-center w-full">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>{t("common.logout")}</span>
@@ -159,6 +165,12 @@ const Navbar = () => {
                       </div>
                     </div>
                   </div>
+                  <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Button>
+                  </Link>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"

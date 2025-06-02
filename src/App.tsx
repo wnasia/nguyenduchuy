@@ -13,6 +13,7 @@ import Gallery from "./pages/Gallery";
 import Videos from "./pages/Videos";
 import Submit from "./pages/Submit";
 import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
                 <Route path="/videos" element={<Videos />} />
                 <Route path="/submit" element={<Submit />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
