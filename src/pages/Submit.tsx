@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,9 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Image, Video, FileText, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const Submit = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
     story: "",
@@ -19,6 +23,7 @@ const Submit = () => {
     tags: []
   });
   const [currentTag, setCurrentTag] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddImageLink = () => {
     setFormData(prev => ({
@@ -79,21 +84,88 @@ const Submit = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Story Submitted!",
-      description: "Thank you for sharing your story. It will be reviewed and published soon.",
-    });
     
-    // Reset form
-    setFormData({
-      title: "",
-      story: "",
-      imageLinks: [""],
-      videoLinks: [""],
-      tags: []
-    });
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to submit your story.",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Filter out empty links
+      const imageLinks = formData.imageLinks.filter(link => link.trim() !== '');
+      const videoLinks = formData.videoLinks.filter(link => link.trim() !== '');
+
+      // Prepare content with all the story elements
+      const content = JSON.stringify({
+        story: formData.story,
+        imageLinks,
+        videoLinks,
+        tags: formData.tags
+      });
+
+      const { data, error } = await supabase
+        .from('posts')
+        .insert([
+          {
+            title: formData.title,
+            content: content,
+            type: 'story',
+            status: 'pending',
+            user_id: user.id,
+            view_count: 0
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating post:', error);
+        toast({
+          title: "Error",
+          description: "Failed to submit your story. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Story Submitted Successfully!",
+        description: "Thank you for sharing your story. It will be reviewed and published soon.",
+      });
+      
+      // Reset form
+      setFormData({
+        title: "",
+        story: "",
+        imageLinks: [""],
+        videoLinks: [""],
+        tags: []
+      });
+
+      // Redirect to dashboard after successful submission
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -133,6 +205,7 @@ const Submit = () => {
                   placeholder="Give your story a meaningful title..."
                   className="text-lg"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -148,6 +221,7 @@ const Submit = () => {
                   placeholder="Share your story here. What happened? How did it make you feel? What did you learn? Be as detailed or as brief as you'd like..."
                   className="min-h-[200px] text-base leading-relaxed"
                   required
+                  disabled={isSubmitting}
                 />
                 <p className="text-sm text-gray-500">
                   Tell your story in your own words. There's no right or wrong way to share your experience.
@@ -170,6 +244,7 @@ const Submit = () => {
                       onChange={(e) => handleImageLinkChange(index, e.target.value)}
                       placeholder="https://drive.google.com/your-image-link or https://imgur.com/..."
                       className="flex-1"
+                      disabled={isSubmitting}
                     />
                     {formData.imageLinks.length > 1 && (
                       <Button
@@ -177,6 +252,7 @@ const Submit = () => {
                         variant="outline"
                         size="icon"
                         onClick={() => handleRemoveImageLink(index)}
+                        disabled={isSubmitting}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -188,6 +264,7 @@ const Submit = () => {
                   variant="outline"
                   onClick={handleAddImageLink}
                   className="flex items-center gap-2"
+                  disabled={isSubmitting}
                 >
                   <Plus className="h-4 w-4" />
                   Add Another Image
@@ -210,6 +287,7 @@ const Submit = () => {
                       onChange={(e) => handleVideoLinkChange(index, e.target.value)}
                       placeholder="https://youtube.com/watch?v=..."
                       className="flex-1"
+                      disabled={isSubmitting}
                     />
                     {formData.videoLinks.length > 1 && (
                       <Button
@@ -217,6 +295,7 @@ const Submit = () => {
                         variant="outline"
                         size="icon"
                         onClick={() => handleRemoveVideoLink(index)}
+                        disabled={isSubmitting}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -228,6 +307,7 @@ const Submit = () => {
                   variant="outline"
                   onClick={handleAddVideoLink}
                   className="flex items-center gap-2"
+                  disabled={isSubmitting}
                 >
                   <Plus className="h-4 w-4" />
                   Add Another Video
@@ -248,8 +328,9 @@ const Submit = () => {
                     onChange={(e) => setCurrentTag(e.target.value)}
                     placeholder="Add a tag..."
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                    disabled={isSubmitting}
                   />
-                  <Button type="button" onClick={handleAddTag} variant="outline">
+                  <Button type="button" onClick={handleAddTag} variant="outline" disabled={isSubmitting}>
                     Add Tag
                   </Button>
                 </div>
@@ -262,6 +343,7 @@ const Submit = () => {
                           type="button"
                           onClick={() => handleRemoveTag(tag)}
                           className="ml-1 hover:text-destructive"
+                          disabled={isSubmitting}
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -273,8 +355,13 @@ const Submit = () => {
 
               {/* Submit Button */}
               <div className="pt-6">
-                <Button type="submit" size="lg" className="w-full bg-primary hover:bg-primary/90">
-                  Share My Story
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full bg-primary hover:bg-primary/90"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Submitting..." : "Share My Story"}
                 </Button>
                 <p className="text-center text-sm text-gray-500 mt-4">
                   By submitting your story, you agree to share it with our community. 
@@ -286,17 +373,23 @@ const Submit = () => {
         </Card>
 
         {/* Login Reminder */}
-        <Card className="mt-8 bg-gradient-to-r from-primary/5 to-warm-100/30 border-primary/20">
-          <CardContent className="text-center py-8">
-            <h3 className="text-xl font-semibold mb-2">Want to manage your stories?</h3>
-            <p className="text-gray-600 mb-4">
-              Create an account to edit your stories, track views, and connect with other storytellers.
-            </p>
-            <Button variant="outline" className="border-primary text-primary hover:bg-primary/5">
-              Sign Up or Log In
-            </Button>
-          </CardContent>
-        </Card>
+        {!user && (
+          <Card className="mt-8 bg-gradient-to-r from-primary/5 to-warm-100/30 border-primary/20">
+            <CardContent className="text-center py-8">
+              <h3 className="text-xl font-semibold mb-2">Want to manage your stories?</h3>
+              <p className="text-gray-600 mb-4">
+                Create an account to edit your stories, track views, and connect with other storytellers.
+              </p>
+              <Button 
+                variant="outline" 
+                className="border-primary text-primary hover:bg-primary/5"
+                onClick={() => navigate('/login')}
+              >
+                Sign Up or Log In
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
