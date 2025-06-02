@@ -15,14 +15,14 @@ interface Report {
   created_at: string;
   post_id: string;
   reporter_id: string;
-  posts: {
+  posts?: {
     title: string;
     content: string;
-  };
-  profiles: {
-    full_name: string;
-    email: string;
-  };
+  } | null;
+  profiles?: {
+    full_name: string | null;
+    email: string | null;
+  } | null;
 }
 
 const AdminReports = () => {
@@ -36,31 +36,48 @@ const AdminReports = () => {
 
   const fetchReports = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: reportsData, error: reportsError } = await supabase
         .from('reports')
-        .select(`
-          *,
-          posts (
-            title,
-            content
-          ),
-          profiles!reports_reporter_id_fkey (
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching reports:', error);
+      if (reportsError) {
+        console.error('Error fetching reports:', reportsError);
         toast({
           title: "Error",
           description: "Failed to load reports",
           variant: "destructive",
         });
-      } else {
-        setReports(data || []);
+        setLoading(false);
+        return;
       }
+
+      // Fetch related data separately for each report
+      const reportsWithDetails = await Promise.all(
+        (reportsData || []).map(async (report) => {
+          // Fetch reporter profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', report.reporter_id)
+            .single();
+
+          // Fetch post details
+          const { data: postData } = await supabase
+            .from('posts')
+            .select('title, content')
+            .eq('id', report.post_id)
+            .single();
+
+          return {
+            ...report,
+            profiles: profileData,
+            posts: postData
+          };
+        })
+      );
+
+      setReports(reportsWithDetails);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -142,7 +159,7 @@ const AdminReports = () => {
                     {report.reason}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    Reported by {report.profiles?.full_name || 'Unknown User'} ({report.profiles?.email})
+                    Reported by {report.profiles?.full_name || 'Unknown User'} ({report.profiles?.email || 'No email'})
                   </p>
                 </div>
                 <Badge variant={getStatusBadgeVariant(report.status)}>

@@ -16,10 +16,10 @@ interface Post {
   view_count: number;
   created_at: string;
   user_id: string;
-  profiles: {
-    full_name: string;
-    email: string;
-  };
+  profiles?: {
+    full_name: string | null;
+    email: string | null;
+  } | null;
 }
 
 const AdminPosts = () => {
@@ -33,27 +33,39 @@ const AdminPosts = () => {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: postsData, error: postsError } = await supabase
         .from('posts')
-        .select(`
-          *,
-          profiles (
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching posts:', error);
+      if (postsError) {
+        console.error('Error fetching posts:', postsError);
         toast({
           title: "Error",
           description: "Failed to load posts",
           variant: "destructive",
         });
-      } else {
-        setPosts(data || []);
+        setLoading(false);
+        return;
       }
+
+      // Fetch profile data separately for each post
+      const postsWithProfiles = await Promise.all(
+        (postsData || []).map(async (post) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', post.user_id)
+            .single();
+
+          return {
+            ...post,
+            profiles: profileData
+          };
+        })
+      );
+
+      setPosts(postsWithProfiles);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -132,7 +144,7 @@ const AdminPosts = () => {
                 <div>
                   <h3 className="font-semibold text-lg">{post.title}</h3>
                   <p className="text-sm text-gray-500">
-                    By {post.profiles?.full_name || 'Unknown User'} ({post.profiles?.email})
+                    By {post.profiles?.full_name || 'Unknown User'} ({post.profiles?.email || 'No email'})
                   </p>
                 </div>
                 <Badge variant={getStatusBadgeVariant(post.status)}>
