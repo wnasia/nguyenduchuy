@@ -168,9 +168,9 @@ const Submit = () => {
         tags: []
       });
 
-      // Redirect to dashboard after successful submission
+      // Navigate to home page instead of dashboard to avoid potential routing issues
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/');
       }, 2000);
 
     } catch (error) {
