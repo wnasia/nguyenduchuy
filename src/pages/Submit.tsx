@@ -115,6 +115,8 @@ const Submit = () => {
         tags: formData.tags
       });
 
+      console.log('Attempting to insert post with user_id:', user.id);
+
       const { data, error } = await supabase
         .from('posts')
         .insert([
@@ -132,13 +134,25 @@ const Submit = () => {
 
       if (error) {
         console.error('Error creating post:', error);
-        toast({
-          title: "Error",
-          description: "Failed to submit your story. Please try again.",
-          variant: "destructive",
-        });
+        
+        // Check if it's a Row Level Security issue
+        if (error.message.includes('row-level security') || error.message.includes('policy')) {
+          toast({
+            title: "Permission Error",
+            description: "There was an issue with permissions. Please try refreshing the page and logging in again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to submit your story. Please try again.",
+            variant: "destructive",
+          });
+        }
         return;
       }
+
+      console.log('Post created successfully:', data);
 
       toast({
         title: "Story Submitted Successfully!",
