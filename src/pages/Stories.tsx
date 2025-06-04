@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Clock, Eye, Image, Video, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Post {
   id: string;
@@ -31,6 +32,7 @@ interface ParsedContent {
 
 const Stories = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [stories, setStories] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -107,17 +109,8 @@ const Stories = () => {
     }
   };
 
-  const incrementViews = async (postId: string) => {
-    try {
-      await supabase.rpc('increment_post_views', { post_id: postId });
-    } catch (error) {
-      console.error('Error incrementing views:', error);
-    }
-  };
-
   const handleReadMore = (postId: string) => {
-    incrementViews(postId);
-    // You can add navigation to a detailed story view here
+    navigate(`/story/${postId}`);
   };
 
   if (loading) {

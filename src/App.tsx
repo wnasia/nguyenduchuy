@@ -10,6 +10,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Stories from "./pages/Stories";
+import StoryDetail from "./pages/StoryDetail";
 import Gallery from "./pages/Gallery";
 import Videos from "./pages/Videos";
 import Submit from "./pages/Submit";
@@ -32,6 +33,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/stories" element={<Stories />} />
+                <Route path="/story/:id" element={<StoryDetail />} />
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/videos" element={<Videos />} />
                 <Route path="/submit" element={<Submit />} />

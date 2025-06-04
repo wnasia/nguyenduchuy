@@ -1,22 +1,160 @@
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Users, BookOpen, Camera } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Heart, Users, BookOpen, Camera, Eye, Image, Video } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  view_count: number;
+  created_at: string;
+  profiles?: {
+    full_name: string | null;
+  } | null;
+}
+
+interface ParsedContent {
+  story: string;
+  imageLinks?: string[];
+  videoLinks?: string[];
+  tags?: string[];
+}
 
 const Home = () => {
-  const featuredStory = {
-    title: "A Letter to My Younger Self",
-    excerpt: "If I could go back and tell my 20-year-old self just one thing, it would be to trust the journey. Life has a way of working out, even when it doesn't feel like it...",
-    author: "Sarah M.",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=400&fit=crop"
+  const navigate = useNavigate();
+  const [featuredStory, setFeaturedStory] = useState<Post | null>(null);
+  const [stats, setStats] = useState({
+    stories: 0,
+    images: 0,
+    members: 0,
+    views: 0
+  });
+
+  useEffect(() => {
+    fetchFeaturedStory();
+    fetchStats();
+  }, []);
+
+  const fetchFeaturedStory = async () => {
+    try {
+      const { data: postsData, error } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('status', 'approved')
+        .order('view_count', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error fetching featured story:', error);
+        return;
+      }
+
+      if (postsData && postsData.length > 0) {
+        const post = postsData[0];
+        
+        // Fetch profile data
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', post.user_id)
+          .single();
+
+        setFeaturedStory({
+          ...post,
+          profiles: profileData
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
-  const stats = [
-    { icon: BookOpen, label: "Stories Shared", value: "1,247" },
-    { icon: Camera, label: "Photos Uploaded", value: "8,923" },
-    { icon: Users, label: "Community Members", value: "5,601" },
-    { icon: Heart, label: "Hearts Given", value: "24,156" }
+  const fetchStats = async () => {
+    try {
+      // Fetch stories count
+      const { count: storiesCount } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'approved');
+
+      // Fetch users count
+      const { count: usersCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      // Fetch total views
+      const { data: viewsData } = await supabase
+        .from('posts')
+        .select('view_count')
+        .eq('status', 'approved');
+
+      const totalViews = viewsData?.reduce((sum, post) => sum + post.view_count, 0) || 0;
+
+      // Count images from all posts
+      const { data: postsData } = await supabase
+        .from('posts')
+        .select('content')
+        .eq('status', 'approved');
+
+      let totalImages = 0;
+      postsData?.forEach(post => {
+        try {
+          const parsed = JSON.parse(post.content);
+          if (parsed.imageLinks) {
+            totalImages += parsed.imageLinks.length;
+          }
+        } catch {
+          // Skip if not JSON
+        }
+      });
+
+      setStats({
+        stories: storiesCount || 0,
+        images: totalImages,
+        members: usersCount || 0,
+        views: totalViews
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const parseContent = (content: string): ParsedContent => {
+    try {
+      const parsed = JSON.parse(content);
+      return {
+        story: parsed.story || '',
+        imageLinks: parsed.imageLinks || [],
+        videoLinks: parsed.videoLinks || [],
+        tags: parsed.tags || []
+      };
+    } catch {
+      return {
+        story: content,
+        imageLinks: [],
+        videoLinks: [],
+        tags: []
+      };
+    }
+  };
+
+  const handleReadStory = () => {
+    if (featuredStory) {
+      navigate(`/story/${featuredStory.id}`);
+    }
+  };
+
+  const statsData = [
+    { icon: BookOpen, label: "Stories Shared", value: stats.stories.toLocaleString() },
+    { icon: Camera, label: "Photos Uploaded", value: stats.images.toLocaleString() },
+    { icon: Users, label: "Community Members", value: stats.members.toLocaleString() },
+    { icon: Eye, label: "Total Views", value: stats.views.toLocaleString() }
   ];
 
   const recentVideos = [
@@ -43,6 +181,8 @@ const Home = () => {
     "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=300&fit=crop",
     "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=300&h=300&fit=crop"
   ];
+
+  const featuredContent = featuredStory ? parseContent(featuredStory.content) : null;
 
   return (
     <div className="min-h-screen">
@@ -78,7 +218,7 @@ const Home = () => {
       <section className="py-16 px-4 bg-white/50">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
+            {statsData.map((stat, index) => (
               <div key={index} className="text-center animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
                 <stat.icon className="h-12 w-12 text-primary mx-auto mb-4" />
                 <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
@@ -90,34 +230,84 @@ const Home = () => {
       </section>
 
       {/* Featured Story */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-serif font-semibold text-center mb-12">Featured Story</h2>
-          <Card className="overflow-hidden hover-scale cursor-pointer border-0 shadow-xl">
-            <div className="md:flex">
-              <div className="md:w-1/2">
-                <img
-                  src={featuredStory.image}
-                  alt={featuredStory.title}
-                  className="w-full h-64 md:h-full object-cover"
-                />
+      {featuredStory && (
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-serif font-semibold text-center mb-12">Featured Story</h2>
+            <Card className="overflow-hidden hover-scale cursor-pointer border-0 shadow-xl">
+              <div className="md:flex">
+                {/* Story Image Preview */}
+                <div className="md:w-1/2 relative">
+                  {featuredContent?.imageLinks && featuredContent.imageLinks.length > 0 ? (
+                    <div className="relative">
+                      <img
+                        src={featuredContent.imageLinks[0]}
+                        alt={featuredStory.title}
+                        className="w-full h-64 md:h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=400&fit=crop";
+                        }}
+                      />
+                      {featuredContent.imageLinks.length > 1 && (
+                        <div className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+                          <Image className="h-4 w-4" />
+                          +{featuredContent.imageLinks.length - 1} more
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <img
+                      src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=400&fit=crop"
+                      alt={featuredStory.title}
+                      className="w-full h-64 md:h-full object-cover"
+                    />
+                  )}
+                  {featuredContent?.videoLinks && featuredContent.videoLinks.length > 0 && (
+                    <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+                      <Video className="h-4 w-4" />
+                      {featuredContent.videoLinks.length} video{featuredContent.videoLinks.length !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+                <div className="md:w-1/2 p-8">
+                  <CardHeader className="px-0 pt-0">
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {featuredContent?.tags && featuredContent.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                      <Badge variant="outline" className="text-xs">
+                        {featuredStory.type}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-2xl font-serif mb-2">{featuredStory.title}</CardTitle>
+                    <CardDescription className="text-sm text-gray-500 flex items-center gap-4">
+                      <span>by {featuredStory.profiles?.full_name || 'Anonymous'}</span>
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-4 w-4" />
+                        {featuredStory.view_count} views
+                      </span>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-0">
+                    <p className="text-gray-700 leading-relaxed mb-6 line-clamp-4">
+                      {featuredContent?.story || 'A beautiful story waiting to be discovered...'}
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      className="story-link"
+                      onClick={handleReadStory}
+                    >
+                      Read Full Story
+                    </Button>
+                  </CardContent>
+                </div>
               </div>
-              <div className="md:w-1/2 p-8">
-                <CardHeader className="px-0 pt-0">
-                  <CardTitle className="text-2xl font-serif mb-2">{featuredStory.title}</CardTitle>
-                  <CardDescription className="text-sm text-gray-500">by {featuredStory.author}</CardDescription>
-                </CardHeader>
-                <CardContent className="px-0">
-                  <p className="text-gray-700 leading-relaxed mb-6">{featuredStory.excerpt}</p>
-                  <Link to="/stories">
-                    <Button variant="outline" className="story-link">Read Full Story</Button>
-                  </Link>
-                </CardContent>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </section>
+            </Card>
+          </div>
+        </section>
+      )}
 
       {/* Gallery Preview */}
       <section className="py-16 px-4 bg-white/50">
