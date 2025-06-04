@@ -8,6 +8,7 @@ import { Users, FileText, AlertTriangle, DollarSign } from "lucide-react";
 import AdminPosts from "./AdminPosts";
 import AdminReports from "./AdminReports";
 import AdminUsers from "./AdminUsers";
+import AdminContent from "./AdminContent";
 
 interface DashboardStats {
   totalUsers: number;
@@ -144,12 +145,17 @@ const AdminDashboard = () => {
       <Tabs defaultValue="posts" className="space-y-4">
         <TabsList>
           <TabsTrigger value="posts">Posts Management</TabsTrigger>
+          <TabsTrigger value="content">All Content</TabsTrigger>
           <TabsTrigger value="users">Users Management</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts">
           <AdminPosts />
+        </TabsContent>
+
+        <TabsContent value="content">
+          <AdminContent />
         </TabsContent>
 
         <TabsContent value="users">
