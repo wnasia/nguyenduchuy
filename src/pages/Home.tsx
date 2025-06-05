@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Users, BookOpen, Camera, Eye, Image, Video } from "lucide-react";
@@ -35,13 +35,28 @@ const Home = () => {
     members: 0,
     views: 0
   });
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchFeaturedStory();
-    fetchStats();
+  const parseContent = useCallback((content: string): ParsedContent => {
+    try {
+      const parsed = JSON.parse(content);
+      return {
+        story: parsed.story || '',
+        imageLinks: parsed.imageLinks || [],
+        videoLinks: parsed.videoLinks || [],
+        tags: parsed.tags || []
+      };
+    } catch {
+      return {
+        story: content,
+        imageLinks: [],
+        videoLinks: [],
+        tags: []
+      };
+    }
   }, []);
 
-  const fetchFeaturedStory = async () => {
+  const fetchFeaturedStory = useCallback(async () => {
     try {
       const { data: postsData, error } = await supabase
         .from('posts')
@@ -58,7 +73,6 @@ const Home = () => {
       if (postsData && postsData.length > 0) {
         const post = postsData[0];
         
-        // Fetch profile data
         const { data: profileData } = await supabase
           .from('profiles')
           .select('full_name')
@@ -73,34 +87,35 @@ const Home = () => {
     } catch (error) {
       console.error('Error:', error);
     }
-  };
+  }, []);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
-      // Fetch stories count
-      const { count: storiesCount } = await supabase
-        .from('posts')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'approved');
+      // Fetch all data in parallel for better performance
+      const [
+        { count: storiesCount },
+        { count: usersCount },
+        { data: viewsData },
+        { data: postsData }
+      ] = await Promise.all([
+        supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'approved'),
+        supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true }),
+        supabase
+          .from('posts')
+          .select('view_count')
+          .eq('status', 'approved'),
+        supabase
+          .from('posts')
+          .select('content')
+          .eq('status', 'approved')
+      ]);
 
-      // Fetch users count
-      const { count: usersCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
-      // Fetch total views
-      const { data: viewsData } = await supabase
-        .from('posts')
-        .select('view_count')
-        .eq('status', 'approved');
-
-      const totalViews = viewsData?.reduce((sum, post) => sum + post.view_count, 0) || 0;
-
-      // Count images from all posts
-      const { data: postsData } = await supabase
-        .from('posts')
-        .select('content')
-        .eq('status', 'approved');
+      const totalViews = viewsData?.reduce((sum, post) => sum + (post.view_count || 0), 0) || 0;
 
       let totalImages = 0;
       postsData?.forEach(post => {
@@ -123,26 +138,17 @@ const Home = () => {
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
-  };
+  }, []);
 
-  const parseContent = (content: string): ParsedContent => {
-    try {
-      const parsed = JSON.parse(content);
-      return {
-        story: parsed.story || '',
-        imageLinks: parsed.imageLinks || [],
-        videoLinks: parsed.videoLinks || [],
-        tags: parsed.tags || []
-      };
-    } catch {
-      return {
-        story: content,
-        imageLinks: [],
-        videoLinks: [],
-        tags: []
-      };
-    }
-  };
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchFeaturedStory(), fetchStats()]);
+      setLoading(false);
+    };
+
+    loadData();
+  }, [fetchFeaturedStory, fetchStats]);
 
   const handleReadStory = () => {
     if (featuredStory) {
@@ -157,24 +163,7 @@ const Home = () => {
     { icon: Eye, label: "Total Views", value: stats.views.toLocaleString() }
   ];
 
-  const recentVideos = [
-    {
-      title: "My Grandmother's Recipe",
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-      duration: "3:45"
-    },
-    {
-      title: "First Day at College",
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-      duration: "5:22"
-    },
-    {
-      title: "Wedding Day Memories",
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-      duration: "7:18"
-    }
-  ];
-
+  // Sample gallery images
   const galleryImages = [
     "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop",
     "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop",
@@ -183,6 +172,14 @@ const Home = () => {
   ];
 
   const featuredContent = featuredStory ? parseContent(featuredStory.content) : null;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -236,7 +233,6 @@ const Home = () => {
             <h2 className="text-3xl md:text-4xl font-serif font-semibold text-center mb-12">Featured Story</h2>
             <Card className="overflow-hidden hover-scale cursor-pointer border-0 shadow-xl">
               <div className="md:flex">
-                {/* Story Image Preview */}
                 <div className="md:w-1/2 relative">
                   {featuredContent?.imageLinks && featuredContent.imageLinks.length > 0 ? (
                     <div className="relative">
@@ -330,40 +326,6 @@ const Home = () => {
           <div className="text-center">
             <Link to="/gallery">
               <Button variant="outline" className="px-8">View Full Gallery</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Videos */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif font-semibold mb-4">Recent Video Stories</h2>
-            <p className="text-gray-600">Life in motion, stories that move us</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            {recentVideos.map((video, index) => (
-              <Card key={index} className="overflow-hidden hover-scale cursor-pointer">
-                <div className="relative">
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm">
-                    {video.duration}
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-gray-900">{video.title}</h3>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="text-center">
-            <Link to="/videos">
-              <Button variant="outline" className="px-8">Watch More Videos</Button>
             </Link>
           </div>
         </div>

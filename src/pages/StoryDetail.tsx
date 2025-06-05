@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Clock, Eye, ArrowLeft, Image, Video, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import VideoPlayer from "@/components/VideoPlayer";
 
 interface Post {
   id: string;
@@ -64,7 +65,6 @@ const StoryDetail = () => {
         return;
       }
 
-      // Fetch profile data
       const { data: profileData } = await supabase
         .from('profiles')
         .select('full_name, email')
@@ -182,7 +182,6 @@ const StoryDetail = () => {
           </CardHeader>
           
           <CardContent>
-            {/* Story Content */}
             {parsedContent.story && (
               <div className="prose prose-lg max-w-none mb-8">
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
@@ -191,7 +190,6 @@ const StoryDetail = () => {
               </div>
             )}
 
-            {/* Images */}
             {parsedContent.imageLinks && parsedContent.imageLinks.length > 0 && (
               <div className="mb-8">
                 <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -215,7 +213,6 @@ const StoryDetail = () => {
               </div>
             )}
 
-            {/* Videos */}
             {parsedContent.videoLinks && parsedContent.videoLinks.length > 0 && (
               <div className="mb-8">
                 <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -224,22 +221,17 @@ const StoryDetail = () => {
                 </h3>
                 <div className="space-y-4">
                   {parsedContent.videoLinks.map((videoUrl, index) => (
-                    <div key={index} className="rounded-lg overflow-hidden shadow-md">
-                      <video 
-                        controls 
-                        className="w-full h-auto"
-                        poster="/placeholder.svg"
-                      >
-                        <source src={videoUrl} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
+                    <VideoPlayer
+                      key={index}
+                      src={videoUrl}
+                      poster="/placeholder.svg"
+                      className="shadow-md"
+                    />
                   ))}
                 </div>
               </div>
             )}
             
-            {/* Interaction Bar */}
             <div className="flex items-center justify-between pt-6 border-t border-gray-100">
               <div className="flex items-center gap-6 text-gray-500">
                 <button className="flex items-center gap-2 hover:text-red-500 transition-colors">
