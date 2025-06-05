@@ -29,6 +29,7 @@ interface ParsedContent {
 const Home = () => {
   const navigate = useNavigate();
   const [featuredStory, setFeaturedStory] = useState<Post | null>(null);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [stats, setStats] = useState({
     stories: 0,
     images: 0,
@@ -89,6 +90,49 @@ const Home = () => {
     }
   }, []);
 
+  const fetchGalleryImages = useCallback(async () => {
+    try {
+      const { data: postsData, error } = await supabase
+        .from('posts')
+        .select('content')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) {
+        console.error('Error fetching gallery images:', error);
+        return;
+      }
+
+      const allImages: string[] = [];
+      postsData?.forEach(post => {
+        const parsed = parseContent(post.content);
+        if (parsed.imageLinks) {
+          allImages.push(...parsed.imageLinks);
+        }
+      });
+
+      // Get first 8 images for gallery
+      const selectedImages = allImages.slice(0, 8);
+      
+      // Fill with placeholder images if needed
+      const placeholderImages = [
+        "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=300&h=300&fit=crop"
+      ];
+
+      while (selectedImages.length < 4 && placeholderImages.length > 0) {
+        selectedImages.push(placeholderImages.shift()!);
+      }
+
+      setGalleryImages(selectedImages);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }, [parseContent]);
+
   const fetchStats = useCallback(async () => {
     try {
       // Fetch all data in parallel for better performance
@@ -143,12 +187,12 @@ const Home = () => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchFeaturedStory(), fetchStats()]);
+      await Promise.all([fetchFeaturedStory(), fetchStats(), fetchGalleryImages()]);
       setLoading(false);
     };
 
     loadData();
-  }, [fetchFeaturedStory, fetchStats]);
+  }, [fetchFeaturedStory, fetchStats, fetchGalleryImages]);
 
   const handleReadStory = () => {
     if (featuredStory) {
@@ -156,19 +200,15 @@ const Home = () => {
     }
   };
 
+  const handleGalleryImageClick = () => {
+    navigate('/gallery');
+  };
+
   const statsData = [
     { icon: BookOpen, label: "Stories Shared", value: stats.stories.toLocaleString() },
     { icon: Camera, label: "Photos Uploaded", value: stats.images.toLocaleString() },
     { icon: Users, label: "Community Members", value: stats.members.toLocaleString() },
     { icon: Eye, label: "Total Views", value: stats.views.toLocaleString() }
-  ];
-
-  // Sample gallery images
-  const galleryImages = [
-    "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=300&h=300&fit=crop"
   ];
 
   const featuredContent = featuredStory ? parseContent(featuredStory.content) : null;
@@ -313,12 +353,19 @@ const Home = () => {
             <p className="text-gray-600">Moments captured, memories cherished</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {galleryImages.map((image, index) => (
-              <div key={index} className="aspect-square overflow-hidden rounded-lg hover-scale">
+            {galleryImages.slice(0, 4).map((image, index) => (
+              <div 
+                key={index} 
+                className="aspect-square overflow-hidden rounded-lg hover-scale cursor-pointer"
+                onClick={handleGalleryImageClick}
+              >
                 <img
                   src={image}
                   alt={`Gallery image ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `/placeholder.svg`;
+                  }}
                 />
               </div>
             ))}

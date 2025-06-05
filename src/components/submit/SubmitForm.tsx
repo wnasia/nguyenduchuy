@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import SubmitFormHeader from "./SubmitFormHeader";
 import StoryTitleInput from "./StoryTitleInput";
 import StoryContentInput from "./StoryContentInput";
-import ImageLinksManager from "./ImageLinksManager";
+import ImageUpload from "./ImageUpload";
 import VideoLinksManager from "./VideoLinksManager";
 import TagsManager from "./TagsManager";
 import SubmitButton from "./SubmitButton";
@@ -29,31 +29,17 @@ const SubmitForm = () => {
   const [formData, setFormData] = useState<FormData>({
     title: "",
     story: "",
-    imageLinks: [""],
+    imageLinks: [],
     videoLinks: [""],
     tags: []
   });
   const [currentTag, setCurrentTag] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddImageLink = () => {
+  const handleImageLinksChange = (links: string[]) => {
     setFormData(prev => ({
       ...prev,
-      imageLinks: [...prev.imageLinks, ""]
-    }));
-  };
-
-  const handleRemoveImageLink = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      imageLinks: prev.imageLinks.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleImageLinkChange = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      imageLinks: prev.imageLinks.map((link, i) => i === index ? value : link)
+      imageLinks: links
     }));
   };
 
@@ -112,13 +98,12 @@ const SubmitForm = () => {
 
     try {
       // Filter out empty links
-      const imageLinks = formData.imageLinks.filter(link => link.trim() !== '');
       const videoLinks = formData.videoLinks.filter(link => link.trim() !== '');
 
       // Prepare content with all the story elements
       const content = JSON.stringify({
         story: formData.story,
-        imageLinks,
+        imageLinks: formData.imageLinks,
         videoLinks,
         tags: formData.tags
       });
@@ -171,7 +156,7 @@ const SubmitForm = () => {
       setFormData({
         title: "",
         story: "",
-        imageLinks: [""],
+        imageLinks: [],
         videoLinks: [""],
         tags: []
       });
@@ -212,11 +197,9 @@ const SubmitForm = () => {
               disabled={isSubmitting}
             />
 
-            <ImageLinksManager
+            <ImageUpload
               imageLinks={formData.imageLinks}
-              onAdd={handleAddImageLink}
-              onRemove={handleRemoveImageLink}
-              onChange={handleImageLinkChange}
+              onImageLinksChange={handleImageLinksChange}
               disabled={isSubmitting}
             />
 

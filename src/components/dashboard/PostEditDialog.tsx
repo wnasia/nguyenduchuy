@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,8 +47,10 @@ const PostEditDialog = ({ post, isOpen, onClose, onPostUpdated }: PostEditDialog
   const [newVideoLink, setNewVideoLink] = useState("");
   const [newTag, setNewTag] = useState("");
 
-  useState(() => {
-    if (post) {
+  // Initialize form data when post changes
+  useEffect(() => {
+    if (post && isOpen) {
+      console.log('Initializing form with post:', post);
       setTitle(post.title);
       setType(post.type);
       setStatus(post.status);
@@ -65,8 +67,20 @@ const PostEditDialog = ({ post, isOpen, onClose, onPostUpdated }: PostEditDialog
         setVideoLinks([]);
         setTags([]);
       }
+    } else if (!isOpen) {
+      // Reset form when dialog closes
+      setTitle("");
+      setStory("");
+      setType("");
+      setStatus("");
+      setImageLinks([]);
+      setVideoLinks([]);
+      setTags([]);
+      setNewImageLink("");
+      setNewVideoLink("");
+      setNewTag("");
     }
-  });
+  }, [post, isOpen]);
 
   const handleSave = async () => {
     if (!post) return;
@@ -75,8 +89,8 @@ const PostEditDialog = ({ post, isOpen, onClose, onPostUpdated }: PostEditDialog
     try {
       const content = JSON.stringify({
         story,
-        imageLinks,
-        videoLinks,
+        imageLinks: imageLinks.filter(link => link.trim()),
+        videoLinks: videoLinks.filter(link => link.trim()),
         tags
       });
 
