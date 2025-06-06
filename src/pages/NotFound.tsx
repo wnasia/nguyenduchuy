@@ -14,17 +14,20 @@ const NotFound = () => {
 
     // Check if this is a valid route that should exist
     const validRoutes = ['/stories', '/gallery', '/videos', '/submit', '/login', '/dashboard'];
-    const isValidRoute = validRoutes.some(route => location.pathname.startsWith(route));
+    const isValidRoute = validRoutes.some(route => 
+      location.pathname === route || location.pathname.startsWith(route + '/')
+    );
     
     if (isValidRoute) {
-      // This is likely a SPA routing issue, redirect to home and let React Router handle it
-      console.log("Redirecting to home to let React Router handle the route");
+      // For valid routes, redirect to home and let the app handle navigation
+      console.log("Valid route detected, redirecting to home to let React Router handle it");
       setShouldRedirect(true);
     }
   }, [location.pathname]);
 
+  // If this is a valid route that should exist, redirect to home
   if (shouldRedirect) {
-    return <Navigate to={location.pathname} replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
