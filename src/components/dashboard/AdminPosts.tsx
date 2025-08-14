@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Calendar, CheckCircle, XCircle, Clock, Image, Video, Tag, Search, Filter, Edit, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Eye, Calendar, CheckCircle, XCircle, Clock, Image, Video, Tag, Search, Filter, Edit, Trash2, ArrowUp, ArrowDown, Star } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import PostEditDialog from "./PostEditDialog";
 
@@ -19,6 +19,7 @@ interface Post {
   view_count: number;
   created_at: string;
   user_id: string;
+  is_featured: boolean;
   profiles?: {
     full_name: string | null;
     email: string | null;
@@ -203,6 +204,37 @@ const AdminPosts = () => {
     }
   };
 
+  const toggleFeatured = async (postId: string, currentFeatured: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ is_featured: !currentFeatured })
+        .eq('id', postId);
+
+      if (error) {
+        console.error('Error updating featured status:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update featured status",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `Post ${!currentFeatured ? 'featured' : 'unfeatured'} successfully`,
+        });
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
   const deletePost = async (postId: string) => {
     try {
       const { error } = await supabase
@@ -356,6 +388,12 @@ const AdminPosts = () => {
                           {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
                         </Badge>
                         <Badge variant="outline">{post.type}</Badge>
+                        {post.is_featured && (
+                          <Badge variant="default" className="bg-yellow-500 text-white">
+                            <Star className="h-3 w-3 mr-1" />
+                            Featured
+                          </Badge>
+                        )}
                         {hasMedia && (
                           <div className="flex items-center gap-1 text-xs text-gray-500">
                             {parsedContent.imageLinks && parsedContent.imageLinks.length > 0 && (
@@ -413,6 +451,16 @@ const AdminPosts = () => {
                     </div>
                     
                     <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => toggleFeatured(post.id, post.is_featured)}
+                        className={post.is_featured ? "text-yellow-600 hover:text-yellow-700" : "text-gray-600 hover:text-gray-700"}
+                      >
+                        <Star className={`mr-1 h-4 w-4 ${post.is_featured ? 'fill-current' : ''}`} />
+                        {post.is_featured ? 'Unfeature' : 'Feature'}
+                      </Button>
+
                       <Button
                         size="sm"
                         variant="outline"

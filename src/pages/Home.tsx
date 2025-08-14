@@ -59,12 +59,27 @@ const Home = () => {
 
   const fetchFeaturedStory = useCallback(async () => {
     try {
-      const { data: postsData, error } = await supabase
+      // First try to get manually featured posts
+      let { data: postsData, error } = await supabase
         .from('posts')
         .select('*')
         .eq('status', 'approved')
-        .order('view_count', { ascending: false })
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
         .limit(1);
+
+      // If no manually featured posts, get the most viewed story
+      if (!error && (!postsData || postsData.length === 0)) {
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('posts')
+          .select('*')
+          .eq('status', 'approved')
+          .order('view_count', { ascending: false })
+          .limit(1);
+        
+        postsData = fallbackData;
+        error = fallbackError;
+      }
 
       if (error) {
         console.error('Error fetching featured story:', error);

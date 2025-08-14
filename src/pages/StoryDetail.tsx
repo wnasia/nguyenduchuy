@@ -8,6 +8,7 @@ import { Heart, MessageCircle, Clock, Eye, ArrowLeft, Image, Video, Tag } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import VideoPlayer from "@/components/VideoPlayer";
+import EngagementSection from "@/components/EngagementSection";
 
 interface Post {
   id: string;
@@ -232,25 +233,7 @@ const StoryDetail = () => {
               </div>
             )}
             
-            <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-              <div className="flex items-center gap-6 text-gray-500">
-                <button className="flex items-center gap-2 hover:text-red-500 transition-colors">
-                  <Heart className="h-5 w-5" />
-                  <span>Like</span>
-                </button>
-                <button className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-                  <MessageCircle className="h-5 w-5" />
-                  <span>Comment</span>
-                </button>
-              </div>
-              <div className="text-sm text-gray-500">
-                Published on {new Date(story.created_at).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </div>
-            </div>
+            <EngagementSection postId={story.id} />
           </CardContent>
         </Card>
       </div>
