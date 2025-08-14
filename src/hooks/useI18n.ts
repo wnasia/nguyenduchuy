@@ -28,7 +28,7 @@ const detectBrowserLanguage = (): Language => {
   if (browserLang.startsWith('vi')) return 'vi';
   if (browserLang.startsWith('zh')) return 'zh';
   if (browserLang.startsWith('ja')) return 'ja';
-  return 'en'; // Default to English
+  return 'vi'; // Default to Vietnamese
 };
 
 export const useI18n = () => {
