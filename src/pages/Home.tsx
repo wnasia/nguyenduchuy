@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Heart, Users, BookOpen, Camera, Eye, Image, Video } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { useI18n } from "@/hooks/useI18n";
 
 interface Post {
   id: string;
@@ -27,6 +27,7 @@ interface ParsedContent {
 }
 
 const Home = () => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [featuredStory, setFeaturedStory] = useState<Post | null>(null);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
@@ -206,46 +207,46 @@ const Home = () => {
   };
 
   const statsData = [
-    { icon: BookOpen, label: "Stories Shared", value: stats.stories.toLocaleString() },
-    { icon: Camera, label: "Photos Uploaded", value: stats.images.toLocaleString() },
-    { icon: Users, label: "Community Members", value: stats.members.toLocaleString() },
-    { icon: Eye, label: "Total Views", value: stats.views.toLocaleString() }
+    { icon: BookOpen, label: t("home.stats_stories"), value: stats.stories.toLocaleString() },
+    { icon: Camera, label: t("home.stats_photos"), value: stats.images.toLocaleString() },
+    { icon: Users, label: t("home.stats_members"), value: stats.members.toLocaleString() },
+    { icon: Eye, label: t("home.stats_views"), value: stats.views.toLocaleString() }
   ];
 
   const featuredContent = featuredStory ? parseContent(featuredStory.content) : null;
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 text-center">
+      <section className="relative py-20 px-4 text-center bg-white">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-serif font-semibold text-gray-900 mb-6 animate-fade-in">
-            Share Your{" "}
+            {t("home.hero_title")}{" "}
             <span className="text-primary relative">
-              Story
+              {t("home.hero_title_highlight")}
               <Heart className="absolute -top-2 -right-8 h-8 w-8 text-primary/60 animate-pulse" />
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            A warm place where life's precious moments, memories, and stories come together to create lasting connections.
+            {t("home.hero_subtitle")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/submit">
               <Button size="lg" className="bg-primary hover:bg-primary/90 px-8 py-3 text-lg">
-                Share Your Story
+                {t("home.share_story_btn")}
               </Button>
             </Link>
             <Link to="/stories">
               <Button variant="outline" size="lg" className="px-8 py-3 text-lg border-primary text-primary hover:bg-primary/5">
-                Read Stories
+                {t("home.read_stories_btn")}
               </Button>
             </Link>
           </div>
@@ -253,7 +254,7 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 px-4 bg-white/50">
+      <section className="py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {statsData.map((stat, index) => (
@@ -269,9 +270,9 @@ const Home = () => {
 
       {/* Featured Story */}
       {featuredStory && (
-        <section className="py-16 px-4">
+        <section className="py-16 px-4 bg-white">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-serif font-semibold text-center mb-12">Featured Story</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-semibold text-center mb-12">{t("home.featured_story_title")}</h2>
             <Card className="overflow-hidden hover-scale cursor-pointer border-0 shadow-xl">
               <div className="md:flex">
                 <div className="md:w-1/2 relative">
@@ -288,7 +289,7 @@ const Home = () => {
                       {featuredContent.imageLinks.length > 1 && (
                         <div className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
                           <Image className="h-4 w-4" />
-                          +{featuredContent.imageLinks.length - 1} more
+                          +{featuredContent.imageLinks.length - 1} {t("home.more_photos")}
                         </div>
                       )}
                     </div>
@@ -302,7 +303,7 @@ const Home = () => {
                   {featuredContent?.videoLinks && featuredContent.videoLinks.length > 0 && (
                     <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
                       <Video className="h-4 w-4" />
-                      {featuredContent.videoLinks.length} video{featuredContent.videoLinks.length !== 1 ? 's' : ''}
+                      {featuredContent.videoLinks.length} {featuredContent.videoLinks.length === 1 ? t("home.video") : t("home.videos")}
                     </div>
                   )}
                 </div>
@@ -320,23 +321,23 @@ const Home = () => {
                     </div>
                     <CardTitle className="text-2xl font-serif mb-2">{featuredStory.title}</CardTitle>
                     <CardDescription className="text-sm text-gray-500 flex items-center gap-4">
-                      <span>by {featuredStory.profiles?.full_name || 'Anonymous'}</span>
+                      <span>{t("home.by_author")} {featuredStory.profiles?.full_name || t("home.anonymous")}</span>
                       <span className="flex items-center gap-1">
                         <Eye className="h-4 w-4" />
-                        {featuredStory.view_count} views
+                        {featuredStory.view_count} {t("home.views")}
                       </span>
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="px-0">
                     <p className="text-gray-700 leading-relaxed mb-6 line-clamp-4">
-                      {featuredContent?.story || 'A beautiful story waiting to be discovered...'}
+                      {featuredContent?.story || t("home.story_placeholder")}
                     </p>
                     <Button 
                       variant="outline" 
                       className="story-link"
                       onClick={handleReadStory}
                     >
-                      Read Full Story
+                      {t("home.read_full_story")}
                     </Button>
                   </CardContent>
                 </div>
@@ -347,11 +348,11 @@ const Home = () => {
       )}
 
       {/* Gallery Preview */}
-      <section className="py-16 px-4 bg-white/50">
+      <section className="py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif font-semibold mb-4">Memory Gallery</h2>
-            <p className="text-gray-600">Moments captured, memories cherished</p>
+            <h2 className="text-3xl md:text-4xl font-serif font-semibold mb-4">{t("home.memory_gallery_title")}</h2>
+            <p className="text-gray-600">{t("home.memory_gallery_subtitle")}</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {galleryImages.slice(0, 4).map((image, index) => (
@@ -373,22 +374,22 @@ const Home = () => {
           </div>
           <div className="text-center">
             <Link to="/gallery">
-              <Button variant="outline" className="px-8">View Full Gallery</Button>
+              <Button variant="outline" className="px-8">{t("home.view_full_gallery")}</Button>
             </Link>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-primary/10 to-warm-200/30">
+      <section className="py-20 px-4 bg-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-serif font-semibold mb-6">Ready to Share Your Story?</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-semibold mb-6">{t("home.cta_title")}</h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Every story matters. Every memory has value. Join our community and let your voice be heard.
+            {t("home.cta_subtitle")}
           </p>
           <Link to="/submit">
             <Button size="lg" className="bg-primary hover:bg-primary/90 px-8 py-3 text-lg">
-              Get Started Today
+              {t("home.get_started_btn")}
             </Button>
           </Link>
         </div>

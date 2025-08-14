@@ -51,5 +51,31 @@
   "brand": {
     "name": "Huy's",
     "tagline": "Chia sẻ câu chuyện của bạn"
+  },
+  "home": {
+    "hero_title": "Chia sẻ",
+    "hero_title_highlight": "Câu chuyện",
+    "hero_subtitle": "Một nơi ấm áp nơi những khoảnh khắc quý giá, ký ức và câu chuyện của cuộc sống hội tụ để tạo nên những kết nối lâu dài.",
+    "share_story_btn": "Chia sẻ câu chuyện của bạn",
+    "read_stories_btn": "Đọc câu chuyện",
+    "stats_stories": "Câu chuyện đã chia sẻ",
+    "stats_photos": "Ảnh đã tải lên",
+    "stats_members": "Thành viên cộng đồng",
+    "stats_views": "Tổng lượt xem",
+    "featured_story_title": "Câu chuyện nổi bật",
+    "more_photos": "thêm",
+    "video": "video",
+    "videos": "video",
+    "by_author": "bởi",
+    "views": "lượt xem",
+    "anonymous": "Ẩn danh",
+    "read_full_story": "Đọc toàn bộ câu chuyện",
+    "memory_gallery_title": "Thư viện ký ức",
+    "memory_gallery_subtitle": "Những khoảnh khắc được ghi lại, ký ức được trân trọng",
+    "view_full_gallery": "Xem toàn bộ thư viện",
+    "cta_title": "Sẵn sàng chia sẻ câu chuyện của bạn?",
+    "cta_subtitle": "Mọi câu chuyện đều có ý nghĩa. Mọi ký ức đều có giá trị. Tham gia cộng đồng của chúng tôi và để tiếng nói của bạn được lắng nghe.",
+    "get_started_btn": "Bắt đầu ngay hôm nay",
+    "story_placeholder": "Một câu chuyện đẹp đang chờ được khám phá..."
   }
 }
