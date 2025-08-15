@@ -194,7 +194,9 @@ const Home = () => {
     };
 
     loadData();
-  }, [fetchFeaturedStory, fetchStats, fetchGalleryImages]);
+    // Update document title
+    document.title = t("meta.home_title");
+  }, [fetchFeaturedStory, fetchStats, fetchGalleryImages, t]);
 
   const handleReadStory = () => {
     if (featuredStory) {

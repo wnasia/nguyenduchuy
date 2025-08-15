@@ -51,5 +51,107 @@
   "brand": {
     "name": "Huy's",
     "tagline": "Share Your Story"
+  },
+  "home": {
+    "hero_title": "Share Your",
+    "hero_title_highlight": "Story",
+    "hero_subtitle": "A warm place where precious moments, memories, and life stories converge to create lasting connections.",
+    "share_story_btn": "Share Your Story",
+    "read_stories_btn": "Read Stories",
+    "stats_stories": "Stories Shared",
+    "stats_photos": "Photos Uploaded",
+    "stats_members": "Community Members",
+    "stats_views": "Total Views",
+    "featured_story_title": "Featured Story",
+    "more_photos": "more",
+    "video": "video",
+    "videos": "videos",
+    "by_author": "by",
+    "views": "views",
+    "anonymous": "Anonymous",
+    "read_full_story": "Read Full Story",
+    "memory_gallery_title": "Memory Gallery",
+    "memory_gallery_subtitle": "Captured moments, cherished memories",
+    "view_full_gallery": "View Full Gallery",
+    "cta_title": "Ready to share your story?",
+    "cta_subtitle": "Every story matters. Every memory has value. Join our community and let your voice be heard.",
+    "get_started_btn": "Get Started Today",
+    "story_placeholder": "A beautiful story waiting to be discovered..."
+  },
+  "gallery": {
+    "title": "Memory Gallery",
+    "subtitle": "A collection of precious moments, captured in time. Each image tells a story, preserves a memory, and connects us to what matters most.",
+    "image_count": "images",
+    "click_to_view": "Click any image to view full size",
+    "refresh_gallery": "Refresh Gallery",
+    "image_of": "of"
+  },
+  "videos": {
+    "title": "Video Stories",
+    "subtitle": "Life in motion. Stories told through the power of video, bringing emotions and experiences to life in ways words alone cannot.",
+    "no_videos_title": "No Video Stories Yet",
+    "no_videos_desc": "Be the first to share a story with videos!",
+    "more_videos": "more videos",
+    "views": "views",
+    "watch_story": "Watch Story",
+    "load_more": "Load More Videos",
+    "video_placeholder": "A beautiful story with videos waiting to be discovered..."
+  },
+  "story": {
+    "read_more": "Read More",
+    "by_author": "by",
+    "anonymous": "Anonymous",
+    "views": "views",
+    "likes": "likes",
+    "comments": "comments",
+    "share": "Share",
+    "like": "Like",
+    "comment": "Comment"
+  },
+  "submit": {
+    "title": "Share Your Story",
+    "subtitle": "Every story matters. Share your experiences, memories, and moments that have shaped your life. Your story could inspire and connect with others in ways you never imagined.",
+    "form_title": "Tell Your Story",
+    "form_subtitle": "Fill out the form below to share your personal story with our community.",
+    "title_label": "Story Title",
+    "title_placeholder": "Enter a compelling title for your story",
+    "content_label": "Your Story",
+    "content_placeholder": "Share your story...",
+    "images_label": "Image Links (Optional)",
+    "images_desc": "Add images by pasting URLs to illustrate your story.",
+    "videos_label": "YouTube Video Links (Optional)",
+    "videos_desc": "Share YouTube videos that are part of your story or help illustrate your experience.",
+    "tags_label": "Tags",
+    "tags_placeholder": "family, memories, success...",
+    "submit_button": "Share Story",
+    "submitting": "Submitting...",
+    "success_title": "Story Submitted!",
+    "success_message": "Thank you for sharing your story. It will be reviewed and published soon.",
+    "error_title": "Error",
+    "error_message": "Failed to submit story. Please try again.",
+    "login_prompt_title": "Want to manage your stories?",
+    "login_prompt_desc": "Create an account to edit your stories, track views, and connect with other storytellers.",
+    "login_prompt_button": "Sign Up or Log In"
+  },
+  "errors": {
+    "404_title": "404",
+    "404_subtitle": "Oops! Page not found",
+    "404_description": "The page doesn't exist.",
+    "404_return": "Return to Home",
+    "network_error": "Network Error",
+    "unexpected_error": "An unexpected error occurred",
+    "failed_to_load": "Failed to load"
+  },
+  "navigation": {
+    "dashboard": "Dashboard"
+  },
+  "meta": {
+    "home_title": "Share Your Story - Huy's",
+    "gallery_title": "Memory Gallery - Huy's",
+    "videos_title": "Video Stories - Huy's", 
+    "stories_title": "Stories - Huy's",
+    "submit_title": "Submit Story - Huy's",
+    "login_title": "Login - Huy's",
+    "dashboard_title": "Dashboard - Huy's"
   }
 }

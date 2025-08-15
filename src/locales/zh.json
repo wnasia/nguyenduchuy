@@ -51,5 +51,107 @@
   "brand": {
     "name": "Huy's",
     "tagline": "分享您的故事"
+  },
+  "home": {
+    "hero_title": "分享您的",
+    "hero_title_highlight": "故事",
+    "hero_subtitle": "一个温暖的地方，珍贵的时刻、回忆和生活故事汇聚在一起，创造持久的联系。",
+    "share_story_btn": "分享您的故事",
+    "read_stories_btn": "阅读故事",
+    "stats_stories": "已分享故事",
+    "stats_photos": "已上传照片",
+    "stats_members": "社区成员",
+    "stats_views": "总浏览量",
+    "featured_story_title": "精选故事",
+    "more_photos": "更多",
+    "video": "视频",
+    "videos": "视频",
+    "by_author": "作者",
+    "views": "浏览量",
+    "anonymous": "匿名",
+    "read_full_story": "阅读完整故事",
+    "memory_gallery_title": "回忆画廊",
+    "memory_gallery_subtitle": "捕捉的瞬间，珍藏的回忆",
+    "view_full_gallery": "查看完整画廊",
+    "cta_title": "准备分享您的故事了吗？",
+    "cta_subtitle": "每个故事都很重要。每个回忆都有价值。加入我们的社区，让您的声音被听到。",
+    "get_started_btn": "今天开始",
+    "story_placeholder": "一个美丽的故事等待被发现..."
+  },
+  "gallery": {
+    "title": "回忆画廊",
+    "subtitle": "珍贵时刻的收藏，在时间中捕获。每张图片都讲述一个故事，保存一个回忆，并将我们与最重要的事物联系起来。",
+    "image_count": "张图片",
+    "click_to_view": "点击任意图片查看完整尺寸",
+    "refresh_gallery": "刷新画廊",
+    "image_of": "的"
+  },
+  "videos": {
+    "title": "视频故事",
+    "subtitle": "运动中的生活。通过视频的力量讲述故事，以仅凭文字无法做到的方式将情感和体验带入生活。",
+    "no_videos_title": "还没有视频故事",
+    "no_videos_desc": "成为第一个分享带视频故事的人！",
+    "more_videos": "更多视频",
+    "views": "浏览量",
+    "watch_story": "观看故事",
+    "load_more": "加载更多视频",
+    "video_placeholder": "一个带视频的美丽故事等待被发现..."
+  },
+  "story": {
+    "read_more": "阅读更多",
+    "by_author": "作者",
+    "anonymous": "匿名",
+    "views": "浏览量",
+    "likes": "点赞",
+    "comments": "评论",
+    "share": "分享",
+    "like": "点赞",
+    "comment": "评论"
+  },
+  "submit": {
+    "title": "分享您的故事",
+    "subtitle": "每个故事都很重要。分享您的经历、回忆和塑造您生活的时刻。您的故事可能以您从未想象过的方式启发他人并与他人建立联系。",
+    "form_title": "讲述您的故事",
+    "form_subtitle": "填写下面的表格与我们的社区分享您的个人故事。",
+    "title_label": "故事标题",
+    "title_placeholder": "为您的故事输入一个引人注目的标题",
+    "content_label": "您的故事",
+    "content_placeholder": "分享您的故事...",
+    "images_label": "图片链接（可选）",
+    "images_desc": "通过粘贴URL添加图片来说明您的故事。",
+    "videos_label": "YouTube视频链接（可选）",
+    "videos_desc": "分享作为您故事一部分或有助于说明您经历的YouTube视频。",
+    "tags_label": "标签",
+    "tags_placeholder": "家庭，回忆，成功...",
+    "submit_button": "分享故事",
+    "submitting": "提交中...",
+    "success_title": "故事已提交！",
+    "success_message": "感谢您分享您的故事。它将被审核并很快发布。",
+    "error_title": "错误",
+    "error_message": "提交故事失败。请重试。",
+    "login_prompt_title": "想要管理您的故事？",
+    "login_prompt_desc": "创建账户以编辑您的故事，跟踪浏览量，并与其他故事讲述者建立联系。",
+    "login_prompt_button": "注册或登录"
+  },
+  "errors": {
+    "404_title": "404",
+    "404_subtitle": "哎呀！页面未找到",
+    "404_description": "页面不存在。",
+    "404_return": "返回首页",
+    "network_error": "网络错误",
+    "unexpected_error": "发生意外错误",
+    "failed_to_load": "加载失败"
+  },
+  "navigation": {
+    "dashboard": "仪表板"
+  },
+  "meta": {
+    "home_title": "分享您的故事 - Huy's",
+    "gallery_title": "回忆画廊 - Huy's",
+    "videos_title": "视频故事 - Huy's",
+    "stories_title": "故事 - Huy's", 
+    "submit_title": "提交故事 - Huy's",
+    "login_title": "登录 - Huy's",
+    "dashboard_title": "仪表板 - Huy's"
   }
 }

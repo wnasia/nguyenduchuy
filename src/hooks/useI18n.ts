@@ -39,6 +39,8 @@ export const useI18n = () => {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, currentLanguage);
+    // Update HTML lang attribute
+    document.documentElement.lang = currentLanguage;
   }, [currentLanguage]);
 
   const t = (key: string): string => {

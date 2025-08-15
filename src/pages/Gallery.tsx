@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/hooks/useI18n";
 
 interface GalleryImage {
   src: string;
@@ -15,13 +16,16 @@ interface GalleryImage {
 
 const Gallery = () => {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchGalleryImages();
-  }, []);
+    // Update document title
+    document.title = t("meta.gallery_title");
+  }, [t]);
 
   const fetchGalleryImages = async () => {
     try {
@@ -34,8 +38,8 @@ const Gallery = () => {
       if (error) {
         console.error('Error fetching gallery images:', error);
         toast({
-          title: "Error",
-          description: "Failed to load gallery images",
+          title: t("errors.network_error"),
+          description: t("errors.failed_to_load"),
           variant: "destructive",
         });
         setLoading(false);
@@ -94,8 +98,8 @@ const Gallery = () => {
     } catch (error) {
       console.error('Error:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: t("common.error"),
+        description: t("errors.unexpected_error"),
         variant: "destructive",
       });
     } finally {
@@ -141,10 +145,9 @@ const Gallery = () => {
       <div className="min-h-screen py-8 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">Memory Gallery</h1>
+            <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("gallery.title")}</h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              A collection of precious moments, captured in time. Each image tells a story, 
-              preserves a memory, and connects us to what matters most.
+              {t("gallery.subtitle")}
             </p>
           </div>
           <div className="flex items-center justify-center p-8">
@@ -159,13 +162,12 @@ const Gallery = () => {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">Memory Gallery</h1>
+          <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("gallery.title")}</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            A collection of precious moments, captured in time. Each image tells a story, 
-            preserves a memory, and connects us to what matters most.
+            {t("gallery.subtitle")}
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            {images.length} images • Click any image to view full size
+            {images.length} {t("gallery.image_count")} • {t("gallery.click_to_view")}
           </p>
         </div>
 
@@ -200,7 +202,7 @@ const Gallery = () => {
         {images.length > 12 && (
           <div className="text-center mt-12">
             <Button size="lg" variant="outline" className="px-8" onClick={fetchGalleryImages}>
-              Refresh Gallery
+              {t("gallery.refresh_gallery")}
             </Button>
           </div>
         )}
@@ -252,7 +254,7 @@ const Gallery = () => {
                     <h3 className="font-semibold text-lg mb-2">{images[selectedImageIndex].title}</h3>
                     <p className="text-sm opacity-90">{images[selectedImageIndex].description}</p>
                     <p className="text-xs opacity-70 mt-2">
-                      {selectedImageIndex + 1} of {images.length}
+                      {selectedImageIndex + 1} {t("gallery.image_of")} {images.length}
                     </p>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useI18n } from "@/hooks/useI18n";
 import { Card, CardContent } from "@/components/ui/card";
 import SubmitFormHeader from "./SubmitFormHeader";
 import StoryTitleInput from "./StoryTitleInput";
@@ -26,6 +27,7 @@ const SubmitForm = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [formData, setFormData] = useState<FormData>({
     title: "",
     story: "",
@@ -148,8 +150,8 @@ const SubmitForm = () => {
       console.log('Post created successfully:', data);
 
       toast({
-        title: "Story Submitted Successfully!",
-        description: "Thank you for sharing your story. It will be reviewed and published soon.",
+        title: t("submit.success_title"),
+        description: t("submit.success_message"),
       });
       
       // Reset form
@@ -169,8 +171,8 @@ const SubmitForm = () => {
     } catch (error) {
       console.error('Unexpected error:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: t("submit.error_title"),
+        description: t("submit.error_message"),
         variant: "destructive",
       });
     } finally {

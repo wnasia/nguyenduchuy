@@ -51,5 +51,107 @@
   "brand": {
     "name": "Huy's",
     "tagline": "あなたのストーリーを共有"
+  },
+  "home": {
+    "hero_title": "あなたの",
+    "hero_title_highlight": "ストーリーを共有",
+    "hero_subtitle": "貴重な瞬間、思い出、人生の物語が集まり、永続的なつながりを生み出す温かい場所。",
+    "share_story_btn": "あなたのストーリーを共有",
+    "read_stories_btn": "ストーリーを読む",
+    "stats_stories": "共有されたストーリー",
+    "stats_photos": "アップロードされた写真",
+    "stats_members": "コミュニティメンバー",
+    "stats_views": "総ビュー数",
+    "featured_story_title": "注目のストーリー",
+    "more_photos": "その他",
+    "video": "動画",
+    "videos": "動画",
+    "by_author": "著者",
+    "views": "ビュー",
+    "anonymous": "匿名",
+    "read_full_story": "完全なストーリーを読む",
+    "memory_gallery_title": "メモリーギャラリー",
+    "memory_gallery_subtitle": "捉えられた瞬間、大切な思い出",
+    "view_full_gallery": "完全なギャラリーを表示",
+    "cta_title": "あなたのストーリーを共有する準備はできましたか？",
+    "cta_subtitle": "すべてのストーリーに意味があります。すべての記憶に価値があります。私たちのコミュニティに参加して、あなたの声を聞かせてください。",
+    "get_started_btn": "今日から始める",
+    "story_placeholder": "発見されるのを待っている美しいストーリー..."
+  },
+  "gallery": {
+    "title": "メモリーギャラリー",
+    "subtitle": "時間の中で捉えられた貴重な瞬間のコレクション。各画像はストーリーを語り、記憶を保存し、最も重要なものとのつながりを作ります。",
+    "image_count": "枚の画像",
+    "click_to_view": "任意の画像をクリックしてフルサイズで表示",
+    "refresh_gallery": "ギャラリーを更新",
+    "image_of": "の"
+  },
+  "videos": {
+    "title": "ビデオストーリー",
+    "subtitle": "動きの中の人生。ビデオの力を通じて語られるストーリーは、言葉だけではできない方法で感情と体験を生き生きとさせます。",
+    "no_videos_title": "ビデオストーリーはまだありません",
+    "no_videos_desc": "ビデオ付きストーリーを共有する最初の人になりましょう！",
+    "more_videos": "その他のビデオ",
+    "views": "ビュー",
+    "watch_story": "ストーリーを見る",
+    "load_more": "さらにビデオを読み込む",
+    "video_placeholder": "ビデオ付きの美しいストーリーが発見されるのを待っています..."
+  },
+  "story": {
+    "read_more": "もっと読む",
+    "by_author": "著者",
+    "anonymous": "匿名",
+    "views": "ビュー",
+    "likes": "いいね",
+    "comments": "コメント",
+    "share": "共有",
+    "like": "いいね",
+    "comment": "コメント"
+  },
+  "submit": {
+    "title": "あなたのストーリーを共有",
+    "subtitle": "すべてのストーリーに意味があります。あなたの経験、思い出、人生を形作った瞬間を共有してください。あなたのストーリーは、想像したことのない方法で他の人にインスピレーションを与え、つながりを作ることができます。",
+    "form_title": "あなたのストーリーを語る",
+    "form_subtitle": "下のフォームに記入して、個人的なストーリーをコミュニティと共有してください。",
+    "title_label": "ストーリータイトル",
+    "title_placeholder": "ストーリーの魅力的なタイトルを入力",
+    "content_label": "あなたのストーリー",
+    "content_placeholder": "あなたのストーリーを共有...",
+    "images_label": "画像リンク（オプション）",
+    "images_desc": "URLを貼り付けて画像を追加し、ストーリーを説明してください。",
+    "videos_label": "YouTubeビデオリンク（オプション）",
+    "videos_desc": "ストーリーの一部であるか、体験を説明するのに役立つYouTubeビデオを共有してください。",
+    "tags_label": "タグ",
+    "tags_placeholder": "家族、思い出、成功...",
+    "submit_button": "ストーリーを共有",
+    "submitting": "送信中...",
+    "success_title": "ストーリーが送信されました！",
+    "success_message": "ストーリーを共有していただきありがとうございます。レビュー後、まもなく公開されます。",
+    "error_title": "エラー",
+    "error_message": "ストーリーの送信に失敗しました。もう一度お試しください。",
+    "login_prompt_title": "ストーリーを管理したいですか？",
+    "login_prompt_desc": "アカウントを作成して、ストーリーを編集し、ビューを追跡し、他のストーリーテラーとつながりましょう。",
+    "login_prompt_button": "サインアップまたはログイン"
+  },
+  "errors": {
+    "404_title": "404",
+    "404_subtitle": "おっと！ページが見つかりません",
+    "404_description": "ページが存在しません。",
+    "404_return": "ホームに戻る",
+    "network_error": "ネットワークエラー",
+    "unexpected_error": "予期しないエラーが発生しました",
+    "failed_to_load": "読み込みに失敗しました"
+  },
+  "navigation": {
+    "dashboard": "ダッシュボード"
+  },
+  "meta": {
+    "home_title": "あなたのストーリーを共有 - Huy's",
+    "gallery_title": "メモリーギャラリー - Huy's",
+    "videos_title": "ビデオストーリー - Huy's",
+    "stories_title": "ストーリー - Huy's",
+    "submit_title": "ストーリーを送信 - Huy's", 
+    "login_title": "ログイン - Huy's",
+    "dashboard_title": "ダッシュボード - Huy's"
   }
 }

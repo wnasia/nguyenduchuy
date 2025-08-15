@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import VideoPlayer from "@/components/VideoPlayer";
 import { useNavigate } from "react-router-dom";
+import { useI18n } from "@/hooks/useI18n";
 
 interface Post {
   id: string;
@@ -31,12 +32,15 @@ interface ParsedContent {
 const Videos = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchVideoPosts();
-  }, []);
+    // Update document title
+    document.title = t("meta.videos_title");
+  }, [t]);
 
   const fetchVideoPosts = async () => {
     try {
@@ -49,8 +53,8 @@ const Videos = () => {
       if (error) {
         console.error('Error fetching posts:', error);
         toast({
-          title: "Error",
-          description: "Failed to load video posts",
+          title: t("common.error"),
+          description: t("errors.failed_to_load"),
           variant: "destructive",
         });
         return;
@@ -85,8 +89,8 @@ const Videos = () => {
     } catch (error) {
       console.error('Error:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: t("common.error"),
+        description: t("errors.unexpected_error"),
         variant: "destructive",
       });
     } finally {
@@ -133,18 +137,17 @@ const Videos = () => {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">Video Stories</h1>
+          <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("videos.title")}</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Life in motion. Stories told through the power of video, 
-            bringing emotions and experiences to life in ways words alone cannot.
+            {t("videos.subtitle")}
           </p>
         </div>
 
         {posts.length === 0 ? (
           <div className="text-center py-12">
             <Play className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Video Stories Yet</h3>
-            <p className="text-gray-500">Be the first to share a story with videos!</p>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">{t("videos.no_videos_title")}</h3>
+            <p className="text-gray-500">{t("videos.no_videos_desc")}</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -181,7 +184,7 @@ const Videos = () => {
                     
                     {parsedContent.videoLinks && parsedContent.videoLinks.length > 1 && (
                       <div className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm">
-                        +{parsedContent.videoLinks.length - 1} more videos
+                        +{parsedContent.videoLinks.length - 1} {t("videos.more_videos")}
                       </div>
                     )}
                   </div>
@@ -191,19 +194,19 @@ const Videos = () => {
                       {post.title}
                     </CardTitle>
                     <CardDescription className="text-sm">
-                      by {post.profiles?.full_name || 'Anonymous'} • {new Date(post.created_at).toLocaleDateString()}
+                      {t("story.by_author")} {post.profiles?.full_name || t("story.anonymous")} • {new Date(post.created_at).toLocaleDateString()}
                     </CardDescription>
                   </CardHeader>
                   
                   <CardContent>
                     <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
-                      {parsedContent.story || 'A beautiful story with videos waiting to be discovered...'}
+                      {parsedContent.story || t("videos.video_placeholder")}
                     </p>
                     
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                       <span className="flex items-center gap-1">
                         <Eye className="h-4 w-4" />
-                        {post.view_count} views
+                        {post.view_count} {t("videos.views")}
                       </span>
                       <div className="flex items-center gap-4">
                         <span className="flex items-center gap-1">
@@ -222,7 +225,7 @@ const Videos = () => {
                       variant="outline"
                       onClick={() => handleWatchStory(post.id)}
                     >
-                      Watch Story
+                      {t("videos.watch_story")}
                     </Button>
                   </CardContent>
                 </Card>
@@ -234,7 +237,7 @@ const Videos = () => {
         {posts.length > 0 && (
           <div className="text-center mt-12">
             <Button size="lg" variant="outline" className="px-8" disabled>
-              Load More Videos
+              {t("videos.load_more")}
             </Button>
           </div>
         )}

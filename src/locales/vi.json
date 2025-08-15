@@ -77,5 +77,81 @@
     "cta_subtitle": "Mọi câu chuyện đều có ý nghĩa. Mọi ký ức đều có giá trị. Tham gia cộng đồng của chúng tôi và để tiếng nói của bạn được lắng nghe.",
     "get_started_btn": "Bắt đầu ngay hôm nay",
     "story_placeholder": "Một câu chuyện đẹp đang chờ được khám phá..."
+  },
+  "gallery": {
+    "title": "Thư viện ký ức",
+    "subtitle": "Bộ sưu tập những khoảnh khắc quý giá, được ghi lại theo thời gian. Mỗi hình ảnh kể một câu chuyện, lưu giữ một ký ức và kết nối chúng ta với những điều quan trọng nhất.",
+    "image_count": "hình ảnh",
+    "click_to_view": "Nhấp vào bất kỳ hình ảnh nào để xem kích thước đầy đủ",
+    "refresh_gallery": "Làm mới thư viện",
+    "image_of": "của"
+  },
+  "videos": {
+    "title": "Video câu chuyện",
+    "subtitle": "Cuộc sống trong chuyển động. Những câu chuyện được kể qua sức mạnh của video, mang đến cảm xúc và trải nghiệm sống động theo cách mà chỉ riêng từ ngữ không thể làm được.",
+    "no_videos_title": "Chưa có video câu chuyện nào",
+    "no_videos_desc": "Hãy là người đầu tiên chia sẻ câu chuyện có video!",
+    "more_videos": "video khác",
+    "views": "lượt xem",
+    "watch_story": "Xem câu chuyện",
+    "load_more": "Tải thêm video",
+    "video_placeholder": "Một câu chuyện đẹp với video đang chờ được khám phá..."
+  },
+  "story": {
+    "read_more": "Đọc thêm",
+    "by_author": "bởi",
+    "anonymous": "Ẩn danh",
+    "views": "lượt xem",
+    "likes": "lượt thích",
+    "comments": "bình luận",
+    "share": "Chia sẻ",
+    "like": "Thích",
+    "comment": "Bình luận"
+  },
+  "submit": {
+    "title": "Chia sẻ câu chuyện của bạn",
+    "subtitle": "Mọi câu chuyện đều có ý nghĩa. Chia sẻ trải nghiệm, ký ức và những khoảnh khắc đã định hình cuộc sống của bạn. Câu chuyện của bạn có thể truyền cảm hứng và kết nối với những người khác theo những cách bạn chưa bao giờ tưởng tượng.",
+    "form_title": "Kể câu chuyện của bạn",
+    "form_subtitle": "Điền vào biểu mẫu bên dưới để chia sẻ câu chuyện cá nhân của bạn với cộng đồng.",
+    "title_label": "Tiêu đề câu chuyện",
+    "title_placeholder": "Nhập tiêu đề hấp dẫn cho câu chuyện của bạn",
+    "content_label": "Câu chuyện của bạn",
+    "content_placeholder": "Chia sẻ câu chuyện của bạn...",
+    "images_label": "Liên kết hình ảnh (Tùy chọn)",
+    "images_desc": "Thêm hình ảnh bằng cách dán URL để minh họa câu chuyện của bạn.",
+    "videos_label": "Liên kết video YouTube (Tùy chọn)",
+    "videos_desc": "Chia sẻ các video YouTube là một phần của câu chuyện hoặc giúp minh họa trải nghiệm của bạn.",
+    "tags_label": "Thẻ",
+    "tags_placeholder": "gia đình, kỷ niệm, thành công...",
+    "submit_button": "Chia sẻ câu chuyện",
+    "submitting": "Đang gửi...",
+    "success_title": "Câu chuyện đã được gửi!",
+    "success_message": "Cảm ơn bạn đã chia sẻ câu chuyện. Nó sẽ được xem xét và xuất bản sớm.",
+    "error_title": "Lỗi",
+    "error_message": "Không thể gửi câu chuyện. Vui lòng thử lại.",
+    "login_prompt_title": "Muốn quản lý câu chuyện của bạn?",
+    "login_prompt_desc": "Tạo tài khoản để chỉnh sửa câu chuyện, theo dõi lượt xem và kết nối với những người kể chuyện khác.",
+    "login_prompt_button": "Đăng ký hoặc đăng nhập"
+  },
+  "errors": {
+    "404_title": "404",
+    "404_subtitle": "Ôi! Không tìm thấy trang",
+    "404_description": "Trang không tồn tại.",
+    "404_return": "Quay lại trang chủ",
+    "network_error": "Lỗi mạng",
+    "unexpected_error": "Đã xảy ra lỗi không mong muốn",
+    "failed_to_load": "Không thể tải"
+  },
+  "navigation": {
+    "dashboard": "Bảng điều khiển"
+  },
+  "meta": {
+    "home_title": "Chia sẻ câu chuyện của bạn - Huy's",
+    "gallery_title": "Thư viện ký ức - Huy's", 
+    "videos_title": "Video câu chuyện - Huy's",
+    "stories_title": "Câu chuyện - Huy's",
+    "submit_title": "Gửi câu chuyện - Huy's",
+    "login_title": "Đăng nhập - Huy's",
+    "dashboard_title": "Bảng điều khiển - Huy's"
   }
 }

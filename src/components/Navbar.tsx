@@ -95,7 +95,7 @@ const Navbar = () => {
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard" className="flex items-center w-full">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      <span>Dashboard</span>
+                      <span>{t("navigation.dashboard")}</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut}>
@@ -168,7 +168,7 @@ const Navbar = () => {
                   <Link to="/dashboard" onClick={() => setIsOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
+                      {t("navigation.dashboard")}
                     </Button>
                   </Link>
                   <Button

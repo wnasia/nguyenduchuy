@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Clock, Eye, Image, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useI18n } from "@/hooks/useI18n";
 
 interface Post {
   id: string;
@@ -32,6 +33,7 @@ interface StoryCardProps {
 
 const StoryCard = ({ story, index }: StoryCardProps) => {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   const parseContent = (content: string): ParsedContent => {
     try {
@@ -123,7 +125,7 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
             {story.title}
           </CardTitle>
           <CardDescription className="flex items-center gap-4 text-sm">
-            <span>by {story.profiles?.full_name || 'Anonymous'}</span>
+            <span>{t("story.by_author")} {story.profiles?.full_name || t("story.anonymous")}</span>
             <span className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
               {new Date(story.created_at).toLocaleDateString()}
@@ -158,7 +160,7 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
               className="story-link"
               onClick={handleReadMore}
             >
-              Read More
+              {t("story.read_more")}
             </Button>
           </div>
         </CardContent>
