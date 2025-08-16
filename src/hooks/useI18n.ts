@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 // Import JSON files using ES6 imports
 import enTranslations from '../locales/en.json';
@@ -43,7 +43,7 @@ export const useI18n = () => {
     document.documentElement.lang = currentLanguage;
   }, [currentLanguage]);
 
-  const t = (key: string): string => {
+  const t = useCallback((key: string): string => {
     const keys = key.split('.');
     let value: any = translations[currentLanguage];
     
@@ -52,7 +52,7 @@ export const useI18n = () => {
     }
     
     return typeof value === 'string' ? value : key;
-  };
+  }, [currentLanguage]);
 
   const changeLanguage = (language: Language) => {
     setCurrentLanguage(language);
