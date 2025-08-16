@@ -106,7 +106,8 @@
     "comments": "comments",
     "share": "Share",
     "like": "Like",
-    "comment": "Comment"
+    "comment": "Comment",
+    "open": "Open"
   },
   "submit": {
     "title": "Share Your Story",

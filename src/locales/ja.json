@@ -106,7 +106,8 @@
     "comments": "コメント",
     "share": "共有",
     "like": "いいね",
-    "comment": "コメント"
+    "comment": "コメント",
+    "open": "開く"
   },
   "submit": {
     "title": "あなたのストーリーを共有",
