@@ -9,6 +9,7 @@ import AdminPosts from "./AdminPosts";
 import AdminReports from "./AdminReports";
 import AdminUsers from "./AdminUsers";
 import AdminContent from "./AdminContent";
+import AdminGallery from "./AdminGallery";
 
 interface DashboardStats {
   totalUsers: number;
@@ -117,88 +118,90 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-        <p className="text-gray-600">Manage users, posts, and reports efficiently</p>
-      </div>
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto p-6 max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600">Manage users, posts, and reports efficiently</p>
+        </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Community members</p>
-          </CardContent>
-        </Card>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+          <Card className="bg-white border hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">Community members</p>
+            </CardContent>
+          </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPosts.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">All submissions</p>
-          </CardContent>
-        </Card>
+          <Card className="bg-white border hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalPosts.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">All submissions</p>
+            </CardContent>
+          </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.approvedPosts.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Live stories</p>
-          </CardContent>
-        </Card>
+          <Card className="bg-white border hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Published</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{stats.approvedPosts.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">Live stories</p>
+            </CardContent>
+          </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Reports</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.pendingReports.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Need review</p>
-          </CardContent>
-        </Card>
+          <Card className="bg-white border hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Reports</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{stats.pendingReports.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">Need review</p>
+            </CardContent>
+          </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.totalViews.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Story views</p>
-          </CardContent>
-        </Card>
+          <Card className="bg-white border hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+              <Eye className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{stats.totalViews.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">Story views</p>
+            </CardContent>
+          </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.totalEarnings.toFixed(0)} VND</div>
-            <p className="text-xs text-muted-foreground">User earnings</p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="bg-white border hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+              <DollarSign className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{stats.totalEarnings.toFixed(0)} VND</div>
+              <p className="text-xs text-muted-foreground">User earnings</p>
+            </CardContent>
+          </Card>
+        </div>
 
       {/* Dashboard Tabs */}
       <Tabs defaultValue="posts" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="posts">Posts Management</TabsTrigger>
-          <TabsTrigger value="content">All Content</TabsTrigger>
-          <TabsTrigger value="users">Users Management</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 bg-white border">
+          <TabsTrigger value="posts" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Posts</TabsTrigger>
+          <TabsTrigger value="content" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Content</TabsTrigger>
+          <TabsTrigger value="gallery" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Gallery</TabsTrigger>
+          <TabsTrigger value="users" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Users</TabsTrigger>
+          <TabsTrigger value="reports" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Reports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts">
@@ -209,6 +212,10 @@ const AdminDashboard = () => {
           <AdminContent />
         </TabsContent>
 
+        <TabsContent value="gallery">
+          <AdminGallery />
+        </TabsContent>
+
         <TabsContent value="users">
           <AdminUsers />
         </TabsContent>
@@ -217,6 +224,7 @@ const AdminDashboard = () => {
           <AdminReports />
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };

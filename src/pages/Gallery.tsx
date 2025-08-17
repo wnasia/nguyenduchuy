@@ -8,10 +8,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
 
 interface GalleryImage {
-  src: string;
+  id: string;
   title: string;
   description: string;
-  storyId?: string;
+  image_url: string;
+  uploaded_by: string;
+  created_at: string;
 }
 
 const Gallery = () => {
@@ -29,10 +31,9 @@ const Gallery = () => {
 
   const fetchGalleryImages = async () => {
     try {
-      const { data: postsData, error } = await supabase
-        .from('posts')
-        .select('id, title, content, created_at')
-        .eq('status', 'approved')
+      const { data: galleryData, error } = await supabase
+        .from('gallery_images')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -46,49 +47,43 @@ const Gallery = () => {
         return;
       }
 
-      const galleryImages: GalleryImage[] = [];
-      
-      // Extract images from posts
-      postsData?.forEach(post => {
-        try {
-          const parsed = JSON.parse(post.content);
-          if (parsed.imageLinks && Array.isArray(parsed.imageLinks)) {
-            parsed.imageLinks.forEach((imageUrl: string, index: number) => {
-              galleryImages.push({
-                src: imageUrl,
-                title: `${post.title} ${parsed.imageLinks.length > 1 ? `(${index + 1})` : ''}`,
-                description: parsed.story?.substring(0, 100) + '...' || 'A beautiful moment captured in time',
-                storyId: post.id
-              });
-            });
-          }
-        } catch {
-          // Skip invalid JSON
-        }
-      });
+      // Use the gallery images from the dedicated table
+      const galleryImages: GalleryImage[] = galleryData || [];
 
       // Add some placeholder images if gallery is empty
       if (galleryImages.length === 0) {
         const placeholderImages = [
           {
-            src: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=800&h=600&fit=crop",
+            id: "placeholder-1",
             title: "Family Reunion 2023",
-            description: "Three generations coming together for the holidays"
+            description: "Three generations coming together for the holidays",
+            image_url: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=800&h=600&fit=crop",
+            uploaded_by: "system",
+            created_at: new Date().toISOString()
           },
           {
-            src: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&h=800&fit=crop",
+            id: "placeholder-2", 
             title: "Grandmother's Kitchen",
-            description: "Where all the magic happened"
+            description: "Where all the magic happened",
+            image_url: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&h=800&fit=crop",
+            uploaded_by: "system",
+            created_at: new Date().toISOString()
           },
           {
-            src: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=800&fit=crop",
-            title: "Study Sessions",
-            description: "Late nights and determination"
+            id: "placeholder-3",
+            title: "Study Sessions", 
+            description: "Late nights and determination",
+            image_url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=800&fit=crop",
+            uploaded_by: "system",
+            created_at: new Date().toISOString()
           },
           {
-            src: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=800&h=600&fit=crop",
+            id: "placeholder-4",
             title: "Home Sweet Home",
-            description: "Our little sanctuary"
+            description: "Our little sanctuary", 
+            image_url: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=800&h=600&fit=crop",
+            uploaded_by: "system",
+            created_at: new Date().toISOString()
           }
         ];
         galleryImages.push(...placeholderImages);
@@ -174,14 +169,14 @@ const Gallery = () => {
         <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
           {images.map((image, index) => (
             <div
-              key={index}
+              key={image.id}
               className="break-inside-avoid group cursor-pointer animate-fade-in"
               style={{ animationDelay: `${index * 0.05}s` }}
               onClick={() => openImage(index)}
             >
               <div className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
                 <img
-                  src={image.src}
+                  src={image.image_url}
                   alt={image.title}
                   className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => {
@@ -245,7 +240,7 @@ const Gallery = () => {
             {selectedImageIndex !== null && (
               <div className="relative">
                 <img
-                  src={images[selectedImageIndex].src}
+                  src={images[selectedImageIndex].image_url}
                   alt={images[selectedImageIndex].title}
                   className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
                 />
