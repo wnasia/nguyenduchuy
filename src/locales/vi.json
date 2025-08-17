@@ -154,5 +154,32 @@
     "submit_title": "Gửi câu chuyện - Huy's",
     "login_title": "Đăng nhập - Huy's",
     "dashboard_title": "Bảng điều khiển - Huy's"
+  },
+  "gallery": {
+    "title": "Thư viện ảnh",
+    "no_images": "Chưa có hình ảnh nào",
+    "no_images_desc": "Các hình ảnh sẽ xuất hiện ở đây khi chúng được tải lên.",
+    "upload": "Tải lên",
+    "upload_images": "Tải lên hình ảnh",
+    "delete": "Xóa",
+    "delete_selected": "Xóa đã chọn",
+    "refresh": "Làm mới",
+    "drag_drop": "Kéo thả hình ảnh vào đây hoặc",
+    "click_upload": "click để tải lên",
+    "select_files": "Chọn tệp",
+    "uploading": "Đang tải lên...",
+    "upload_success": "Tải lên thành công",
+    "upload_error": "Lỗi tải lên",
+    "delete_confirm": "Xác nhận xóa",
+    "delete_confirm_msg": "Bạn có chắc chắn muốn xóa hình ảnh này không? Hành động này không thể hoàn tác.",
+    "delete_selected_msg": "Bạn có chắc chắn muốn xóa {count} hình ảnh đã chọn không? Hành động này không thể hoàn tác.",
+    "delete_success": "Xóa thành công",
+    "delete_error": "Lỗi xóa",
+    "management": "Quản lý thư viện",
+    "image_title": "Tiêu đề hình ảnh",
+    "image_description": "Mô tả hình ảnh",
+    "uploaded_by": "Tải lên bởi",
+    "total_images": "tổng số hình ảnh",
+    "selected": "đã chọn"
   }
 }

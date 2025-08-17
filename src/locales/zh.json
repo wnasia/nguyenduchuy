@@ -78,14 +78,6 @@
     "get_started_btn": "今天开始",
     "story_placeholder": "一个美丽的故事等待被发现..."
   },
-  "gallery": {
-    "title": "回忆画廊",
-    "subtitle": "珍贵时刻的收藏，在时间中捕获。每张图片都讲述一个故事，保存一个回忆，并将我们与最重要的事物联系起来。",
-    "image_count": "张图片",
-    "click_to_view": "点击任意图片查看完整尺寸",
-    "refresh_gallery": "刷新画廊",
-    "image_of": "的"
-  },
   "videos": {
     "title": "视频故事",
     "subtitle": "运动中的生活。通过视频的力量讲述故事，以仅凭文字无法做到的方式将情感和体验带入生活。",
@@ -154,5 +146,32 @@
     "submit_title": "提交故事 - Huy's",
     "login_title": "登录 - Huy's",
     "dashboard_title": "仪表板 - Huy's"
+  },
+  "gallery": {
+    "title": "相册",
+    "no_images": "暂无图片",
+    "no_images_desc": "上传后图片将显示在这里。",
+    "upload": "上传",
+    "upload_images": "上传图片",
+    "delete": "删除",
+    "delete_selected": "删除选中",
+    "refresh": "刷新",
+    "drag_drop": "拖拽图片到此处或",
+    "click_upload": "点击上传",
+    "select_files": "选择文件",
+    "uploading": "上传中...",
+    "upload_success": "上传成功",
+    "upload_error": "上传错误",
+    "delete_confirm": "确认删除",
+    "delete_confirm_msg": "您确定要删除此图片吗？此操作无法撤消。",
+    "delete_selected_msg": "您确定要删除{count}张选中的图片吗？此操作无法撤消。",
+    "delete_success": "删除成功",
+    "delete_error": "删除错误",
+    "management": "相册管理",
+    "image_title": "图片标题",
+    "image_description": "图片描述",
+    "uploaded_by": "上传者",
+    "total_images": "张图片",
+    "selected": "已选择"
   }
 }

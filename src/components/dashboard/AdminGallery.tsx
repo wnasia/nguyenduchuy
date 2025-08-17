@@ -7,7 +7,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/hooks/useI18n";
 import { Trash2, Eye, X, ChevronLeft, ChevronRight, Upload, RefreshCw } from "lucide-react";
+import GalleryImageUpload from "./GalleryImageUpload";
 
 interface GalleryImage {
   id: string;
@@ -24,6 +26,7 @@ interface GalleryImage {
 
 const AdminGallery = () => {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
@@ -104,6 +107,13 @@ const AdminGallery = () => {
 
     try {
       setDeleting(true);
+      // First, get the image URLs to delete from storage
+      const { data: imagesToDelete } = await supabase
+        .from('gallery_images')
+        .select('image_url')
+        .in('id', Array.from(selectedImages));
+
+      // Delete from database first
       const { error } = await supabase
         .from('gallery_images')
         .delete()
@@ -112,16 +122,30 @@ const AdminGallery = () => {
       if (error) {
         console.error('Error deleting images:', error);
         toast({
-          title: "Error",
-          description: "Failed to delete some images",
+          title: t("gallery.delete_error"),
+          description: t("gallery.delete_error"),
           variant: "destructive",
         });
         return;
       }
 
+      // Delete from storage
+      if (imagesToDelete) {
+        for (const image of imagesToDelete) {
+          if (image.image_url) {
+            const filePath = image.image_url.split('/').pop();
+            if (filePath) {
+              await supabase.storage
+                .from('story-images')
+                .remove([`gallery/${filePath}`]);
+            }
+          }
+        }
+      }
+
       toast({
-        title: "Success",
-        description: `Successfully deleted ${selectedImages.size} image(s)`,
+        title: t("gallery.delete_success"),
+        description: `${t("gallery.delete_success")} ${selectedImages.size} ${t("gallery.total_images")}`,
       });
 
       setSelectedImages(new Set());
@@ -141,6 +165,15 @@ const AdminGallery = () => {
   const handleDeleteSingle = async (imageId: string) => {
     try {
       setDeleting(true);
+      
+      // Get the image URL to delete from storage
+      const { data: imageToDelete } = await supabase
+        .from('gallery_images')
+        .select('image_url')
+        .eq('id', imageId)
+        .single();
+
+      // Delete from database first
       const { error } = await supabase
         .from('gallery_images')
         .delete()
@@ -149,16 +182,26 @@ const AdminGallery = () => {
       if (error) {
         console.error('Error deleting image:', error);
         toast({
-          title: "Error",
-          description: "Failed to delete image",
+          title: t("gallery.delete_error"),
+          description: t("gallery.delete_error"),
           variant: "destructive",
         });
         return;
       }
 
+      // Delete from storage
+      if (imageToDelete?.image_url) {
+        const filePath = imageToDelete.image_url.split('/').pop();
+        if (filePath) {
+          await supabase.storage
+            .from('story-images')
+            .remove([`gallery/${filePath}`]);
+        }
+      }
+
       toast({
-        title: "Success",
-        description: "Image deleted successfully",
+        title: t("gallery.delete_success"),
+        description: t("gallery.delete_success"),
       });
 
       await fetchGalleryImages();
@@ -200,7 +243,7 @@ const AdminGallery = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Gallery Management
+            {t("gallery.management")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -218,32 +261,33 @@ const AdminGallery = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Gallery Management
+            {t("gallery.management")}
           </CardTitle>
           <div className="flex items-center gap-2">
+            <GalleryImageUpload onUploadSuccess={fetchGalleryImages} />
             <Button onClick={fetchGalleryImages} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+              {t("gallery.refresh")}
             </Button>
             {selectedImages.size > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" size="sm" disabled={deleting}>
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Selected ({selectedImages.size})
+                    {t("gallery.delete_selected")} ({selectedImages.size})
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Selected Images</AlertDialogTitle>
+                    <AlertDialogTitle>{t("gallery.delete_confirm")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to delete {selectedImages.size} selected image(s)? This action cannot be undone.
+                      {t("gallery.delete_selected_msg").replace('{count}', selectedImages.size.toString())}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete
+                      {t("gallery.delete")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -256,8 +300,9 @@ const AdminGallery = () => {
         {images.length === 0 ? (
           <div className="text-center py-12">
             <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No gallery images</h3>
-            <p className="text-muted-foreground mb-4">Gallery images will appear here when users upload them.</p>
+            <h3 className="text-lg font-semibold mb-2">{t("gallery.no_images")}</h3>
+            <p className="text-muted-foreground mb-4">{t("gallery.no_images_desc")}</p>
+            <GalleryImageUpload onUploadSuccess={fetchGalleryImages} />
           </div>
         ) : (
           <>
@@ -268,7 +313,7 @@ const AdminGallery = () => {
                   onCheckedChange={handleSelectAll}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedImages.size > 0 ? `${selectedImages.size} selected` : `${images.length} total images`}
+                  {selectedImages.size > 0 ? `${selectedImages.size} ${t("gallery.selected")}` : `${images.length} ${t("gallery.total_images")}`}
                 </span>
               </div>
             </div>
@@ -304,7 +349,7 @@ const AdminGallery = () => {
                       </p>
                       <div className="flex items-center justify-between">
                         <Badge variant="outline" className="text-xs">
-                          {image.profiles?.full_name || 'Unknown'}
+                          {t("gallery.uploaded_by")}: {image.profiles?.full_name || 'Unknown'}
                         </Badge>
                         <div className="flex items-center gap-1">
                           <Button
@@ -328,9 +373,9 @@ const AdminGallery = () => {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Image</AlertDialogTitle>
+                                <AlertDialogTitle>{t("gallery.delete_confirm")}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to delete "{image.title}"? This action cannot be undone.
+                                  {t("gallery.delete_confirm_msg")}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -339,7 +384,7 @@ const AdminGallery = () => {
                                   onClick={() => handleDeleteSingle(image.id)}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
-                                  Delete
+                                  {t("gallery.delete")}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>

@@ -78,14 +78,6 @@
     "get_started_btn": "今日から始める",
     "story_placeholder": "発見されるのを待っている美しいストーリー..."
   },
-  "gallery": {
-    "title": "メモリーギャラリー",
-    "subtitle": "時間の中で捉えられた貴重な瞬間のコレクション。各画像はストーリーを語り、記憶を保存し、最も重要なものとのつながりを作ります。",
-    "image_count": "枚の画像",
-    "click_to_view": "任意の画像をクリックしてフルサイズで表示",
-    "refresh_gallery": "ギャラリーを更新",
-    "image_of": "の"
-  },
   "videos": {
     "title": "ビデオストーリー",
     "subtitle": "動きの中の人生。ビデオの力を通じて語られるストーリーは、言葉だけではできない方法で感情と体験を生き生きとさせます。",
@@ -154,5 +146,32 @@
     "submit_title": "ストーリーを送信 - Huy's", 
     "login_title": "ログイン - Huy's",
     "dashboard_title": "ダッシュボード - Huy's"
+  },
+  "gallery": {
+    "title": "フォトギャラリー",
+    "no_images": "画像がありません",
+    "no_images_desc": "アップロードされた画像がここに表示されます。",
+    "upload": "アップロード",
+    "upload_images": "画像をアップロード",
+    "delete": "削除",
+    "delete_selected": "選択した画像を削除",
+    "refresh": "更新",
+    "drag_drop": "画像をここにドラッグ＆ドロップするか",
+    "click_upload": "クリックしてアップロード",
+    "select_files": "ファイルを選択",
+    "uploading": "アップロード中...",
+    "upload_success": "アップロード成功",
+    "upload_error": "アップロードエラー",
+    "delete_confirm": "削除確認",
+    "delete_confirm_msg": "この画像を削除してもよろしいですか？この操作は元に戻すことができません。",
+    "delete_selected_msg": "選択した{count}枚の画像を削除してもよろしいですか？この操作は元に戻すことができません。",
+    "delete_success": "削除成功",
+    "delete_error": "削除エラー",
+    "management": "ギャラリー管理",
+    "image_title": "画像タイトル",
+    "image_description": "画像の説明",
+    "uploaded_by": "アップロード者",
+    "total_images": "枚の画像",
+    "selected": "選択済み"
   }
 }
