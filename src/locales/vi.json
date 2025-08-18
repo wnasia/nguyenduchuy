@@ -1,5 +1,10 @@
 
 {
+  "footer": {
+    "contact_us": "Liên hệ",
+    "contact_description": "Chúng tôi rất muốn nghe câu chuyện của bạn và kết nối với bạn",
+    "copyright": "© 2025 Nguyen Duc Huy. Một nơi ấm áp để chia sẻ câu chuyện của bạn."
+  },
   "common": {
     "welcome": "Chào mừng",
     "home": "Trang chủ",
@@ -12,7 +17,9 @@
     "language": "Ngôn ngữ",
     "loading": "Đang tải...",
     "error": "Lỗi",
-    "success": "Thành công"
+    "success": "Thành công",
+    "unknown": "Không xác định",
+    "cancel": "Hủy"
   },
   "auth": {
     "welcome_back": "Chào mừng trở lại",
@@ -180,6 +187,11 @@
     "image_description": "Mô tả hình ảnh",
     "uploaded_by": "Tải lên bởi",
     "total_images": "tổng số hình ảnh",
-    "selected": "đã chọn"
+    "selected": "đã chọn",
+    "no_description": "Không có mô tả",
+    "cancel": "Hủy",
+    "selected_images": "Hình ảnh đã chọn",
+    "image_title_placeholder": "Nhập tiêu đề hình ảnh",
+    "image_description_placeholder": "Nhập mô tả hình ảnh (tùy chọn)"
   }
 }

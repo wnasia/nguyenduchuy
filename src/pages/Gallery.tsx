@@ -6,6 +6,7 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 interface GalleryImage {
   id: string;
@@ -19,15 +20,14 @@ interface GalleryImage {
 const Gallery = () => {
   const { toast } = useToast();
   const { t } = useI18n();
+  usePageTitle("meta.gallery_title");
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchGalleryImages();
-    // Update document title
-    document.title = t("meta.gallery_title");
-  }, [t]);
+  }, []);
 
   const fetchGalleryImages = async () => {
     try {

@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import UserDashboard from "@/components/dashboard/UserDashboard";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
+  usePageTitle("meta.dashboard_title");
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();

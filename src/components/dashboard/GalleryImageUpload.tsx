@@ -100,7 +100,7 @@ const GalleryImageUpload = ({ onUploadSuccess }: GalleryImageUploadProps) => {
       if (!user) {
         toast({
           title: t("gallery.upload_error"),
-          description: "You must be logged in to upload images",
+          description: t("errors.failed_to_load"),
           variant: "destructive",
         });
         return;
@@ -151,10 +151,10 @@ const GalleryImageUpload = ({ onUploadSuccess }: GalleryImageUploadProps) => {
         }
       }
 
-      toast({
-        title: t("gallery.upload_success"),
-        description: `Successfully uploaded ${selectedFiles.length} image(s)`,
-      });
+        toast({
+          title: t("gallery.upload_success"),
+          description: `${t("gallery.upload_success")} ${selectedFiles.length} ${t("gallery.total_images")}`,
+        });
 
       // Reset form
       setSelectedFiles([]);
@@ -169,11 +169,11 @@ const GalleryImageUpload = ({ onUploadSuccess }: GalleryImageUploadProps) => {
 
     } catch (error) {
       console.error('Upload error:', error);
-      toast({
-        title: t("gallery.upload_error"),
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+          toast({
+            title: t("gallery.upload_error"),
+            description: t("errors.unexpected_error"),
+            variant: "destructive",
+          });
     } finally {
       setUploading(false);
     }
@@ -232,7 +232,7 @@ const GalleryImageUpload = ({ onUploadSuccess }: GalleryImageUploadProps) => {
           {/* Selected Files */}
           {selectedFiles.length > 0 && (
             <div className="space-y-4">
-              <h3 className="font-semibold">Selected Images ({selectedFiles.length})</h3>
+              <h3 className="font-semibold">{t("gallery.selected_images")} ({selectedFiles.length})</h3>
               {selectedFiles.map((file) => (
                 <Card key={file.name} className="p-4">
                   <div className="flex items-start gap-4">
@@ -259,7 +259,7 @@ const GalleryImageUpload = ({ onUploadSuccess }: GalleryImageUploadProps) => {
                             id={`title-${file.name}`}
                             value={uploadData[file.name]?.title || ''}
                             onChange={(e) => updateUploadData(file.name, 'title', e.target.value)}
-                            placeholder="Enter image title"
+                            placeholder={t("gallery.image_title_placeholder")}
                           />
                         </div>
                         <div>
@@ -268,7 +268,7 @@ const GalleryImageUpload = ({ onUploadSuccess }: GalleryImageUploadProps) => {
                             id={`desc-${file.name}`}
                             value={uploadData[file.name]?.description || ''}
                             onChange={(e) => updateUploadData(file.name, 'description', e.target.value)}
-                            placeholder="Enter image description (optional)"
+                            placeholder={t("gallery.image_description_placeholder")}
                             rows={2}
                           />
                         </div>
@@ -283,19 +283,19 @@ const GalleryImageUpload = ({ onUploadSuccess }: GalleryImageUploadProps) => {
           {/* Upload Button */}
           {selectedFiles.length > 0 && (
             <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSelectedFiles([]);
-                  setUploadData({});
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                }}
-                disabled={uploading}
-              >
-                Cancel
-              </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedFiles([]);
+                    setUploadData({});
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
+                  }}
+                  disabled={uploading}
+                >
+                  {t("gallery.cancel")}
+                </Button>
               <Button onClick={handleUpload} disabled={uploading}>
                 {uploading ? t("gallery.uploading") : t("gallery.upload")} ({selectedFiles.length})
               </Button>

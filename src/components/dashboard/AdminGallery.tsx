@@ -48,8 +48,8 @@ const AdminGallery = () => {
       if (error) {
         console.error('Error fetching gallery images:', error);
         toast({
-          title: "Error",
-          description: "Failed to load gallery images",
+          title: t("errors.network_error"),
+          description: t("errors.failed_to_load"),
           variant: "destructive",
         });
         return;
@@ -75,8 +75,8 @@ const AdminGallery = () => {
     } catch (error) {
       console.error('Error:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: t("errors.network_error"),
+        description: t("errors.unexpected_error"),
         variant: "destructive",
       });
     } finally {
@@ -153,8 +153,8 @@ const AdminGallery = () => {
     } catch (error) {
       console.error('Error:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: t("errors.network_error"),
+        description: t("errors.unexpected_error"),
         variant: "destructive",
       });
     } finally {
@@ -208,8 +208,8 @@ const AdminGallery = () => {
     } catch (error) {
       console.error('Error:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: t("errors.network_error"),
+        description: t("errors.unexpected_error"),
         variant: "destructive",
       });
     } finally {
@@ -285,7 +285,7 @@ const AdminGallery = () => {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t("gallery.cancel")}</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                       {t("gallery.delete")}
                     </AlertDialogAction>
@@ -345,11 +345,11 @@ const AdminGallery = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-sm truncate mb-1">{image.title}</h4>
                       <p className="text-xs text-muted-foreground truncate mb-2">
-                        {image.description || 'No description'}
+                        {image.description || t("gallery.no_description")}
                       </p>
                       <div className="flex items-center justify-between">
                         <Badge variant="outline" className="text-xs">
-                          {t("gallery.uploaded_by")}: {image.profiles?.full_name || 'Unknown'}
+                          {t("gallery.uploaded_by")}: {image.profiles?.full_name || t("common.unknown")}
                         </Badge>
                         <div className="flex items-center gap-1">
                           <Button
@@ -379,7 +379,7 @@ const AdminGallery = () => {
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel>{t("gallery.cancel")}</AlertDialogCancel>
                                 <AlertDialogAction 
                                   onClick={() => handleDeleteSingle(image.id)}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -448,11 +448,11 @@ const AdminGallery = () => {
                   <div className="bg-black/80 text-white p-4 rounded-lg">
                     <h3 className="font-semibold text-lg mb-2">{images[selectedImageIndex].title}</h3>
                     <p className="text-sm opacity-90 mb-2">{images[selectedImageIndex].description}</p>
-                    <p className="text-xs opacity-70">
-                      Uploaded by: {images[selectedImageIndex].profiles?.full_name || 'Unknown'} • {new Date(images[selectedImageIndex].created_at).toLocaleDateString()}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {t("gallery.uploaded_by")}: {images[selectedImageIndex].profiles?.full_name || t("common.unknown")} • {new Date(images[selectedImageIndex].created_at).toLocaleDateString()}
                     </p>
-                    <p className="text-xs opacity-70 mt-1">
-                      {selectedImageIndex + 1} of {images.length}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {selectedImageIndex + 1} {t("gallery.image_of")} {images.length}
                     </p>
                   </div>
                 </div>

@@ -7,12 +7,14 @@ import { Separator } from "@/components/ui/separator";
 import { Heart, Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const { toast } = useToast();
   const { t } = useI18n();
+  usePageTitle("meta.login_title");
   const { user, signInWithEmail, signUpWithEmail, signInWithProvider } = useAuth();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);

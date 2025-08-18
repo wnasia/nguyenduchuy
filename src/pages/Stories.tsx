@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/hooks/useI18n";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import StoryCard from "@/components/StoryCard";
 
 interface Post {
@@ -22,6 +24,8 @@ interface Post {
 
 const Stories = () => {
   const { toast } = useToast();
+  const { t } = useI18n();
+  usePageTitle("meta.stories_title");
   const [stories, setStories] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,8 +44,8 @@ const Stories = () => {
       if (postsError) {
         console.error('Error fetching stories:', postsError);
         toast({
-          title: "Error",
-          description: "Failed to load stories",
+          title: t("errors.network_error"),
+          description: t("errors.failed_to_load"),
           variant: "destructive",
         });
         setLoading(false);
@@ -68,8 +72,8 @@ const Stories = () => {
     } catch (error) {
       console.error('Error:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: t("errors.network_error"),
+        description: t("errors.unexpected_error"),
         variant: "destructive",
       });
     } finally {
@@ -82,10 +86,9 @@ const Stories = () => {
       <div className="min-h-screen py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">Life Stories</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Real stories from real people. Each one a window into the human experience, 
-              shared with courage and vulnerability.
+            <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("common.stories")}</h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              {t("home.story_placeholder")}
             </p>
           </div>
           <div className="flex items-center justify-center p-8">
@@ -100,17 +103,16 @@ const Stories = () => {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">Life Stories</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Real stories from real people. Each one a window into the human experience, 
-            shared with courage and vulnerability.
+          <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("common.stories")}</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            {t("home.story_placeholder")}
           </p>
         </div>
 
         {stories.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-gray-500 text-lg mb-4">No stories available yet</div>
-            <p className="text-gray-400">Be the first to share your story!</p>
+            <div className="text-muted-foreground text-lg mb-4">{t("videos.no_videos_title")}</div>
+            <p className="text-muted-foreground">{t("videos.no_videos_desc")}</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -122,8 +124,8 @@ const Stories = () => {
 
         {stories.length > 0 && (
           <div className="text-center mt-12">
-            <button className="px-8 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors" disabled>
-              Load More Stories
+            <button className="px-8 py-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors" disabled>
+              {t("videos.load_more")}
             </button>
           </div>
         )}
