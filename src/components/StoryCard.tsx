@@ -85,13 +85,21 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
     >
       <Card className="overflow-hidden hover:shadow-xl hover:scale-[1.02] cursor-pointer border-0 shadow-lg animate-fade-in transition-all duration-300 min-h-[44px]" style={{ animationDelay: `${index * 0.1}s` }}>
         {/* Thumbnail Image */}
-        <AspectRatio ratio={16 / 9} className="overflow-hidden">
+        <AspectRatio ratio={16 / 9} className="overflow-hidden bg-muted">
           <img
             src={getThumbnail()}
             alt={story.title}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = "/placeholder.svg";
+              const target = e.target as HTMLImageElement;
+              target.src = "/placeholder.svg";
+              target.onerror = null; // Prevent infinite loop
+            }}
+            onLoad={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (target.naturalWidth === 0 || target.naturalHeight === 0) {
+                target.src = "/placeholder.svg";
+              }
             }}
           />
           
