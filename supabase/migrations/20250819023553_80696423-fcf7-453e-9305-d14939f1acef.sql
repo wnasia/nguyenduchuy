@@ -1,0 +1,24 @@
+-- Clear existing data
+DELETE FROM posts;
+DELETE FROM gallery_images;
+
+-- Insert sample posts with valid thumbnails and content
+INSERT INTO posts (id, user_id, title, content, type, status, thumbnail_url, is_featured, view_count, created_at) VALUES
+('550e8400-e29b-41d4-a716-446655440001', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Câu Chuyện Mùa Thu Hà Nội', '{"story": "Mùa thu Hà Nội với những chiếc lá vàng rơi trên phố cổ, tạo nên khung cảnh thơ mộng đặc biệt. Tôi đi dọc theo hồ Hoàn Kiếm, ngắm nhìn ánh nắng chiều tà xuyên qua tán lá...", "imageLinks": ["https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800&h=600&fit=crop"], "videoLinks": [], "tags": ["Hà Nội", "Mùa thu", "Hồ Hoàn Kiếm"]}', 'story', 'approved', 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800&h=600&fit=crop', true, 156, now() - interval '2 days'),
+
+('550e8400-e29b-41d4-a716-446655440002', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Hành Trình Sapa Mùa Lúa Chín', '{"story": "Những ruộng bậc thang Sapa trong mùa lúa chín vàng như tranh vẽ. Từng bậc thang uốn cong theo sườn núi, phản chiếu ánh nắng mai tạo nên cảnh tượng hùng vĩ...", "imageLinks": ["https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?w=800&h=600&fit=crop", "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop"], "videoLinks": [], "tags": ["Sapa", "Ruộng bậc thang", "Thiên nhiên"]}', 'story', 'approved', 'https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?w=800&h=600&fit=crop', false, 89, now() - interval '1 day'),
+
+('550e8400-e29b-41d4-a716-446655440003', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Phố Cổ Hội An Về Đêm', '{"story": "Khi màn đêm buông xuống, phố cổ Hội An thắp sáng hàng ngàn chiếc đèn lồng đầy màu sắc. Con đường đá cổ kính phản chiếu ánh đèn, tạo nên không gian lãng mạn...", "imageLinks": ["https://images.unsplash.com/photo-1578163530625-6baa5c3487a8?w=800&h=600&fit=crop"], "videoLinks": [], "tags": ["Hội An", "Đèn lồng", "Phố cổ"]}', 'story', 'approved', null, false, 123, now() - interval '6 hours'),
+
+('550e8400-e29b-41d4-a716-446655440004', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Vịnh Hạ Long Kỳ Vĩ', '{"story": "Vịnh Hạ Long với hàng nghìn hòn đảo đá vôi sừng sững giữa mặt nước xanh biếc. Du thuyền lướt qua những hang động kỳ bí, khám phá vẻ đẹp thiên nhiên tuyệt vời...", "imageLinks": ["https://images.unsplash.com/photo-1586394786046-7ad0d06e7ce9?w=800&h=600&fit=crop", "https://images.unsplash.com/photo-1578486451493-cac7d0e02611?w=800&h=600&fit=crop"], "videoLinks": ["https://www.youtube.com/watch?v=dQw4w9WgXcQ"], "tags": ["Hạ Long", "Du lịch", "Vịnh"]}', 'story', 'approved', 'https://images.unsplash.com/photo-1586394786046-7ad0d06e7ce9?w=800&h=600&fit=crop', false, 201, now() - interval '3 hours'),
+
+('550e8400-e29b-41d4-a716-446655440005', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Công Viên Quốc Gia Phong Nha', '{"story": "Khám phá hang động Phong Nha với những thạch nhũ kỳ ảo, dòng nước trong xanh chảy êm ái. Hành trình thám hiểm dưới lòng đất mang đến trải nghiệm khó quên...", "imageLinks": ["https://images.unsplash.com/photo-1578424761210-53ed261c35f7?w=800&h=600&fit=crop"], "videoLinks": [], "tags": ["Phong Nha", "Hang động", "Thám hiểm"]}', 'story', 'approved', null, false, 67, now() - interval '12 hours');
+
+-- Insert sample gallery images
+INSERT INTO gallery_images (id, uploaded_by, title, description, image_url, created_at) VALUES
+('660e8400-e29b-41d4-a716-446655440001', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Cầu Rồng Đà Nẵng', 'Cầu Rồng phun lửa về đêm tại Đà Nẵng', 'https://images.unsplash.com/photo-1578663571042-7b19bfed1db9?w=800&h=600&fit=crop', now() - interval '1 day'),
+('660e8400-e29b-41d4-a716-446655440002', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Chùa Cầu Hội An', 'Cây cầu cổ kính nổi tiếng của Hội An', 'https://images.unsplash.com/photo-1578486451493-cac7d0e02611?w=800&h=600&fit=crop', now() - interval '2 hours'),
+('660e8400-e29b-41d4-a716-446655440003', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Bà Nà Hills', 'Cây cầu vàng nổi tiếng trên đỉnh Bà Nà', 'https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?w=800&h=600&fit=crop', now() - interval '3 hours'),
+('660e8400-e29b-41d4-a716-446655440004', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Vườn Quốc Gia Cát Tiên', 'Rừng nhiệt đới nguyên sinh tại Cát Tiên', 'https://images.unsplash.com/photo-1578424761210-53ed261c35f7?w=800&h=600&fit=crop', now() - interval '4 hours'),
+('660e8400-e29b-41d4-a716-446655440005', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Đồi Chè Mộc Châu', 'Những đồi chè xanh mướt tại Mộc Châu', 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800&h=600&fit=crop', now() - interval '5 hours'),
+('660e8400-e29b-41d4-a716-446655440006', '8fdc3caf-7bb9-4a1e-88e1-c6dead470d3d', 'Chợ Nổi Cái Răng', 'Chợ nổi sông nước miền Tây Nam Bộ', 'https://images.unsplash.com/photo-1578663571042-7b19bfed1db9?w=800&h=600&fit=crop', now() - interval '6 hours');

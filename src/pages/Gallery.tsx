@@ -50,45 +50,6 @@ const Gallery = () => {
       // Use the gallery images from the dedicated table
       const galleryImages: GalleryImage[] = galleryData || [];
 
-      // Add some placeholder images if gallery is empty
-      if (galleryImages.length === 0) {
-        const placeholderImages = [
-          {
-            id: "placeholder-1",
-            title: "Family Reunion 2023",
-            description: "Three generations coming together for the holidays",
-            image_url: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=800&h=600&fit=crop",
-            uploaded_by: "system",
-            created_at: new Date().toISOString()
-          },
-          {
-            id: "placeholder-2", 
-            title: "Grandmother's Kitchen",
-            description: "Where all the magic happened",
-            image_url: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&h=800&fit=crop",
-            uploaded_by: "system",
-            created_at: new Date().toISOString()
-          },
-          {
-            id: "placeholder-3",
-            title: "Study Sessions", 
-            description: "Late nights and determination",
-            image_url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=800&fit=crop",
-            uploaded_by: "system",
-            created_at: new Date().toISOString()
-          },
-          {
-            id: "placeholder-4",
-            title: "Home Sweet Home",
-            description: "Our little sanctuary", 
-            image_url: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=800&h=600&fit=crop",
-            uploaded_by: "system",
-            created_at: new Date().toISOString()
-          }
-        ];
-        galleryImages.push(...placeholderImages);
-      }
-
       setImages(galleryImages);
     } catch (error) {
       console.error('Error:', error);
