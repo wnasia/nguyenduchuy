@@ -192,6 +192,8 @@
     "cancel": "Cancel",
     "selected_images": "Selected Images",
     "image_title_placeholder": "Enter image title",
-    "image_description_placeholder": "Enter image description (optional)"
+    "image_description_placeholder": "Enter image description (optional)",
+    "no_images_title": "No Images Yet",
+    "no_images_subtitle": "Gallery is empty. Admin can upload images from the dashboard."
   }
 }

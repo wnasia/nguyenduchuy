@@ -123,12 +123,23 @@ const Gallery = () => {
             {t("gallery.subtitle")}
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            {images.length} {t("gallery.image_count")} • {t("gallery.click_to_view")}
+            {images.length > 0 && (
+              <span>{images.length} {t("gallery.image_count")} • {t("gallery.click_to_view")}</span>
+            )}
           </p>
         </div>
 
         <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
-          {images.map((image, index) => (
+        {images.length === 0 ? (
+          <div className="col-span-full text-center py-16">
+            <div className="text-gray-500">
+              <div className="text-6xl mb-4">📷</div>
+              <h3 className="text-xl font-semibold mb-2">{t("gallery.no_images_title")}</h3>
+              <p className="text-gray-400">{t("gallery.no_images_subtitle")}</p>
+            </div>
+          </div>
+        ) : (
+          images.map((image, index) => (
             <div
               key={image.id}
               className="break-inside-avoid group cursor-pointer animate-fade-in"
@@ -152,7 +163,8 @@ const Gallery = () => {
                 </div>
               </div>
             </div>
-          ))}
+          ))
+        )}
         </div>
 
         {images.length > 12 && (

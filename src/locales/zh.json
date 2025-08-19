@@ -172,6 +172,13 @@
     "image_description": "图片描述",
     "uploaded_by": "上传者",
     "total_images": "张图片",
-    "selected": "已选择"
+    "selected": "已选择",
+    "no_description": "无描述",
+    "cancel": "取消",
+    "selected_images": "已选择的图片",
+    "image_title_placeholder": "输入图片标题",
+    "image_description_placeholder": "输入图片描述（可选）",
+    "no_images_title": "暂无图片",
+    "no_images_subtitle": "相册为空。管理员可以从仪表板上传图片。"
   }
 }

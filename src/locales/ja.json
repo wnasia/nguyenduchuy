@@ -172,6 +172,13 @@
     "image_description": "画像の説明",
     "uploaded_by": "アップロード者",
     "total_images": "枚の画像",
-    "selected": "選択済み"
+    "selected": "選択済み",
+    "no_description": "説明なし",
+    "cancel": "キャンセル",
+    "selected_images": "選択された画像",
+    "image_title_placeholder": "画像タイトルを入力",
+    "image_description_placeholder": "画像の説明を入力（任意）",
+    "no_images_title": "画像がありません",
+    "no_images_subtitle": "ギャラリーは空です。管理者はダッシュボードから画像をアップロードできます。"
   }
 }

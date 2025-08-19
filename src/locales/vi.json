@@ -192,6 +192,8 @@
     "cancel": "Hủy",
     "selected_images": "Hình ảnh đã chọn",
     "image_title_placeholder": "Nhập tiêu đề hình ảnh",
-    "image_description_placeholder": "Nhập mô tả hình ảnh (tùy chọn)"
+    "image_description_placeholder": "Nhập mô tả hình ảnh (tùy chọn)",
+    "no_images_title": "Chưa có hình ảnh",
+    "no_images_subtitle": "Thư viện trống. Quản trị viên có thể tải lên hình ảnh từ trang quản lý."
   }
 }
