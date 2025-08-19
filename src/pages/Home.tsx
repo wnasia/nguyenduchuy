@@ -70,21 +70,7 @@ const Home = () => {
 
       if (error) {
         console.error('Error fetching featured story:', error);
-        // Set a fallback featured story
-        setFeaturedStory({
-          id: 'fallback-1',
-          title: 'Chào mừng đến với trang chia sẻ câu chuyện',
-          content: JSON.stringify({
-            story: 'Đây là nơi để bạn chia sẻ những câu chuyện đáng nhớ trong cuộc sống. Mỗi câu chuyện đều có giá trị riêng và đáng được lắng nghe.',
-            imageLinks: ['https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=400&fit=crop'],
-            videoLinks: [],
-            tags: ['câu chuyện', 'chia sẻ', 'kỷ niệm']
-          }),
-          type: 'story',
-          view_count: 0,
-          created_at: new Date().toISOString(),
-          profiles: { full_name: 'Hệ thống' }
-        });
+        setFeaturedStory(null);
         return;
       }
 
@@ -106,102 +92,39 @@ const Home = () => {
           console.error('Error fetching profile:', profileError);
           setFeaturedStory({
             ...post,
-            profiles: { full_name: 'Người dùng' }
+            profiles: { full_name: t("story.anonymous") }
           });
         }
       } else {
-        // Set fallback if no posts found
-        setFeaturedStory({
-          id: 'fallback-1',
-          title: 'Chào mừng đến với trang chia sẻ câu chuyện',
-          content: JSON.stringify({
-            story: 'Đây là nơi để bạn chia sẻ những câu chuyện đáng nhớ trong cuộc sống. Mỗi câu chuyện đều có giá trị riêng và đáng được lắng nghe.',
-            imageLinks: ['https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=400&fit=crop'],
-            videoLinks: [],
-            tags: ['câu chuyện', 'chia sẻ', 'kỷ niệm']
-          }),
-          type: 'story',
-          view_count: 0,
-          created_at: new Date().toISOString(),
-          profiles: { full_name: 'Hệ thống' }
-        });
+        setFeaturedStory(null);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
-      // Set fallback story on any error
-      setFeaturedStory({
-        id: 'fallback-1',
-        title: 'Chào mừng đến với trang chia sẻ câu chuyện',
-        content: JSON.stringify({
-          story: 'Đây là nơi để bạn chia sẻ những câu chuyện đáng nhớ trong cuộc sống. Mỗi câu chuyện đều có giá trị riêng và đáng được lắng nghe.',
-          imageLinks: ['https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=400&fit=crop'],
-          videoLinks: [],
-          tags: ['câu chuyện', 'chia sẻ', 'kỷ niệm']
-        }),
-        type: 'story',
-        view_count: 0,
-        created_at: new Date().toISOString(),
-        profiles: { full_name: 'Hệ thống' }
-      });
+      setFeaturedStory(null);
     }
-  }, []);
+  }, [t]);
 
   const fetchGalleryImages = useCallback(async () => {
     try {
-      const { data: postsData, error } = await supabase
-        .from('posts')
-        .select('content')
-        .eq('status', 'approved')
+      const { data: galleryData, error } = await supabase
+        .from('gallery_images')
+        .select('image_url')
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(8);
 
       if (error) {
         console.error('Error fetching gallery images:', error);
-        // Set fallback images
-        setGalleryImages([
-          "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop",
-          "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop",
-          "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=300&fit=crop",
-          "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=300&h=300&fit=crop"
-        ]);
+        setGalleryImages([]);
         return;
       }
 
-      const allImages: string[] = [];
-      postsData?.forEach(post => {
-        const parsed = parseContent(post.content);
-        if (parsed.imageLinks) {
-          allImages.push(...parsed.imageLinks);
-        }
-      });
-
-      // Get first 8 images for gallery
-      const selectedImages = allImages.slice(0, 8);
-      
-      // Fill with placeholder images if needed
-      const placeholderImages = [
-        "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=300&h=300&fit=crop"
-      ];
-
-      while (selectedImages.length < 4 && placeholderImages.length > 0) {
-        selectedImages.push(placeholderImages.shift()!);
-      }
-
-      setGalleryImages(selectedImages);
+      const imageUrls = galleryData?.map(img => img.image_url) || [];
+      setGalleryImages(imageUrls);
     } catch (error) {
       console.error('Unexpected error:', error);
-      // Set fallback images on any error
-      setGalleryImages([
-        "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=300&fit=crop",
-        "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=300&h=300&fit=crop"
-      ]);
+      setGalleryImages([]);
     }
-  }, [parseContent]);
+  }, []);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -251,12 +174,11 @@ const Home = () => {
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
-      // Set fallback stats on any error
       setStats({
-        stories: 15,
-        images: 120,
-        members: 50,
-        views: 2500
+        stories: 0,
+        images: 0,
+        members: 0,
+        views: 0
       });
     }
   }, []);
@@ -369,7 +291,7 @@ const Home = () => {
                         alt={featuredStory.title}
                         className="w-full h-64 md:h-full object-cover"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=400&fit=crop";
+                          (e.target as HTMLImageElement).src = "/placeholder.svg";
                         }}
                       />
                       {featuredContent.imageLinks.length > 1 && (
@@ -379,13 +301,15 @@ const Home = () => {
                         </div>
                       )}
                     </div>
-                  ) : (
-                    <img
-                      src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=400&fit=crop"
-                      alt={featuredStory.title}
-                      className="w-full h-64 md:h-full object-cover"
-                    />
-                  )}
+                   ) : (
+                     <div className="w-full h-64 md:h-full bg-muted flex items-center justify-center">
+                       <img 
+                         src="/placeholder.svg" 
+                         alt={featuredStory.title}
+                         className="w-16 h-16 opacity-50"
+                       />
+                     </div>
+                   )}
                   {featuredContent?.videoLinks && featuredContent.videoLinks.length > 0 && (
                     <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
                       <Video className="h-4 w-4" />

@@ -58,9 +58,20 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
   const hasMedia = (parsedContent.imageLinks && parsedContent.imageLinks.length > 0) || 
                  (parsedContent.videoLinks && parsedContent.videoLinks.length > 0);
 
-  // Get thumbnail - only use thumbnail_url or local placeholder
+  // Get thumbnail - proper fallback logic: thumbnail_url → first imageLink → placeholder
   const getThumbnail = () => {
-    return story.thumbnail_url || "/placeholder.svg";
+    // First priority: use thumbnail_url if available
+    if (story.thumbnail_url) {
+      return story.thumbnail_url;
+    }
+    
+    // Second priority: use first image from imageLinks if available
+    if (parsedContent.imageLinks && parsedContent.imageLinks.length > 0) {
+      return parsedContent.imageLinks[0];
+    }
+    
+    // Fallback: use placeholder
+    return "/placeholder.svg";
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
