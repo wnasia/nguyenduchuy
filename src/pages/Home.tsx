@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Users, BookOpen, Camera, Eye, Image, Video } from "lucide-react";
+import { Heart, Users, BookOpen, Camera, Eye, Image, Video, Sparkles, Star, MessageCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -225,35 +225,55 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground font-medium">Loading your stories...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 text-center bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-serif font-semibold text-gray-900 mb-6 animate-fade-in">
+    <div className="min-h-screen">
+      {/* Hero Section - Warm and Inviting */}
+      <section className="relative py-24 px-4 text-center overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-4 h-4 bg-primary/20 rounded-full animate-pulse"></div>
+          <div className="absolute top-40 right-16 w-3 h-3 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-32 left-20 w-2 h-2 bg-primary/25 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+        </div>
+        
+        <div className="max-w-5xl mx-auto relative">
+          {/* Handwritten note effect */}
+          <div className="handwritten text-center mb-4 opacity-75">
+            "Your story matters. Share it." 
+            <Heart className="inline-block ml-2 h-5 w-5 text-primary" />
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-serif font-semibold text-foreground mb-6 animate-fade-in">
             {t("home.hero_title")}{" "}
-            <span className="text-primary relative">
+            <span className="text-primary relative inline-block">
               {t("home.hero_title_highlight")}
-              <Heart className="absolute -top-2 -right-8 h-8 w-8 text-primary/60 animate-pulse" />
+              <Sparkles className="absolute -top-4 -right-8 h-8 w-8 text-primary/60 float-gentle" />
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+          
+          <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
             {t("home.hero_subtitle")}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
             <Link to="/submit">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 px-8 py-3 text-lg">
+              <Button className="btn-warm text-lg h-14 px-10 group">
+                <Heart className="mr-2 h-5 w-5 group-hover:animate-pulse" />
                 {t("home.share_story_btn")}
               </Button>
             </Link>
             <Link to="/stories">
-              <Button variant="outline" size="lg" className="px-8 py-3 text-lg border-primary text-primary hover:bg-primary/5">
+              <Button className="btn-outline-warm text-lg h-14 px-10 group">
+                <BookOpen className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                 {t("home.read_stories_btn")}
               </Button>
             </Link>
@@ -261,41 +281,56 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 px-4 bg-white">
+      {/* Stats Section - Polaroid Style */}
+      <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {statsData.map((stat, index) => (
-              <div key={index} className="text-center animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <stat.icon className="h-12 w-12 text-primary mx-auto mb-4" />
-                <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
+              <div 
+                key={index} 
+                className="story-card paper-texture text-center p-6 hover-lift group"
+                style={{ animationDelay: `${index * 0.15}s` }}
+              >
+                <div className="relative">
+                  <stat.icon className="h-12 w-12 text-primary mx-auto mb-4 group-hover:scale-110 transition-all duration-300" />
+                  <Star className="absolute -top-2 -right-2 h-4 w-4 text-primary/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div className="text-3xl font-bold text-foreground mb-2 font-serif">{stat.value}</div>
+                <div className="text-muted-foreground font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Story */}
+      {/* Featured Story - Story Card Style */}
       {featuredStory && (
-        <section className="py-16 px-4 bg-white">
+        <section className="py-20 px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-serif font-semibold text-center mb-12">{t("home.featured_story_title")}</h2>
-            <Card className="overflow-hidden hover-scale cursor-pointer border-0 shadow-xl">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-serif font-semibold mb-4 text-foreground">
+                {t("home.featured_story_title")}
+              </h2>
+              <div className="handwritten text-primary/70">
+                A beautiful story awaits...
+              </div>
+            </div>
+            
+            <Card className="story-card overflow-hidden paper-texture hover-lift cursor-pointer group max-w-5xl mx-auto">
               <div className="md:flex">
-                <div className="md:w-1/2 relative">
+                <div className="md:w-1/2 relative overflow-hidden">
                   {featuredContent?.imageLinks && featuredContent.imageLinks.length > 0 ? (
                     <div className="relative">
                       <img
                         src={featuredContent.imageLinks[0]}
                         alt={featuredStory.title}
-                        className="w-full h-64 md:h-full object-cover"
+                        className="w-full h-64 md:h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = "/placeholder.svg";
                         }}
                       />
                       {featuredContent.imageLinks.length > 1 && (
-                        <div className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+                        <div className="absolute bottom-3 right-3 bg-black/80 text-white px-3 py-2 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
                           <Image className="h-4 w-4" />
                           +{featuredContent.imageLinks.length - 1} {t("home.more_photos")}
                         </div>
@@ -303,35 +338,40 @@ const Home = () => {
                     </div>
                    ) : (
                      <div className="w-full h-64 md:h-full bg-muted flex items-center justify-center">
-                       <img 
-                         src="/placeholder.svg" 
-                         alt={featuredStory.title}
-                         className="w-16 h-16 opacity-50"
-                       />
+                       <div className="text-center opacity-50">
+                         <Camera className="h-16 w-16 mx-auto mb-2 text-muted-foreground" />
+                         <p className="text-muted-foreground">Story image</p>
+                       </div>
                      </div>
                    )}
                   {featuredContent?.videoLinks && featuredContent.videoLinks.length > 0 && (
-                    <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+                    <div className="absolute top-3 right-3 bg-black/80 text-white px-3 py-2 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
                       <Video className="h-4 w-4" />
                       {featuredContent.videoLinks.length} {featuredContent.videoLinks.length === 1 ? t("home.video") : t("home.videos")}
                     </div>
                   )}
                 </div>
-                <div className="md:w-1/2 p-8">
+                
+                <div className="md:w-1/2 p-8 md:p-10">
                   <CardHeader className="px-0 pt-0">
-                    <div className="flex flex-wrap gap-2 mb-3">
+                    <div className="flex flex-wrap gap-2 mb-4">
                       {featuredContent?.tags && featuredContent.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
+                        <Badge key={tag} variant="secondary" className="text-xs px-3 py-1 bg-primary/10 text-primary border-none">
                           {tag}
                         </Badge>
                       ))}
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs px-3 py-1 border-primary/30 text-primary">
                         {featuredStory.type}
                       </Badge>
                     </div>
-                    <CardTitle className="text-2xl font-serif mb-2">{featuredStory.title}</CardTitle>
-                    <CardDescription className="text-sm text-gray-500 flex items-center gap-4">
-                      <span>{t("home.by_author")} {featuredStory.profiles?.full_name || t("home.anonymous")}</span>
+                    <CardTitle className="text-2xl md:text-3xl font-serif mb-3 text-foreground leading-relaxed">
+                      {featuredStory.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm text-muted-foreground flex items-center gap-4 mb-6">
+                      <span className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {featuredStory.profiles?.full_name || t("home.anonymous")}
+                      </span>
                       <span className="flex items-center gap-1">
                         <Eye className="h-4 w-4" />
                         {featuredStory.view_count} {t("home.views")}
@@ -339,14 +379,15 @@ const Home = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="px-0">
-                    <p className="text-gray-700 leading-relaxed mb-6 line-clamp-4">
+                    <p className="text-foreground/80 leading-relaxed mb-8 text-lg line-clamp-4">
                       {featuredContent?.story || t("home.story_placeholder")}
                     </p>
                     <Button 
                       variant="outline" 
-                      className="story-link"
+                      className="story-link border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 rounded-full group"
                       onClick={handleReadStory}
                     >
+                      <MessageCircle className="mr-2 h-4 w-4 group-hover:animate-bounce" />
                       {t("home.read_full_story")}
                     </Button>
                   </CardContent>
@@ -357,51 +398,79 @@ const Home = () => {
         </section>
       )}
 
-      {/* Gallery Preview */}
-      <section className="py-16 px-4 bg-white">
+      {/* Gallery Preview - Scrapbook Style */}
+      <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif font-semibold mb-4">{t("home.memory_gallery_title")}</h2>
-            <p className="text-gray-600">{t("home.memory_gallery_subtitle")}</p>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-serif font-semibold mb-4 text-foreground">
+              {t("home.memory_gallery_title")}
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              {t("home.memory_gallery_subtitle")}
+            </p>
+            <div className="handwritten text-primary/70 mt-2">
+              Cherished moments...
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
             {galleryImages.slice(0, 4).map((image, index) => (
               <div 
                 key={index} 
-                className="aspect-square overflow-hidden rounded-lg hover-scale cursor-pointer"
+                className="story-card aspect-square overflow-hidden hover-lift cursor-pointer group paper-texture"
                 onClick={handleGalleryImageClick}
+                style={{ 
+                  animationDelay: `${index * 0.1}s`,
+                  transform: `rotate(${index % 2 === 0 ? '-1deg' : '1deg'})`,
+                }}
               >
-                <img
-                  src={image}
-                  alt={`Gallery image ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-300"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `/placeholder.svg`;
-                  }}
-                />
+                <div className="relative h-full">
+                  <img
+                    src={image}
+                    alt={`Memory ${index + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `/placeholder.svg`;
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent group-hover:from-black/30 transition-all duration-300"></div>
+                </div>
               </div>
             ))}
           </div>
+          
           <div className="text-center">
             <Link to="/gallery">
-              <Button variant="outline" className="px-8">{t("home.view_full_gallery")}</Button>
+              <Button className="btn-outline-warm text-lg px-10 py-3 group">
+                <Camera className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                {t("home.view_full_gallery")}
+              </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-serif font-semibold mb-6">{t("home.cta_title")}</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            {t("home.cta_subtitle")}
-          </p>
-          <Link to="/submit">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 px-8 py-3 text-lg">
-              {t("home.get_started_btn")}
-            </Button>
-          </Link>
+      {/* CTA Section - Heartfelt Invitation */}
+      <section className="py-24 px-4">
+        <div className="max-w-5xl mx-auto text-center">
+          <div className="story-card paper-texture p-12 md:p-16 hover-lift">
+            <div className="handwritten text-primary/70 mb-4">
+              We're waiting for you...
+            </div>
+            <h2 className="text-4xl md:text-5xl font-serif font-semibold mb-8 text-foreground leading-relaxed">
+              {t("home.cta_title")}
+            </h2>
+            <p className="text-xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
+              {t("home.cta_subtitle")}
+            </p>
+            <Link to="/submit">
+              <Button className="btn-warm text-lg h-16 px-12 group">
+                <Sparkles className="mr-2 h-6 w-6 group-hover:animate-spin" />
+                {t("home.get_started_btn")}
+                <Heart className="ml-2 h-5 w-5 group-hover:animate-pulse" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </div>

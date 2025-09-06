@@ -5,83 +5,102 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 24 24% 15%;
+    /* Warm, cozy background palette */
+    --background: 30 40% 98%;
+    --foreground: 25 20% 20%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 24 24% 15%;
+    /* Story card colors - like cream paper */
+    --card: 28 45% 97%;
+    --card-foreground: 25 20% 20%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 24 24% 15%;
+    --popover: 28 45% 97%;
+    --popover-foreground: 25 20% 20%;
 
-    --primary: 22 78% 60%;
+    /* Warm coral-pink primary - heartfelt and inviting */
+    --primary: 15 75% 65%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 15 85% 75%;
 
-    --secondary: 32 31% 94%;
-    --secondary-foreground: 24 24% 15%;
+    /* Soft peach secondary */
+    --secondary: 25 60% 92%;
+    --secondary-foreground: 25 20% 20%;
 
-    --muted: 32 31% 94%;
-    --muted-foreground: 24 24% 46%;
+    /* Warm cream tones */
+    --muted: 30 40% 94%;
+    --muted-foreground: 25 15% 50%;
 
-    --accent: 22 78% 95%;
-    --accent-foreground: 24 24% 15%;
+    /* Gentle accent - warm blush */
+    --accent: 15 60% 90%;
+    --accent-foreground: 25 20% 20%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 32 31% 91%;
-    --input: 32 31% 91%;
-    --ring: 22 78% 60%;
+    /* Soft borders */
+    --border: 25 30% 88%;
+    --input: 25 30% 88%;
+    --ring: 15 75% 65%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    /* Sidebar colors */
+    --sidebar-background: 30 40% 96%;
+    --sidebar-foreground: 25 20% 30%;
+    --sidebar-primary: 15 75% 65%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 25 40% 92%;
+    --sidebar-accent-foreground: 25 20% 30%;
+    --sidebar-border: 25 30% 88%;
+    --sidebar-ring: 15 75% 65%;
+
+    /* Soft shadows for Polaroid-like effects */
+    --shadow-soft: 0 4px 20px -2px hsl(15 75% 65% / 0.15);
+    --shadow-polaroid: 0 8px 25px -5px hsl(25 20% 20% / 0.2);
+    --shadow-float: 0 12px 35px -8px hsl(15 75% 65% / 0.25);
+
+    /* Gradients for warmth */
+    --gradient-warm: linear-gradient(135deg, hsl(15 75% 65%) 0%, hsl(25 70% 70%) 100%);
+    --gradient-paper: linear-gradient(180deg, hsl(28 45% 97%) 0%, hsl(30 40% 95%) 100%);
+    --gradient-sunset: linear-gradient(135deg, hsl(15 75% 65%) 0%, hsl(35 80% 70%) 50%, hsl(45 85% 75%) 100%);
   }
 
   .dark {
-    --background: 24 24% 8%;
-    --foreground: 32 31% 95%;
+    --background: 25 15% 8%;
+    --foreground: 30 40% 95%;
 
-    --card: 24 24% 10%;
-    --card-foreground: 32 31% 95%;
+    --card: 25 15% 10%;
+    --card-foreground: 30 40% 95%;
 
-    --popover: 24 24% 10%;
-    --popover-foreground: 32 31% 95%;
+    --popover: 25 15% 10%;
+    --popover-foreground: 30 40% 95%;
 
-    --primary: 22 78% 60%;
+    --primary: 15 75% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 24 24% 15%;
-    --secondary-foreground: 32 31% 95%;
+    --secondary: 25 15% 15%;
+    --secondary-foreground: 30 40% 95%;
 
-    --muted: 24 24% 15%;
-    --muted-foreground: 32 31% 65%;
+    --muted: 25 15% 15%;
+    --muted-foreground: 30 20% 65%;
 
-    --accent: 24 24% 15%;
-    --accent-foreground: 32 31% 95%;
+    --accent: 25 15% 15%;
+    --accent-foreground: 30 40% 95%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 24 24% 15%;
-    --input: 24 24% 15%;
-    --ring: 22 78% 60%;
+    --border: 25 15% 15%;
+    --input: 25 15% 15%;
+    --ring: 15 75% 65%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 25 15% 8%;
+    --sidebar-foreground: 30 40% 95%;
+    --sidebar-primary: 15 75% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 25 15% 12%;
+    --sidebar-accent-foreground: 30 40% 95%;
+    --sidebar-border: 25 15% 15%;
+    --sidebar-ring: 15 75% 65%;
   }
 }
 
@@ -92,6 +111,8 @@
 
   body {
     @apply bg-background text-foreground font-sans;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(30 50% 96%) 100%);
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -100,11 +121,70 @@
 }
 
 @layer utilities {
+  /* Story card effect - like a Polaroid photo */
+  .story-card {
+    @apply bg-gradient-to-b from-card to-card/95 shadow-lg rounded-2xl border border-border/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+    box-shadow: var(--shadow-polaroid);
+  }
+
+  .story-card:hover {
+    box-shadow: var(--shadow-float);
+  }
+
+  /* Gentle hover effects */
   .story-link {
     @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
   }
 
   .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-xl;
+  }
+
+  /* Warm button styles */
+  .btn-warm {
+    @apply bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-full px-8 py-3 font-medium transition-all duration-300 hover:shadow-lg hover:scale-105;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .btn-outline-warm {
+    @apply border-2 border-primary text-primary bg-transparent rounded-full px-8 py-3 font-medium transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:shadow-lg hover:scale-105;
+  }
+
+  /* Handwritten note effect */
+  .handwritten {
+    @apply font-script text-lg transform -rotate-1 text-primary/80;
+  }
+
+  /* Gentle animations */
+  .float-gentle {
+    animation: float-gentle 3s ease-in-out infinite;
+  }
+
+  @keyframes float-gentle {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  /* Paper texture overlay */
+  .paper-texture {
+    position: relative;
+  }
+
+  .paper-texture::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(120, 90, 60, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(120, 90, 60, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 90, 60, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+    border-radius: inherit;
   }
 }
