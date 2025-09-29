@@ -5,102 +5,102 @@
 
 @layer base {
   :root {
-    /* Warm, cozy background palette */
-    --background: 30 40% 98%;
-    --foreground: 25 20% 20%;
+    /* Clean white background */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
 
-    /* Story card colors - like cream paper */
-    --card: 28 45% 97%;
-    --card-foreground: 25 20% 20%;
+    /* Clean white card colors */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
 
-    --popover: 28 45% 97%;
-    --popover-foreground: 25 20% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
 
-    /* Warm coral-pink primary - heartfelt and inviting */
-    --primary: 15 75% 65%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 15 85% 75%;
+    /* Blue gradient primary - left to right, darker on right */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --primary-dark: 221.2 83.2% 43.3%;
 
-    /* Soft peach secondary */
-    --secondary: 25 60% 92%;
-    --secondary-foreground: 25 20% 20%;
+    /* Clean secondary */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    /* Warm cream tones */
-    --muted: 30 40% 94%;
-    --muted-foreground: 25 15% 50%;
+    /* Clean muted tones */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    /* Gentle accent - warm blush */
-    --accent: 15 60% 90%;
-    --accent-foreground: 25 20% 20%;
+    /* Clean accent */
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    /* Soft borders */
-    --border: 25 30% 88%;
-    --input: 25 30% 88%;
-    --ring: 15 75% 65%;
+    /* Clean borders */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
 
-    --radius: 1rem;
+    --radius: 0.5rem;
 
-    /* Sidebar colors */
-    --sidebar-background: 30 40% 96%;
-    --sidebar-foreground: 25 20% 30%;
-    --sidebar-primary: 15 75% 65%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 25 40% 92%;
-    --sidebar-accent-foreground: 25 20% 30%;
-    --sidebar-border: 25 30% 88%;
-    --sidebar-ring: 15 75% 65%;
+    /* Clean sidebar colors */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 15%;
+    --sidebar-primary: 221.2 83.2% 53.3%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 0 0% 15%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 221.2 83.2% 53.3%;
 
-    /* Soft shadows for Polaroid-like effects */
-    --shadow-soft: 0 4px 20px -2px hsl(15 75% 65% / 0.15);
-    --shadow-polaroid: 0 8px 25px -5px hsl(25 20% 20% / 0.2);
-    --shadow-float: 0 12px 35px -8px hsl(15 75% 65% / 0.25);
+    /* Clean shadows */
+    --shadow-soft: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
+    --shadow-float: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
 
-    /* Gradients for warmth */
-    --gradient-warm: linear-gradient(135deg, hsl(15 75% 65%) 0%, hsl(25 70% 70%) 100%);
-    --gradient-paper: linear-gradient(180deg, hsl(28 45% 97%) 0%, hsl(30 40% 95%) 100%);
-    --gradient-sunset: linear-gradient(135deg, hsl(15 75% 65%) 0%, hsl(35 80% 70%) 50%, hsl(45 85% 75%) 100%);
+    /* Blue gradients */
+    --gradient-primary: linear-gradient(90deg, hsl(221.2 83.2% 53.3%) 0%, hsl(221.2 83.2% 43.3%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
   }
 
   .dark {
-    --background: 25 15% 8%;
-    --foreground: 30 40% 95%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 25 15% 10%;
-    --card-foreground: 30 40% 95%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 25 15% 10%;
-    --popover-foreground: 30 40% 95%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 15 75% 65%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --primary-dark: 217.2 91.2% 49.8%;
 
-    --secondary: 25 15% 15%;
-    --secondary-foreground: 30 40% 95%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 25 15% 15%;
-    --muted-foreground: 30 20% 65%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 25 15% 15%;
-    --accent-foreground: 30 40% 95%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 25 15% 15%;
-    --input: 25 15% 15%;
-    --ring: 15 75% 65%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217.2 91.2% 59.8%;
 
-    --sidebar-background: 25 15% 8%;
-    --sidebar-foreground: 30 40% 95%;
-    --sidebar-primary: 15 75% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 25 15% 12%;
-    --sidebar-accent-foreground: 30 40% 95%;
-    --sidebar-border: 25 15% 15%;
-    --sidebar-ring: 15 75% 65%;
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217.2 91.2% 59.8%;
+    --sidebar-primary-foreground: 222.2 84% 4.9%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -111,7 +111,7 @@
 
   body {
     @apply bg-background text-foreground font-sans;
-    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(30 50% 96%) 100%);
+    background: hsl(var(--background));
     min-height: 100vh;
   }
 
@@ -121,10 +121,10 @@
 }
 
 @layer utilities {
-  /* Story card effect - like a Polaroid photo */
+  /* Clean story card effect */
   .story-card {
-    @apply bg-gradient-to-b from-card to-card/95 shadow-lg rounded-2xl border border-border/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
-    box-shadow: var(--shadow-polaroid);
+    @apply bg-card shadow-sm rounded-lg border border-border transition-all duration-300 hover:shadow-md hover:-translate-y-1;
+    box-shadow: var(--shadow-card);
   }
 
   .story-card:hover {
@@ -144,14 +144,15 @@
     @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-xl;
   }
 
-  /* Warm button styles */
-  .btn-warm {
-    @apply bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-full px-8 py-3 font-medium transition-all duration-300 hover:shadow-lg hover:scale-105;
+  /* Clean button styles with blue gradient */
+  .btn-gradient {
+    background: var(--gradient-primary);
+    @apply text-primary-foreground rounded-md px-6 py-2.5 font-medium transition-all duration-300 hover:shadow-md hover:scale-105;
     box-shadow: var(--shadow-soft);
   }
 
-  .btn-outline-warm {
-    @apply border-2 border-primary text-primary bg-transparent rounded-full px-8 py-3 font-medium transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:shadow-lg hover:scale-105;
+  .btn-outline-clean {
+    @apply border-2 border-primary text-primary bg-transparent rounded-md px-6 py-2.5 font-medium transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:shadow-md;
   }
 
   /* Handwritten note effect */
@@ -170,21 +171,15 @@
   }
 
   /* Paper texture overlay */
-  .paper-texture {
-    position: relative;
+  /* Clean minimal effects */
+  .clean-card {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md;
   }
-
-  .paper-texture::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 20% 80%, rgba(120, 90, 60, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(120, 90, 60, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 90, 60, 0.02) 0%, transparent 50%);
-    pointer-events: none;
-    border-radius: inherit;
+  
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
