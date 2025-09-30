@@ -106,9 +106,9 @@ const Navbar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/login">
+              <Link to="/submit">
                 <Button className="bg-primary hover:bg-primary/90">
-                  {t("common.login")}
+                  Share Now
                 </Button>
               </Link>
             )}
@@ -185,9 +185,9 @@ const Navbar = () => {
                   </Button>
                 </div>
               ) : (
-                <Link to="/login" onClick={() => setIsOpen(false)}>
+                <Link to="/submit" onClick={() => setIsOpen(false)}>
                   <Button className="w-full mt-2 bg-primary hover:bg-primary/90">
-                    {t("common.login")}
+                    Share Now
                   </Button>
                 </Link>
               )}

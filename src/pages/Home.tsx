@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Users, BookOpen, Camera, Eye, Image, Video, Star, MessageCircle, ArrowRight } from "lucide-react";
+import { Heart, Users, BookOpen, Camera, Eye, Image, Video, ArrowRight, MessageCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ interface ParsedContent {
 const Home = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const [featuredStory, setFeaturedStory] = useState<Post | null>(null);
+  const [featuredPosts, setFeaturedPosts] = useState<Post[]>([]);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [stats, setStats] = useState({
     stories: 0,
@@ -58,48 +58,52 @@ const Home = () => {
     }
   }, []);
 
-  const fetchFeaturedStory = useCallback(async () => {
+  const fetchFeaturedPosts = useCallback(async () => {
     try {
       let { data: postsData, error } = await supabase
         .from('posts')
         .select('*')
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
-        .limit(1);
+        .limit(6);
 
       if (error) {
-        console.error('Error fetching featured story:', error);
-        setFeaturedStory(null);
+        console.error('Error fetching featured posts:', error);
+        setFeaturedPosts([]);
         return;
       }
 
       if (postsData && postsData.length > 0) {
-        const post = postsData[0];
-        
-        try {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', post.user_id)
-            .single();
+        const postsWithProfiles = await Promise.all(
+          postsData.map(async (post) => {
+            try {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', post.user_id)
+                .single();
 
-          setFeaturedStory({
-            ...post,
-            profiles: profileData
-          });
-        } catch (profileError) {
-          console.error('Error fetching profile:', profileError);
-          setFeaturedStory({
-            ...post,
-            profiles: { full_name: t("story.anonymous") }
-          });
-        }
+              return {
+                ...post,
+                profiles: profileData
+              };
+            } catch (profileError) {
+              console.error('Error fetching profile:', profileError);
+              return {
+                ...post,
+                profiles: { full_name: t("story.anonymous") }
+              };
+            }
+          })
+        );
+        
+        setFeaturedPosts(postsWithProfiles);
       } else {
-        setFeaturedStory(null);
+        setFeaturedPosts([]);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
-      setFeaturedStory(null);
+      setFeaturedPosts([]);
     }
   }, [t]);
 
@@ -186,7 +190,7 @@ const Home = () => {
       setLoading(true);
       try {
         await Promise.race([
-          Promise.all([fetchFeaturedStory(), fetchStats(), fetchGalleryImages()]),
+          Promise.all([fetchFeaturedPosts(), fetchStats(), fetchGalleryImages()]),
           new Promise(resolve => setTimeout(resolve, 10000))
         ]);
       } catch (error) {
@@ -198,33 +202,22 @@ const Home = () => {
 
     loadData();
     document.title = t("meta.home_title");
-  }, [fetchFeaturedStory, fetchStats, fetchGalleryImages, t]);
+  }, [fetchFeaturedPosts, fetchStats, fetchGalleryImages, t]);
 
-  const handleReadStory = () => {
-    if (featuredStory) {
-      navigate(`/story/${featuredStory.id}`);
-    }
+  const handleReadStory = (id: string) => {
+    navigate(`/story/${id}`);
   };
 
   const handleGalleryImageClick = () => {
     navigate('/gallery');
   };
 
-  const statsData = [
-    { icon: BookOpen, label: t("home.stats_stories"), value: stats.stories.toLocaleString() },
-    { icon: Camera, label: t("home.stats_photos"), value: stats.images.toLocaleString() },
-    { icon: Users, label: t("home.stats_members"), value: stats.members.toLocaleString() },
-    { icon: Eye, label: t("home.stats_views"), value: stats.views.toLocaleString() }
-  ];
-
-  const featuredContent = featuredStory ? parseContent(featuredStory.content) : null;
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground font-medium">Loading your stories...</p>
+          <p className="text-muted-foreground font-medium">Loading...</p>
         </div>
       </div>
     );
@@ -232,168 +225,166 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Clean Hero Section */}
-      <section className="relative py-20 lg:py-32 px-4 text-center">
+      {/* Hero Banner Section */}
+      <section className="relative py-20 lg:py-32 px-4 text-center bg-gradient-to-b from-background to-muted/20">
         <div className="max-w-6xl mx-auto">
           <div className="space-y-8">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
-              {t("home.hero_title")}{" "}
+              Share Your{" "}
               <span className="gradient-text">
-                {t("home.hero_title_highlight")}
+                Stories
               </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-              {t("home.hero_subtitle")}
+              Connect with others through authentic storytelling, photos, and shared experiences
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link to="/submit">
                 <Button size="lg" className="px-8 py-3 text-lg">
                   <Heart className="mr-2 h-5 w-5" />
-                  {t("home.share_story_btn")}
+                  Share Your Story
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/stories">
                 <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
                   <BookOpen className="mr-2 h-5 w-5" />
-                  {t("home.read_stories_btn")}
+                  Read Stories
                 </Button>
               </Link>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Clean Stats Section */}
-      <section className="py-16 px-4 bg-muted/20">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {statsData.map((stat, index) => (
-              <Card key={index} className="clean-card text-center p-6">
-                <CardContent className="space-y-4">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                    <stat.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-2xl md:text-3xl font-bold text-foreground">{stat.value}</h3>
-                    <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Clean Featured Story Section */}
-      {featuredStory && (
-        <section className="py-20 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                {t("home.featured_story_title")}
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Discover inspiring stories from our community
-              </p>
+            {/* Community Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto">
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.stories.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground font-medium">Stories</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.images.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground font-medium">Photos</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.members.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground font-medium">Members</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.views.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground font-medium">Views</div>
+              </div>
             </div>
-            
-            <Card className="clean-card max-w-5xl mx-auto overflow-hidden">
-              <div className="grid md:grid-cols-2">
-                <div className="relative overflow-hidden">
-                  {featuredContent?.imageLinks && featuredContent.imageLinks.length > 0 ? (
-                    <div className="relative">
-                      <img
-                        src={featuredContent.imageLinks[0]}
-                        alt={featuredStory.title}
-                        className="w-full h-64 md:h-full object-cover hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/placeholder.svg";
-                        }}
-                      />
-                      {featuredContent.imageLinks.length > 1 && (
-                        <Badge className="absolute bottom-3 right-3 bg-black/80 text-white">
-                          <Image className="h-3 w-3 mr-1" />
-                          +{featuredContent.imageLinks.length - 1}
-                        </Badge>
-                      )}
-                    </div>
-                   ) : (
-                     <div className="w-full h-64 md:h-full bg-muted/50 flex items-center justify-center">
-                       <Camera className="h-16 w-16 text-muted-foreground/50" />
-                     </div>
-                   )}
-                  {featuredContent?.videoLinks && featuredContent.videoLinks.length > 0 && (
-                    <Badge className="absolute top-3 right-3 bg-black/80 text-white">
-                      <Video className="h-3 w-3 mr-1" />
-                      {featuredContent.videoLinks.length}
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="p-8 md:p-10">
-                  <CardHeader className="px-0 pt-0">
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {featuredContent?.tags && featuredContent.tags.slice(0, 3).map((tag) => (
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Posts Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+              Featured Stories
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Discover inspiring stories from our community
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredPosts.slice(0, 6).map((post) => {
+              const content = parseContent(post.content);
+              return (
+                <Card key={post.id} className="clean-card overflow-hidden group cursor-pointer" onClick={() => handleReadStory(post.id)}>
+                  <div className="relative">
+                    {content?.imageLinks && content.imageLinks.length > 0 ? (
+                      <div className="relative">
+                        <img
+                          src={content.imageLinks[0]}
+                          alt={post.title}
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                          }}
+                        />
+                        {content.imageLinks.length > 1 && (
+                          <Badge className="absolute bottom-2 right-2 bg-black/80 text-white">
+                            <Image className="h-3 w-3 mr-1" />
+                            +{content.imageLinks.length - 1}
+                          </Badge>
+                        )}
+                      </div>
+                     ) : (
+                       <div className="w-full h-48 bg-muted/50 flex items-center justify-center">
+                         <Camera className="h-12 w-12 text-muted-foreground/50" />
+                       </div>
+                     )}
+                    {content?.videoLinks && content.videoLinks.length > 0 && (
+                      <Badge className="absolute top-2 right-2 bg-black/80 text-white">
+                        <Video className="h-3 w-3 mr-1" />
+                        {content.videoLinks.length}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <CardHeader>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {content?.tags && content.tags.slice(0, 2).map((tag) => (
                         <Badge key={tag} variant="secondary" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
-                      <Badge variant="outline" className="text-xs">
-                        {featuredStory.type}
-                      </Badge>
                     </div>
-                    <CardTitle className="text-2xl md:text-3xl font-bold mb-3 text-foreground">
-                      {featuredStory.title}
+                    <CardTitle className="text-xl font-bold line-clamp-2 text-foreground">
+                      {post.title}
                     </CardTitle>
-                    <CardDescription className="text-sm text-muted-foreground flex items-center gap-4 mb-6">
+                    <CardDescription className="text-sm text-muted-foreground flex items-center gap-4">
                       <span className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {featuredStory.profiles?.full_name || t("home.anonymous")}
+                        <Users className="h-3 w-3" />
+                        {post.profiles?.full_name || "Anonymous"}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
-                        {featuredStory.view_count} {t("home.views")}
+                        <Eye className="h-3 w-3" />
+                        {post.view_count}
                       </span>
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="px-0">
-                    <p className="text-foreground/80 leading-relaxed mb-6 line-clamp-4">
-                      {featuredContent?.story || t("home.story_placeholder")}
+                  <CardContent>
+                    <p className="text-sm text-foreground/80 leading-relaxed line-clamp-3">
+                      {content?.story || "Click to read this story..."}
                     </p>
-                    <Button 
-                      variant="outline" 
-                      onClick={handleReadStory}
-                      className="w-fit"
-                    >
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      {t("home.read_full_story")}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
                   </CardContent>
-                </div>
-              </div>
-            </Card>
+                </Card>
+              );
+            })}
           </div>
-        </section>
-      )}
+          
+          <div className="text-center mt-12">
+            <Link to="/stories">
+              <Button variant="outline" size="lg" className="px-8 py-3">
+                <BookOpen className="mr-2 h-5 w-5" />
+                View All Stories
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
-      {/* Clean Gallery Preview */}
+      {/* Gallery Section */}
       <section className="py-20 px-4 bg-muted/20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-              {t("home.memory_gallery_title")}
+              Photo Gallery
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t("home.memory_gallery_subtitle")}
+              Visual memories and moments captured by our community
             </p>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {galleryImages.slice(0, 4).map((image, index) => (
+            {galleryImages.slice(0, 8).map((image, index) => (
               <Card 
                 key={index} 
                 className="clean-card aspect-square overflow-hidden cursor-pointer group"
@@ -402,7 +393,7 @@ const Home = () => {
                 <div className="relative h-full">
                   <img
                     src={image}
-                    alt={`Memory ${index + 1}`}
+                    alt={`Gallery image ${index + 1}`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = `/placeholder.svg`;
@@ -418,7 +409,7 @@ const Home = () => {
             <Link to="/gallery">
               <Button variant="outline" size="lg" className="px-8 py-3">
                 <Camera className="mr-2 h-5 w-5" />
-                {t("home.view_full_gallery")}
+                View Full Gallery
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -426,7 +417,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Clean Call to Action */}
+      {/* Call to Action Section */}
       <section className="py-24 px-4">
         <div className="max-w-4xl mx-auto">
           <Card className="clean-card">
