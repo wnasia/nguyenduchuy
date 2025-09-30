@@ -25,6 +25,7 @@ const Navbar = () => {
     { name: t("common.stories"), href: "/stories" },
     { name: t("common.gallery"), href: "/gallery" },
     { name: t("common.videos"), href: "/videos" },
+    { name: "Crypto", href: "/crypto" },
     { name: t("common.submit_story"), href: "/submit" },
   ];
 
