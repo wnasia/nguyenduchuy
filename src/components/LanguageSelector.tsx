@@ -25,9 +25,7 @@ const LanguageSelector = () => {
     <Select value={currentLanguage} onValueChange={changeLanguage}>
       <SelectTrigger className="w-auto border-0 bg-transparent hover:bg-gray-100 focus:ring-0">
         <div className="flex items-center gap-2">
-          <Globe className="h-4 w-4" />
-          <span className="hidden sm:inline">{currentLang?.flag}</span>
-          <span className="hidden md:inline text-sm">{currentLang?.label}</span>
+          <span className="text-xl">{currentLang?.flag}</span>
         </div>
       </SelectTrigger>
       <SelectContent>
