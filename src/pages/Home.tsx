@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Users, BookOpen, Camera, Eye, Image, Video, ArrowRight, MessageCircle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Heart, TrendingUp, Users, Eye, ArrowRight, Clock, Flame, Star, Tag, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/hooks/useI18n";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Post {
   id: string;
@@ -27,10 +28,15 @@ interface ParsedContent {
 }
 
 const Home = () => {
-  const { t } = useI18n();
   const navigate = useNavigate();
-  const [featuredPosts, setFeaturedPosts] = useState<Post[]>([]);
+  const { t } = useI18n();
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("hot");
+  const [hotPosts, setHotPosts] = useState<Post[]>([]);
+  const [latestPosts, setLatestPosts] = useState<Post[]>([]);
+  const [topPosts, setTopPosts] = useState<Post[]>([]);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [popularTags, setPopularTags] = useState<string[]>([]);
   const [stats, setStats] = useState({
     stories: 0,
     images: 0,
@@ -58,54 +64,93 @@ const Home = () => {
     }
   }, []);
 
-  const fetchFeaturedPosts = useCallback(async () => {
+  const fetchHotPosts = useCallback(async () => {
+    try {
+      let { data: postsData, error } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('status', 'approved')
+        .order('view_count', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      if (postsData && postsData.length > 0) {
+        const postsWithProfiles = await Promise.all(
+          postsData.map(async (post) => {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', post.user_id)
+              .single();
+            return { ...post, profiles: profileData };
+          })
+        );
+        setHotPosts(postsWithProfiles);
+      }
+    } catch (error) {
+      console.error('Error fetching hot posts:', error);
+    }
+  }, []);
+
+  const fetchLatestPosts = useCallback(async () => {
     try {
       let { data: postsData, error } = await supabase
         .from('posts')
         .select('*')
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
-        .limit(6);
+        .limit(10);
 
-      if (error) {
-        console.error('Error fetching featured posts:', error);
-        setFeaturedPosts([]);
-        return;
-      }
+      if (error) throw error;
 
       if (postsData && postsData.length > 0) {
         const postsWithProfiles = await Promise.all(
           postsData.map(async (post) => {
-            try {
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('full_name')
-                .eq('id', post.user_id)
-                .single();
-
-              return {
-                ...post,
-                profiles: profileData
-              };
-            } catch (profileError) {
-              console.error('Error fetching profile:', profileError);
-              return {
-                ...post,
-                profiles: { full_name: t("story.anonymous") }
-              };
-            }
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', post.user_id)
+              .single();
+            return { ...post, profiles: profileData };
           })
         );
-        
-        setFeaturedPosts(postsWithProfiles);
-      } else {
-        setFeaturedPosts([]);
+        setLatestPosts(postsWithProfiles);
       }
     } catch (error) {
-      console.error('Unexpected error:', error);
-      setFeaturedPosts([]);
+      console.error('Error fetching latest posts:', error);
     }
-  }, [t]);
+  }, []);
+
+  const fetchTopPosts = useCallback(async () => {
+    try {
+      let { data: postsData, error } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('status', 'approved')
+        .eq('is_featured', true)
+        .order('view_count', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      if (postsData && postsData.length > 0) {
+        const postsWithProfiles = await Promise.all(
+          postsData.map(async (post) => {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', post.user_id)
+              .single();
+            return { ...post, profiles: profileData };
+          })
+        );
+        setTopPosts(postsWithProfiles);
+      }
+    } catch (error) {
+      console.error('Error fetching top posts:', error);
+    }
+  }, []);
 
   const fetchGalleryImages = useCallback(async () => {
     try {
@@ -113,21 +158,43 @@ const Home = () => {
         .from('gallery_images')
         .select('image_url')
         .order('created_at', { ascending: false })
-        .limit(8);
+        .limit(6);
 
-      if (error) {
-        console.error('Error fetching gallery images:', error);
-        setGalleryImages([]);
-        return;
-      }
-
-      const imageUrls = galleryData?.map(img => img.image_url) || [];
-      setGalleryImages(imageUrls);
+      if (error) throw error;
+      setGalleryImages(galleryData?.map(img => img.image_url) || []);
     } catch (error) {
-      console.error('Unexpected error:', error);
-      setGalleryImages([]);
+      console.error('Error fetching gallery images:', error);
     }
   }, []);
+
+  const fetchPopularTags = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('content')
+        .eq('status', 'approved')
+        .limit(50);
+
+      if (error) throw error;
+
+      const tagsMap = new Map<string, number>();
+      data?.forEach(post => {
+        const parsed = parseContent(post.content);
+        parsed.tags?.forEach(tag => {
+          tagsMap.set(tag, (tagsMap.get(tag) || 0) + 1);
+        });
+      });
+
+      const sortedTags = Array.from(tagsMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(([tag]) => tag);
+
+      setPopularTags(sortedTags);
+    } catch (error) {
+      console.error('Error fetching popular tags:', error);
+    }
+  }, [parseContent]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -137,35 +204,18 @@ const Home = () => {
         { data: viewsData },
         { data: postsData }
       ] = await Promise.all([
-        supabase
-          .from('posts')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'approved'),
-        supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true }),
-        supabase
-          .from('posts')
-          .select('view_count')
-          .eq('status', 'approved'),
-        supabase
-          .from('posts')
-          .select('content')
-          .eq('status', 'approved')
+        supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('posts').select('view_count').eq('status', 'approved'),
+        supabase.from('posts').select('content').eq('status', 'approved')
       ]);
 
       const totalViews = viewsData?.reduce((sum, post) => sum + (post.view_count || 0), 0) || 0;
 
       let totalImages = 0;
       postsData?.forEach(post => {
-        try {
-          const parsed = JSON.parse(post.content);
-          if (parsed.imageLinks) {
-            totalImages += parsed.imageLinks.length;
-          }
-        } catch {
-          // Skip if not JSON
-        }
+        const parsed = parseContent(post.content);
+        totalImages += parsed.imageLinks?.length || 0;
       });
 
       setStats({
@@ -176,33 +226,26 @@ const Home = () => {
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
-      setStats({
-        stories: 0,
-        images: 0,
-        members: 0,
-        views: 0
-      });
     }
-  }, []);
+  }, [parseContent]);
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      try {
-        await Promise.race([
-          Promise.all([fetchFeaturedPosts(), fetchStats(), fetchGalleryImages()]),
-          new Promise(resolve => setTimeout(resolve, 10000))
-        ]);
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
-        setLoading(false);
-      }
+      await Promise.all([
+        fetchHotPosts(),
+        fetchLatestPosts(),
+        fetchTopPosts(),
+        fetchGalleryImages(),
+        fetchPopularTags(),
+        fetchStats()
+      ]);
+      setLoading(false);
     };
 
     loadData();
     document.title = t("meta.home_title");
-  }, [fetchFeaturedPosts, fetchStats, fetchGalleryImages, t]);
+  }, [fetchHotPosts, fetchLatestPosts, fetchTopPosts, fetchGalleryImages, fetchPopularTags, fetchStats, t]);
 
   const handleReadStory = (id: string) => {
     navigate(`/story/${id}`);
@@ -212,233 +255,297 @@ const Home = () => {
     navigate('/gallery');
   };
 
+  const handleShareNow = () => {
+    navigate('/submit');
+  };
+
+  const getPostExcerpt = (content: string, maxLength: number = 120) => {
+    const parsed = parseContent(content);
+    const text = parsed.story.replace(/<[^>]*>/g, '');
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
+
+  const getPostThumbnail = (content: string): string | null => {
+    const parsed = parseContent(content);
+    return parsed.imageLinks && parsed.imageLinks.length > 0 ? parsed.imageLinks[0] : null;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground font-medium">Loading...</p>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
+  const currentPosts = activeTab === "hot" ? hotPosts : activeTab === "latest" ? latestPosts : topPosts;
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Banner Section */}
-      <section className="relative py-20 lg:py-32 px-4 text-center bg-gradient-to-b from-background to-muted/20">
-        <div className="max-w-6xl mx-auto">
-          <div className="space-y-8">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
-              Share Your{" "}
-              <span className="gradient-text">
-                Stories
-              </span>
+      {/* Hero Banner */}
+      <section className="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-4">
+            <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground">
+              {t("home.hero_title")}
             </h1>
-            
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-              Connect with others through authentic storytelling, photos, and shared experiences
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              {t("home.hero_subtitle")}
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link to="/submit">
-                <Button size="lg" className="px-8 py-3 text-lg">
-                  <Heart className="mr-2 h-5 w-5" />
-                  Share Your Story
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="/stories">
-                <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
-                  <BookOpen className="mr-2 h-5 w-5" />
-                  Read Stories
-                </Button>
-              </Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-4">
+              <Button 
+                onClick={handleShareNow}
+                size="lg" 
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Heart className="mr-2 h-5 w-5" />
+                {t("home.share_story")}
+              </Button>
+              <Button 
+                onClick={() => navigate('/stories')} 
+                variant="outline" 
+                size="lg"
+              >
+                {t("home.read_stories")}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Area with Sidebar */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content Feed */}
+          <div className="lg:col-span-2">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="w-full grid grid-cols-3 mb-6">
+                <TabsTrigger value="hot" className="flex items-center gap-2">
+                  <Flame className="h-4 w-4" />
+                  <span>Hot</span>
+                </TabsTrigger>
+                <TabsTrigger value="latest" className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Mới nhất</span>
+                </TabsTrigger>
+                <TabsTrigger value="favorite" className="flex items-center gap-2">
+                  <Star className="h-4 w-4" />
+                  <span>Yêu thích</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value={activeTab} className="space-y-4">
+                {currentPosts.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    Chưa có bài viết nào
+                  </div>
+                ) : (
+                  currentPosts.map((post) => {
+                    const thumbnail = getPostThumbnail(post.content);
+                    const excerpt = getPostExcerpt(post.content);
+                    
+                    return (
+                      <div 
+                        key={post.id}
+                        onClick={() => handleReadStory(post.id)}
+                        className="flex gap-4 p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all cursor-pointer group"
+                      >
+                        {thumbnail && (
+                          <div className="flex-shrink-0 w-32 h-32 rounded-lg overflow-hidden bg-muted">
+                            <img 
+                              src={thumbnail} 
+                              alt={post.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                            {post.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                            {excerpt}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="font-medium">{post.profiles?.full_name || "Anonymous"}</span>
+                            <span>•</span>
+                            <div className="flex items-center gap-1">
+                              <Eye className="h-3 w-3" />
+                              <span>{post.view_count}</span>
+                            </div>
+                            <span>•</span>
+                            <span>{new Date(post.created_at).toLocaleDateString('vi-VN')}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Top Stories */}
+            <div className="bg-card rounded-lg border border-border p-5">
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Top Stories
+              </h3>
+              <div className="space-y-3">
+                {hotPosts.slice(0, 5).map((post, index) => (
+                  <div 
+                    key={post.id}
+                    onClick={() => handleReadStory(post.id)}
+                    className="flex gap-3 cursor-pointer group"
+                  >
+                    <span className="text-2xl font-bold text-muted-foreground/30 flex-shrink-0">
+                      {(index + 1).toString().padStart(2, '0')}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                        {post.title}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <Eye className="h-3 w-3" />
+                        <span>{post.view_count}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Popular Topics */}
+            <div className="bg-card rounded-lg border border-border p-5">
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Tag className="h-5 w-5 text-primary" />
+                Chủ đề phổ biến
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {popularTags.map((tag, index) => (
+                  <Badge 
+                    key={index} 
+                    variant="secondary" 
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    #{tag}
+                  </Badge>
+                ))}
+              </div>
             </div>
 
             {/* Community Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto">
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.stories.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground font-medium">Stories</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.images.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground font-medium">Photos</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.members.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground font-medium">Members</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-foreground">{stats.views.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground font-medium">Views</div>
+            <div className="bg-card rounded-lg border border-border p-5">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
+                Thống kê cộng đồng
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Câu chuyện</span>
+                  <span className="font-semibold text-foreground">{stats.stories.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Hình ảnh</span>
+                  <span className="font-semibold text-foreground">{stats.images.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Thành viên</span>
+                  <span className="font-semibold text-foreground">{stats.members.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Lượt xem</span>
+                  <span className="font-semibold text-foreground">{stats.views.toLocaleString()}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Photo Gallery Section */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-muted/30 border-t border-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-serif font-bold text-foreground">
+              Thư viện ảnh
+            </h2>
+            <Button 
+              onClick={handleGalleryImageClick} 
+              variant="ghost"
+              className="text-primary"
+            >
+              Xem tất cả
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {galleryImages.map((imageUrl, index) => (
+              <div 
+                key={index}
+                className="aspect-square rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+                onClick={handleGalleryImageClick}
+              >
+                <img 
+                  src={imageUrl} 
+                  alt={`Gallery ${index + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* Featured Posts Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-              Featured Stories
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Discover inspiring stories from our community
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredPosts.slice(0, 6).map((post) => {
-              const content = parseContent(post.content);
+      {/* Featured This Month / Top Voted Section */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-serif font-bold text-foreground mb-8">
+            Nổi bật trong tháng
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {topPosts.slice(0, 6).map((post) => {
+              const thumbnail = getPostThumbnail(post.content);
+              const excerpt = getPostExcerpt(post.content, 80);
+              
               return (
-                <Card key={post.id} className="clean-card overflow-hidden group cursor-pointer" onClick={() => handleReadStory(post.id)}>
-                  <div className="relative">
-                    {content?.imageLinks && content.imageLinks.length > 0 ? (
-                      <div className="relative">
-                        <img
-                          src={content.imageLinks[0]}
-                          alt={post.title}
-                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/placeholder.svg";
-                          }}
-                        />
-                        {content.imageLinks.length > 1 && (
-                          <Badge className="absolute bottom-2 right-2 bg-black/80 text-white">
-                            <Image className="h-3 w-3 mr-1" />
-                            +{content.imageLinks.length - 1}
-                          </Badge>
-                        )}
-                      </div>
-                     ) : (
-                       <div className="w-full h-48 bg-muted/50 flex items-center justify-center">
-                         <Camera className="h-12 w-12 text-muted-foreground/50" />
-                       </div>
-                     )}
-                    {content?.videoLinks && content.videoLinks.length > 0 && (
-                      <Badge className="absolute top-2 right-2 bg-black/80 text-white">
-                        <Video className="h-3 w-3 mr-1" />
-                        {content.videoLinks.length}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <CardHeader>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {content?.tags && content.tags.slice(0, 2).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
+                <div 
+                  key={post.id}
+                  onClick={() => handleReadStory(post.id)}
+                  className="bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
+                >
+                  {thumbnail && (
+                    <div className="aspect-video w-full bg-muted overflow-hidden">
+                      <img 
+                        src={thumbnail} 
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
                     </div>
-                    <CardTitle className="text-xl font-bold line-clamp-2 text-foreground">
+                  )}
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                       {post.title}
-                    </CardTitle>
-                    <CardDescription className="text-sm text-muted-foreground flex items-center gap-4">
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {post.profiles?.full_name || "Anonymous"}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        {post.view_count}
-                      </span>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-foreground/80 leading-relaxed line-clamp-3">
-                      {content?.story || "Click to read this story..."}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                      {excerpt}
                     </p>
-                  </CardContent>
-                </Card>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="font-medium">{post.profiles?.full_name || "Anonymous"}</span>
+                      <span>•</span>
+                      <div className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" />
+                        <span>{post.view_count}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
-          
-          <div className="text-center mt-12">
-            <Link to="/stories">
-              <Button variant="outline" size="lg" className="px-8 py-3">
-                <BookOpen className="mr-2 h-5 w-5" />
-                View All Stories
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery Section */}
-      <section className="py-20 px-4 bg-muted/20">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-              Photo Gallery
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Visual memories and moments captured by our community
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {galleryImages.slice(0, 8).map((image, index) => (
-              <Card 
-                key={index} 
-                className="clean-card aspect-square overflow-hidden cursor-pointer group"
-                onClick={handleGalleryImageClick}
-              >
-                <div className="relative h-full">
-                  <img
-                    src={image}
-                    alt={`Gallery image ${index + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = `/placeholder.svg`;
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                </div>
-              </Card>
-            ))}
-          </div>
-          
-          <div className="text-center">
-            <Link to="/gallery">
-              <Button variant="outline" size="lg" className="px-8 py-3">
-                <Camera className="mr-2 h-5 w-5" />
-                View Full Gallery
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action Section */}
-      <section className="py-24 px-4">
-        <div className="max-w-4xl mx-auto">
-          <Card className="clean-card">
-            <CardContent className="p-12 md:p-16 text-center">
-              <div className="space-y-6">
-                <h2 className="text-3xl md:text-5xl font-bold text-foreground">
-                  Your Story Matters
-                </h2>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                  Join thousands of people sharing their authentic experiences and connecting through the power of storytelling.
-                </p>
-                <Link to="/submit">
-                  <Button size="lg" className="px-10 py-4 text-lg">
-                    <Heart className="mr-2 h-5 w-5" />
-                    Share Your Story Today
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </section>
     </div>
