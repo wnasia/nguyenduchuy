@@ -8,7 +8,7 @@ import { useI18n } from "@/hooks/useI18n";
 import { Card, CardContent } from "@/components/ui/card";
 import SubmitFormHeader from "./SubmitFormHeader";
 import StoryTitleInput from "./StoryTitleInput";
-import StoryContentInput from "./StoryContentInput";
+import RichTextEditor from "./RichTextEditor";
 import ImageUpload from "./ImageUpload";
 import VideoLinksManager from "./VideoLinksManager";
 import TagsManager from "./TagsManager";
@@ -193,7 +193,7 @@ const SubmitForm = () => {
               disabled={isSubmitting}
             />
 
-            <StoryContentInput
+            <RichTextEditor
               value={formData.story}
               onChange={(value) => setFormData(prev => ({ ...prev, story: value }))}
               disabled={isSubmitting}

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -182,4 +183,75 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out forwards;
+    opacity: 0;
+  }
+  
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
 }
+
+/* Rich Text Editor Styles */
+.ql-container {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 16px !important;
+}
+
+.ql-editor {
+  min-height: 300px !important;
+  padding: 1rem !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: hsl(var(--muted-foreground)) !important;
+  font-style: normal !important;
+}
+
+.ql-toolbar {
+  border-top-left-radius: 0.5rem !important;
+  border-top-right-radius: 0.5rem !important;
+  background: hsl(var(--muted)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.ql-container {
+  border-bottom-left-radius: 0.5rem !important;
+  border-bottom-right-radius: 0.5rem !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.ql-stroke {
+  stroke: hsl(var(--foreground)) !important;
+}
+
+.ql-fill {
+  fill: hsl(var(--foreground)) !important;
+}
+
+.ql-picker-label {
+  color: hsl(var(--foreground)) !important;
+}
+
+.ql-toolbar button:hover,
+.ql-toolbar button:focus,
+.ql-toolbar button.ql-active {
+  color: hsl(var(--primary)) !important;
+}
+
+.ql-toolbar button:hover .ql-stroke,
+.ql-toolbar button:focus .ql-stroke,
+.ql-toolbar button.ql-active .ql-stroke {
+  stroke: hsl(var(--primary)) !important;
+}
+
+.ql-toolbar button:hover .ql-fill,
+.ql-toolbar button:focus .ql-fill,
+.ql-toolbar button.ql-active .ql-fill {
+  fill: hsl(var(--primary)) !important;
+}
+

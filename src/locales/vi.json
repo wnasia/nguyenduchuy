@@ -118,6 +118,9 @@
   },
   "submit": {
     "title": "Chia sẻ câu chuyện của bạn",
+    "story_label": "Nội dung câu chuyện",
+    "story_placeholder": "Chia sẻ câu chuyện của bạn tại đây. Điều gì đã xảy ra? Bạn cảm thấy thế nào? Bạn đã học được gì? Hãy viết chi tiết hoặc ngắn gọn tùy ý...",
+    "story_helper": "Hãy kể câu chuyện của bạn theo cách riêng của bạn. Không có cách nào đúng hay sai để chia sẻ trải nghiệm của bạn.",
     "subtitle": "Mọi câu chuyện đều có ý nghĩa. Chia sẻ trải nghiệm, ký ức và những khoảnh khắc đã định hình cuộc sống của bạn. Câu chuyện của bạn có thể truyền cảm hứng và kết nối với những người khác theo những cách bạn chưa bao giờ tưởng tượng.",
     "form_title": "Kể câu chuyện của bạn",
     "form_subtitle": "Điền vào biểu mẫu bên dưới để chia sẻ câu chuyện cá nhân của bạn với cộng đồng.",

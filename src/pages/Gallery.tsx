@@ -1,12 +1,14 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import GalleryImageUpload from "@/components/dashboard/GalleryImageUpload";
 
 interface GalleryImage {
   id: string;
@@ -20,10 +22,13 @@ interface GalleryImage {
 const Gallery = () => {
   const { toast } = useToast();
   const { t } = useI18n();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   usePageTitle("meta.gallery_title");
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
 
   useEffect(() => {
     fetchGalleryImages();
@@ -47,9 +52,7 @@ const Gallery = () => {
         return;
       }
 
-      // Use the gallery images from the dedicated table
       const galleryImages: GalleryImage[] = galleryData || [];
-
       setImages(galleryImages);
     } catch (error) {
       console.error('Error:', error);
@@ -96,6 +99,24 @@ const Gallery = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedImageIndex]);
 
+  const handleUploadClick = () => {
+    if (!user) {
+      toast({
+        title: t("submit.auth_required"),
+        description: t("submit.login_to_upload"),
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+    setShowUploadDialog(true);
+  };
+
+  const handleUploadSuccess = () => {
+    setShowUploadDialog(false);
+    fetchGalleryImages();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen py-8 px-4">
@@ -127,6 +148,12 @@ const Gallery = () => {
               <span>{images.length} {t("gallery.image_count")} • {t("gallery.click_to_view")}</span>
             )}
           </p>
+          <div className="mt-6">
+            <Button onClick={handleUploadClick} size="lg" className="gap-2">
+              <Upload className="h-5 w-5" />
+              {t("gallery.upload_button")}
+            </Button>
+          </div>
         </div>
 
         <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
@@ -188,7 +215,6 @@ const Gallery = () => {
               <X className="h-6 w-6" />
             </Button>
             
-            {/* Navigation buttons */}
             {images.length > 1 && selectedImageIndex !== null && (
               <>
                 <Button
@@ -231,6 +257,10 @@ const Gallery = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {showUploadDialog && (
+        <GalleryImageUpload onUploadSuccess={handleUploadSuccess} />
+      )}
     </div>
   );
 };

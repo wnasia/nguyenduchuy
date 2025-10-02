@@ -120,6 +120,9 @@
   },
   "submit": {
     "title": "Share Your Story",
+    "story_label": "Your Story",
+    "story_placeholder": "Share your story here. What happened? How did it make you feel? What did you learn? Be as detailed or as brief as you'd like...",
+    "story_helper": "Tell your story in your own words. There's no right or wrong way to share your experience.",
     "subtitle": "Every story matters. Share your experiences, memories, and moments that have shaped your life. Your story could inspire and connect with others in ways you never imagined.",
     "form_title": "Tell Your Story",
     "form_subtitle": "Fill out the form below to share your personal story with our community.",
