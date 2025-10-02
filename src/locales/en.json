@@ -91,7 +91,9 @@
     "image_count": "images",
     "click_to_view": "Click any image to view full size",
     "refresh_gallery": "Refresh Gallery",
-    "image_of": "of"
+    "image_of": "of",
+    "no_images_title": "No Images Yet",
+    "no_images_subtitle": "Gallery is empty. Admin can upload images from the dashboard."
   },
   "videos": {
     "title": "Video Stories",
@@ -125,7 +127,7 @@
     "title_placeholder": "Enter a compelling title for your story",
     "content_label": "Your Story",
     "content_placeholder": "Share your story...",
-    "images_label": "Image Links (Optional)",
+    "images_label": "Images (Optional)",
     "images_desc": "Add images by pasting URLs to illustrate your story.",
     "videos_label": "YouTube Video Links (Optional)",
     "videos_desc": "Share YouTube videos that are part of your story or help illustrate your experience.",
@@ -139,7 +141,24 @@
     "error_message": "Failed to submit story. Please try again.",
     "login_prompt_title": "Want to manage your stories?",
     "login_prompt_desc": "Create an account to edit your stories, track views, and connect with other storytellers.",
-    "login_prompt_button": "Sign Up or Log In"
+    "login_prompt_button": "Sign Up or Log In",
+    "submit_disclaimer": "By submitting your story, you agree to share it with our community. We'll review it before publishing to ensure it meets our community guidelines.",
+    "upload_from_device": "Upload images from your device",
+    "image_format_limit": "PNG, JPG, GIF up to 5MB",
+    "uploading": "Uploading...",
+    "or_add_url": "Or add image URL",
+    "add_button": "Add",
+    "added_images": "Added Images",
+    "invalid_file_type": "Invalid file type",
+    "select_image_file": "Please select an image file",
+    "file_too_large": "File too large",
+    "image_size_limit": "Please select an image smaller than 5MB",
+    "auth_required": "Authentication Required",
+    "login_to_upload": "Please log in to upload images",
+    "upload_failed": "Upload failed",
+    "upload_failed_desc": "Failed to upload image. Please try again.",
+    "image_uploaded_success": "Image uploaded successfully!",
+    "unexpected_upload_error": "An unexpected error occurred during upload"
   },
   "errors": {
     "404_title": "404",
@@ -162,8 +181,8 @@
     "login_title": "Login - Huy's",
     "dashboard_title": "Dashboard - Huy's"
   },
-  "gallery": {
-    "title": "Photo Gallery",
+  "dashboard": {
+    "title": "Dashboard",
     "no_images": "No images yet",
     "no_images_desc": "Images will appear here when they are uploaded.",
     "upload": "Upload",
@@ -192,8 +211,6 @@
     "cancel": "Cancel",
     "selected_images": "Selected Images",
     "image_title_placeholder": "Enter image title",
-    "image_description_placeholder": "Enter image description (optional)",
-    "no_images_title": "No Images Yet",
-    "no_images_subtitle": "Gallery is empty. Admin can upload images from the dashboard."
+    "image_description_placeholder": "Enter image description (optional)"
   }
 }

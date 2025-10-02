@@ -1,11 +1,14 @@
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/hooks/useI18n";
 
 interface SubmitButtonProps {
   isSubmitting: boolean;
 }
 
 const SubmitButton = ({ isSubmitting }: SubmitButtonProps) => {
+  const { t } = useI18n();
+  
   return (
     <div className="pt-6">
       <Button 
@@ -14,11 +17,10 @@ const SubmitButton = ({ isSubmitting }: SubmitButtonProps) => {
         className="w-full bg-primary hover:bg-primary/90"
         disabled={isSubmitting}
       >
-        {isSubmitting ? "Submitting..." : "Share My Story"}
+        {isSubmitting ? t("submit.submitting") : t("submit.submit_button")}
       </Button>
       <p className="text-center text-sm text-gray-500 mt-4">
-        By submitting your story, you agree to share it with our community. 
-        We'll review it before publishing to ensure it meets our community guidelines.
+        {t("submit.submit_disclaimer")}
       </p>
     </div>
   );
