@@ -43,6 +43,7 @@ const Home = () => {
     members: 0,
     views: 0
   });
+  const [activeBanner, setActiveBanner] = useState<{ image_url: string; link_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const parseContent = useCallback((content: string): ParsedContent => {
@@ -229,6 +230,23 @@ const Home = () => {
     }
   }, [parseContent]);
 
+  const fetchActiveBanner = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('homepage_banners')
+        .select('image_url, link_url')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      setActiveBanner(data);
+    } catch (error) {
+      console.error('Error fetching banner:', error);
+    }
+  }, []);
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -238,14 +256,15 @@ const Home = () => {
         fetchTopPosts(),
         fetchGalleryImages(),
         fetchPopularTags(),
-        fetchStats()
+        fetchStats(),
+        fetchActiveBanner()
       ]);
       setLoading(false);
     };
 
     loadData();
     document.title = t("meta.home_title");
-  }, [fetchHotPosts, fetchLatestPosts, fetchTopPosts, fetchGalleryImages, fetchPopularTags, fetchStats, t]);
+  }, [fetchHotPosts, fetchLatestPosts, fetchTopPosts, fetchGalleryImages, fetchPopularTags, fetchStats, fetchActiveBanner, t]);
 
   const handleReadStory = (id: string) => {
     navigate(`/story/${id}`);
@@ -282,6 +301,27 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Homepage Banner */}
+      {activeBanner && (
+        <section className="relative w-full">
+          {activeBanner.link_url ? (
+            <a href={activeBanner.link_url} target="_blank" rel="noopener noreferrer" className="block">
+              <img 
+                src={activeBanner.image_url} 
+                alt="Homepage Banner" 
+                className="w-full h-auto max-h-96 object-cover"
+              />
+            </a>
+          ) : (
+            <img 
+              src={activeBanner.image_url} 
+              alt="Homepage Banner" 
+              className="w-full h-auto max-h-96 object-cover"
+            />
+          )}
+        </section>
+      )}
+
       {/* Hero Banner */}
       <section className="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-border">
         <div className="max-w-7xl mx-auto">

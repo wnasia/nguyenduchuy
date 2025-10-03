@@ -10,6 +10,7 @@ import AdminReports from "./AdminReports";
 import AdminUsers from "./AdminUsers";
 import AdminContent from "./AdminContent";
 import AdminGallery from "./AdminGallery";
+import AdminBanners from "./AdminBanners";
 
 interface DashboardStats {
   totalUsers: number;
@@ -196,10 +197,11 @@ const AdminDashboard = () => {
 
       {/* Dashboard Tabs */}
       <Tabs defaultValue="posts" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 bg-white border">
+        <TabsList className="grid w-full grid-cols-6 bg-white border">
           <TabsTrigger value="posts" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Posts</TabsTrigger>
           <TabsTrigger value="content" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Content</TabsTrigger>
           <TabsTrigger value="gallery" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Gallery</TabsTrigger>
+          <TabsTrigger value="banners" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Banners</TabsTrigger>
           <TabsTrigger value="users" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Users</TabsTrigger>
           <TabsTrigger value="reports" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Reports</TabsTrigger>
         </TabsList>
@@ -214,6 +216,10 @@ const AdminDashboard = () => {
 
         <TabsContent value="gallery">
           <AdminGallery />
+        </TabsContent>
+
+        <TabsContent value="banners">
+          <AdminBanners />
         </TabsContent>
 
         <TabsContent value="users">
