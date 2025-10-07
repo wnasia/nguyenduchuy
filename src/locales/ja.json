@@ -206,6 +206,12 @@
     "delete_confirm_msg": "この画像を削除してもよろしいですか？",
     "delete_success": "削除成功",
     "delete_error": "削除エラー",
-    "login_to_upload": "画像をアップロードするにはログインしてください"
+    "login_to_upload": "画像をアップロードするにはログインしてください",
+    "my_images": "マイ画像",
+    "no_images_yet": "まだ画像をアップロードしていません",
+    "upload_first_image": "画像をアップロードしてギャラリーで共有しましょう！",
+    "manage_images": "アップロードした画像を管理",
+    "uploaded_on": "アップロード日",
+    "image_deleted": "画像が削除されました"
   }
 }

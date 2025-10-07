@@ -206,6 +206,12 @@
     "delete_confirm_msg": "您确定要删除此图片吗？",
     "delete_success": "删除成功",
     "delete_error": "删除错误",
-    "login_to_upload": "请登录以上传图片"
+    "login_to_upload": "请登录以上传图片",
+    "my_images": "我的图片",
+    "no_images_yet": "您还没有上传任何图片",
+    "upload_first_image": "上传图片分享到图片库！",
+    "manage_images": "管理已上传的图片",
+    "uploaded_on": "上传于",
+    "image_deleted": "图片已删除"
   }
 }

@@ -127,14 +127,14 @@ const UserPosts = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>My Posts</CardTitle>
-          <CardDescription>You haven't created any posts yet.</CardDescription>
+          <CardTitle>My Stories</CardTitle>
+          <CardDescription>You haven't created any stories yet.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500 mb-4">Start sharing your stories and memories!</p>
+          <p className="text-gray-500 mb-4">Share your stories, articles, and experiences with the community!</p>
           <Button onClick={() => window.location.href = '/submit'}>
             <FileText className="mr-2 h-4 w-4" />
-            Create Your First Post
+            Create Your First Story
           </Button>
         </CardContent>
       </Card>
@@ -144,8 +144,16 @@ const UserPosts = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>My Posts</CardTitle>
-        <CardDescription>Manage your submitted content</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>My Stories</CardTitle>
+            <CardDescription>Manage your submitted stories and articles</CardDescription>
+          </div>
+          <Button onClick={() => window.location.href = '/submit'}>
+            <FileText className="mr-2 h-4 w-4" />
+            Create Story
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">

@@ -192,7 +192,15 @@
     "upload_failed": "Tải lên thất bại",
     "upload_failed_desc": "Không thể tải lên hình ảnh. Vui lòng thử lại.",
     "image_uploaded_success": "Hình ảnh đã được tải lên thành công!",
-    "unexpected_upload_error": "Đã xảy ra lỗi không mong muốn trong quá trình tải lên"
+    "unexpected_upload_error": "Đã xảy ra lỗi không mong muốn trong quá trình tải lên",
+    "my_images": "Ảnh của tôi",
+    "no_images_yet": "Bạn chưa tải lên ảnh nào",
+    "upload_first_image": "Tải ảnh lên để chia sẻ trong Thư viện ảnh!",
+    "manage_images": "Quản lý ảnh đã tải lên",
+    "uploaded_on": "Tải lên vào",
+    "image_deleted": "Ảnh đã được xóa",
+    "delete_success": "Xóa thành công",
+    "delete_error": "Xóa thất bại"
   },
   "errors": {
     "404_title": "404",

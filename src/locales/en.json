@@ -192,7 +192,15 @@
     "upload_failed": "Upload failed",
     "upload_failed_desc": "Failed to upload image. Please try again.",
     "image_uploaded_success": "Image uploaded successfully!",
-    "unexpected_upload_error": "An unexpected error occurred during upload"
+    "unexpected_upload_error": "An unexpected error occurred during upload",
+    "my_images": "My Images",
+    "no_images_yet": "You haven't uploaded any images yet",
+    "upload_first_image": "Upload images to share them in the Image Gallery!",
+    "manage_images": "Manage your uploaded images",
+    "uploaded_on": "Uploaded on",
+    "image_deleted": "Image has been deleted",
+    "delete_success": "Deleted successfully",
+    "delete_error": "Delete failed"
   },
   "errors": {
     "404_title": "404",

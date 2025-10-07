@@ -5,13 +5,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Wallet, FileText, TrendingUp } from "lucide-react";
+import { Wallet, FileText, TrendingUp, Image as ImageIcon } from "lucide-react";
 import UserPosts from "./UserPosts";
 import UserWallet from "./UserWallet";
+import UserGallery from "./UserGallery";
 
 interface WalletData {
   balance: number;
   total_earned: number;
+}
+
+interface GalleryStats {
+  imagesCount: number;
 }
 
 const UserDashboard = () => {
@@ -19,6 +24,7 @@ const UserDashboard = () => {
   const { toast } = useToast();
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [postsCount, setPostsCount] = useState(0);
+  const [imagesCount, setImagesCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,7 +51,7 @@ const UserDashboard = () => {
         }
 
         // Fetch posts count
-        const { count, error: postsError } = await supabase
+        const { count: postsCountData, error: postsError } = await supabase
           .from('posts')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
@@ -53,7 +59,19 @@ const UserDashboard = () => {
         if (postsError) {
           console.error('Error fetching posts count:', postsError);
         } else {
-          setPostsCount(count || 0);
+          setPostsCount(postsCountData || 0);
+        }
+
+        // Fetch images count
+        const { count: imagesCountData, error: imagesError } = await supabase
+          .from('gallery_images')
+          .select('*', { count: 'exact', head: true })
+          .eq('uploaded_by', user.id);
+
+        if (imagesError) {
+          console.error('Error fetching images count:', imagesError);
+        } else {
+          setImagesCount(imagesCountData || 0);
         }
       } catch (error) {
         console.error('Error:', error);
@@ -87,7 +105,7 @@ const UserDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-white border hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Current Balance</CardTitle>
@@ -110,7 +128,17 @@ const UserDashboard = () => {
 
           <Card className="bg-white border hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+              <CardTitle className="text-sm font-medium">My Images</CardTitle>
+              <ImageIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{imagesCount}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">My Posts</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -120,11 +148,25 @@ const UserDashboard = () => {
         </div>
 
         {/* Dashboard Tabs */}
-        <Tabs defaultValue="posts" className="space-y-4">
+        <Tabs defaultValue="gallery" className="space-y-4">
           <TabsList className="bg-white border">
-            <TabsTrigger value="posts" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">My Posts</TabsTrigger>
-            <TabsTrigger value="wallet" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Wallet</TabsTrigger>
+            <TabsTrigger value="gallery" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Image Gallery
+            </TabsTrigger>
+            <TabsTrigger value="posts" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <FileText className="h-4 w-4 mr-2" />
+              My Stories
+            </TabsTrigger>
+            <TabsTrigger value="wallet" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <Wallet className="h-4 w-4 mr-2" />
+              Wallet
+            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="gallery">
+            <UserGallery />
+          </TabsContent>
 
           <TabsContent value="posts">
             <UserPosts />
