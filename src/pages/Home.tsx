@@ -275,6 +275,10 @@ const Home = () => {
   };
 
   const handleShareNow = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     navigate('/submit');
   };
 
@@ -339,14 +343,14 @@ const Home = () => {
                 className="bg-primary hover:bg-primary/90"
               >
                 <Heart className="mr-2 h-5 w-5" />
-                {t("home.share_story")}
+                {t("common.submit_story")}
               </Button>
               <Button 
                 onClick={() => navigate('/stories')} 
                 variant="outline" 
                 size="lg"
               >
-                {t("home.read_stories")}
+                {t("common.stories")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>

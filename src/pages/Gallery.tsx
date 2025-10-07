@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, ChevronLeft, ChevronRight, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,7 +103,7 @@ const Gallery = () => {
     if (!user) {
       toast({
         title: t("submit.auth_required"),
-        description: t("submit.login_to_upload"),
+        description: t("gallery.login_to_upload"),
         variant: "destructive",
       });
       navigate('/login');
@@ -258,9 +258,17 @@ const Gallery = () => {
         </DialogContent>
       </Dialog>
 
-      {showUploadDialog && (
-        <GalleryImageUpload onUploadSuccess={handleUploadSuccess} />
-      )}
+      <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <GalleryImageUpload 
+            onUploadSuccess={() => {
+              setShowUploadDialog(false);
+              fetchGalleryImages();
+            }}
+            onClose={() => setShowUploadDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
