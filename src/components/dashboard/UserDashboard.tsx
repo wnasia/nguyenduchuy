@@ -5,10 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Wallet, FileText, TrendingUp, Image as ImageIcon } from "lucide-react";
+import { Wallet, FileText, TrendingUp, Image as ImageIcon, Youtube } from "lucide-react";
 import UserPosts from "./UserPosts";
 import UserWallet from "./UserWallet";
 import UserGallery from "./UserGallery";
+import UserYouTube from "./UserYouTube";
 
 interface WalletData {
   balance: number;
@@ -25,6 +26,7 @@ const UserDashboard = () => {
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [postsCount, setPostsCount] = useState(0);
   const [imagesCount, setImagesCount] = useState(0);
+  const [videosCount, setVideosCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -73,6 +75,18 @@ const UserDashboard = () => {
         } else {
           setImagesCount(imagesCountData || 0);
         }
+
+        // Fetch videos count
+        const { count: videosCountData, error: videosError } = await supabase
+          .from('youtube_videos')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (videosError) {
+          console.error('Error fetching videos count:', videosError);
+        } else {
+          setVideosCount(videosCountData || 0);
+        }
       } catch (error) {
         console.error('Error:', error);
         toast({
@@ -105,7 +119,7 @@ const UserDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <Card className="bg-white border hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Current Balance</CardTitle>
@@ -145,6 +159,16 @@ const UserDashboard = () => {
               <div className="text-2xl font-bold">{postsCount}</div>
             </CardContent>
           </Card>
+
+          <Card className="bg-white border hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">My Videos</CardTitle>
+              <Youtube className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{videosCount}</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Dashboard Tabs */}
@@ -158,6 +182,10 @@ const UserDashboard = () => {
               <FileText className="h-4 w-4 mr-2" />
               My Stories
             </TabsTrigger>
+            <TabsTrigger value="youtube" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <Youtube className="h-4 w-4 mr-2" />
+              YouTube Videos
+            </TabsTrigger>
             <TabsTrigger value="wallet" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <Wallet className="h-4 w-4 mr-2" />
               Wallet
@@ -170,6 +198,10 @@ const UserDashboard = () => {
 
           <TabsContent value="posts">
             <UserPosts />
+          </TabsContent>
+
+          <TabsContent value="youtube">
+            <UserYouTube />
           </TabsContent>
 
           <TabsContent value="wallet">

@@ -159,7 +159,7 @@ const Home = () => {
         .from('gallery_images')
         .select('image_url')
         .order('created_at', { ascending: false })
-        .limit(6);
+        .limit(4);
 
       if (error) throw error;
       setGalleryImages(galleryData?.map(img => img.image_url) || []);
@@ -305,58 +305,58 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Homepage Banner */}
-      {activeBanner && (
+      {/* Homepage Banner - Replaces "Chia sẻ" Hero Section */}
+      {activeBanner ? (
         <section className="relative w-full">
           {activeBanner.link_url ? (
             <a href={activeBanner.link_url} target="_blank" rel="noopener noreferrer" className="block">
               <img 
                 src={activeBanner.image_url} 
                 alt="Homepage Banner" 
-                className="w-full h-auto max-h-96 object-cover"
+                className="w-full h-auto max-h-[400px] object-cover"
               />
             </a>
           ) : (
             <img 
               src={activeBanner.image_url} 
               alt="Homepage Banner" 
-              className="w-full h-auto max-h-96 object-cover"
+              className="w-full h-auto max-h-[400px] object-cover"
             />
           )}
         </section>
-      )}
-
-      {/* Hero Banner */}
-      <section className="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-border">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground">
-              {t("home.hero_title")}
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t("home.hero_subtitle")}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-4">
-              <Button 
-                onClick={handleShareNow}
-                size="lg" 
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Heart className="mr-2 h-5 w-5" />
-                {t("common.submit_story")}
-              </Button>
-              <Button 
-                onClick={() => navigate('/stories')} 
-                variant="outline" 
-                size="lg"
-              >
-                {t("common.stories")}
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+      ) : (
+        /* Fallback Hero Banner when no admin banner is active */
+        <section className="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-border">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center space-y-4">
+              <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground">
+                {t("home.hero_title")}
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t("home.hero_subtitle")}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-4">
+                <Button 
+                  onClick={handleShareNow}
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Heart className="mr-2 h-5 w-5" />
+                  {t("common.submit_story")}
+                </Button>
+                <Button 
+                  onClick={() => navigate('/stories')} 
+                  variant="outline" 
+                  size="lg"
+                >
+                  {t("common.stories")}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Main Content Area with Sidebar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -509,40 +509,46 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Photo Gallery Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-muted/30 border-t border-border">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-serif font-bold text-foreground">
-              Thư viện ảnh
-            </h2>
-            <Button 
-              onClick={handleGalleryImageClick} 
-              variant="ghost"
-              className="text-primary"
-            >
-              Xem tất cả
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
+      {/* Photo Gallery Section - Show only 4 images */}
+      {galleryImages.length > 0 && (
+        <section className="py-12 px-4 sm:px-6 lg:px-8 bg-muted/30 border-t border-border">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-serif font-bold text-foreground">
+                Thư viện ảnh
+              </h2>
+            </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {galleryImages.map((imageUrl, index) => (
-              <div 
-                key={index}
-                className="aspect-square rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
-                onClick={handleGalleryImageClick}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {galleryImages.map((imageUrl, index) => (
+                <div 
+                  key={index}
+                  className="aspect-square rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+                  onClick={handleGalleryImageClick}
+                >
+                  <img 
+                    src={imageUrl} 
+                    alt={`Gallery ${index + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center">
+              <Button 
+                onClick={handleGalleryImageClick} 
+                variant="outline"
+                size="lg"
+                className="min-w-[200px]"
               >
-                <img 
-                  src={imageUrl} 
-                  alt={`Gallery ${index + 1}`}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-              </div>
-            ))}
+                Xem thêm
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Featured This Month / Top Voted Section */}
       <section className="py-12 px-4 sm:px-6 lg:px-8">
