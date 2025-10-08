@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
+import BannerSlider from "@/components/BannerSlider";
 
 interface Post {
   id: string;
@@ -325,37 +326,8 @@ const Home = () => {
           )}
         </section>
       ) : (
-        /* Fallback Hero Banner when no admin banner is active */
-        <section className="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-border">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center space-y-4">
-              <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground">
-                {t("home.hero_title")}
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                {t("home.hero_subtitle")}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-4">
-                <Button 
-                  onClick={handleShareNow}
-                  size="lg" 
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  <Heart className="mr-2 h-5 w-5" />
-                  {t("common.submit_story")}
-                </Button>
-                <Button 
-                  onClick={() => navigate('/stories')} 
-                  variant="outline" 
-                  size="lg"
-                >
-                  {t("common.stories")}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
+        /* Sample animated banners when no admin banner is active */
+        <BannerSlider />
       )}
 
       {/* Main Content Area with Sidebar */}
