@@ -62,6 +62,10 @@
     /* Blue gradients */
     --gradient-primary: linear-gradient(90deg, hsl(221.2 83.2% 53.3%) 0%, hsl(221.2 83.2% 43.3%) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
+
+    /* Social brand tokens */
+    --brand-facebook: 221 89% 61%;
+    --brand-x: 204 100% 45%;
   }
 
   .dark {
@@ -193,6 +197,17 @@
     to {
       opacity: 1;
     }
+  }
+
+  /* Social brand buttons */
+  .btn-social {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-white text-sm shadow-sm transition-transform duration-200;
+  }
+  .btn-facebook {
+    background-color: hsl(var(--brand-facebook));
+  }
+  .btn-x {
+    background-color: hsl(var(--brand-x));
   }
 }
 

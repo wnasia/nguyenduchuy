@@ -81,10 +81,6 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
     }
   };
 
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
 
   return (
     <Link 
@@ -188,8 +184,6 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
               <Button 
                 variant="outline" 
                 className="story-link min-h-[44px] min-w-[44px]"
-                onClick={handleButtonClick}
-                tabIndex={-1}
               >
                 {t("story.read_more")}
               </Button>

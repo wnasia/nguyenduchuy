@@ -195,26 +195,27 @@ const StoryDetail = () => {
                 {story.view_count} {t("story.views") || "views"}
               </span>
             </CardDescription>
-            
             {/* Social Share Buttons */}
             <div className="flex items-center gap-2 mt-4 pt-4 border-t">
               <span className="text-sm text-muted-foreground mr-2">
                 {t("story.share") || "Share"}:
               </span>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={shareOnFacebook}
-                className="flex items-center gap-2"
+                className="btn-social btn-facebook"
+                aria-label="Share on Facebook"
               >
                 <Facebook className="h-4 w-4" />
                 Facebook
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={shareOnTwitter}
-                className="flex items-center gap-2"
+                className="btn-social btn-x"
+                aria-label="Share on X"
               >
                 <Share2 className="h-4 w-4" />
                 X
