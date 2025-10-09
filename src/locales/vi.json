@@ -1,9 +1,21 @@
 
 {
   "footer": {
+    "about": "Giới thiệu",
+    "about_description": "Nơi ấm áp để chia sẻ những khoảnh khắc quý giá, câu chuyện độc đáo và trải nghiệm cuộc sống.",
+    "quick_links": "Liên kết nhanh",
     "contact_us": "Liên hệ",
     "contact_description": "Chúng tôi rất muốn nghe câu chuyện của bạn và kết nối với bạn",
+    "follow_us": "Theo dõi chúng tôi",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản dịch vụ",
     "copyright": "© 2025 Nguyen Duc Huy. Một nơi ấm áp để chia sẻ câu chuyện của bạn."
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "stories": "Câu chuyện",
+    "gallery": "Thư viện ảnh",
+    "videos": "Video"
   },
   "common": {
     "welcome": "Chào mừng",

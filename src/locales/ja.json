@@ -1,5 +1,22 @@
 
 {
+  "footer": {
+    "about": "概要",
+    "about_description": "大切な瞬間、ユニークなストーリー、人生の経験を共有する温かい場所。",
+    "quick_links": "クイックリンク",
+    "contact_us": "お問い合わせ",
+    "contact_description": "あなたのストーリーを聞いて、つながりたいと思っています",
+    "follow_us": "フォローする",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "copyright": "© 2025 Nguyen Duc Huy. あなたのストーリーを共有する温かい場所。"
+  },
+  "nav": {
+    "home": "ホーム",
+    "stories": "ストーリー",
+    "gallery": "ギャラリー",
+    "videos": "動画"
+  },
   "common": {
     "welcome": "ようこそ",
     "home": "ホーム",

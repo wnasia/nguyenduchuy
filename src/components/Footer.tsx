@@ -1,48 +1,118 @@
-
-import { Mail, MessageCircle } from "lucide-react";
+import { Mail, MessageCircle, Home, BookOpen, Image as ImageIcon, Video, Facebook, Twitter } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
 
 const Footer = () => {
   const { t } = useI18n();
   
   return (
-    <footer className="bg-white/80 backdrop-blur-md border-t border-gray-200 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-          <div className="text-center md:text-left">
-            <h3 className="text-lg font-serif font-semibold text-gray-900 mb-2">
-              {t("footer.contact_us")}
+    <footer className="bg-gradient-to-br from-gray-50 via-white to-gray-100 border-t border-gray-200 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          {/* About Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-serif font-semibold text-gray-900">
+              {t("footer.about") || "About"}
             </h3>
-            <p className="text-sm text-gray-600">
-              {t("footer.contact_description")}
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {t("footer.about_description") || "A warm place to share precious moments, unique stories, and life experiences."}
             </p>
           </div>
-          
-          <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-6">
-            <a 
-              href="mailto:huy110qt@gmail.com"
-              className="flex items-center space-x-2 text-gray-700 hover:text-primary transition-colors group"
-            >
-              <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />
-              <span className="text-sm font-medium">huy110qt@gmail.com</span>
-            </a>
-            
-            <a 
-              href="https://wa.me/84918795578"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-2 text-gray-700 hover:text-primary transition-colors group"
-            >
-              <MessageCircle className="h-5 w-5 group-hover:scale-110 transition-transform" />
-              <span className="text-sm font-medium">0918795578</span>
-            </a>
+
+          {/* Quick Links */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-serif font-semibold text-gray-900">
+              {t("footer.quick_links") || "Quick Links"}
+            </h3>
+            <nav className="flex flex-col space-y-2">
+              <Link to="/" className="text-sm text-gray-600 hover:text-primary transition-colors flex items-center gap-2">
+                <Home className="h-4 w-4" />
+                {t("nav.home") || "Home"}
+              </Link>
+              <Link to="/stories" className="text-sm text-gray-600 hover:text-primary transition-colors flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                {t("nav.stories") || "Stories"}
+              </Link>
+              <Link to="/gallery" className="text-sm text-gray-600 hover:text-primary transition-colors flex items-center gap-2">
+                <ImageIcon className="h-4 w-4" />
+                {t("nav.gallery") || "Gallery"}
+              </Link>
+              <Link to="/videos" className="text-sm text-gray-600 hover:text-primary transition-colors flex items-center gap-2">
+                <Video className="h-4 w-4" />
+                {t("nav.videos") || "Videos"}
+              </Link>
+            </nav>
+          </div>
+
+          {/* Contact Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-serif font-semibold text-gray-900">
+              {t("footer.contact_us") || "Contact Us"}
+            </h3>
+            <div className="flex flex-col space-y-3">
+              <a 
+                href="mailto:huy110qt@gmail.com"
+                className="flex items-center space-x-2 text-sm text-gray-600 hover:text-primary transition-colors group"
+              >
+                <Mail className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                <span>huy110qt@gmail.com</span>
+              </a>
+              
+              <a 
+                href="https://wa.me/84918795578"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-sm text-gray-600 hover:text-primary transition-colors group"
+              >
+                <MessageCircle className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                <span>0918795578</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Social Media */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-serif font-semibold text-gray-900">
+              {t("footer.follow_us") || "Follow Us"}
+            </h3>
+            <div className="flex items-center space-x-4">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-primary hover:border-primary transition-all hover:scale-110"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-primary hover:border-primary transition-all hover:scale-110"
+                aria-label="Twitter"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
+            </div>
           </div>
         </div>
         
-        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-          <p className="text-xs text-gray-500">
-            {t("footer.copyright")}
-          </p>
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-gray-200">
+          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+            <p className="text-sm text-gray-500 text-center md:text-left">
+              {t("footer.copyright") || "© 2025 All rights reserved."}
+            </p>
+            <div className="flex items-center space-x-6 text-sm text-gray-500">
+              <a href="#" className="hover:text-primary transition-colors">
+                {t("footer.privacy") || "Privacy Policy"}
+              </a>
+              <a href="#" className="hover:text-primary transition-colors">
+                {t("footer.terms") || "Terms of Service"}
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

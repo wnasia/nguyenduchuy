@@ -1,5 +1,22 @@
 
 {
+  "footer": {
+    "about": "关于",
+    "about_description": "一个温暖的地方，分享珍贵的时刻、独特的故事和生活体验。",
+    "quick_links": "快速链接",
+    "contact_us": "联系我们",
+    "contact_description": "我们很想听听您的故事并与您联系",
+    "follow_us": "关注我们",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "copyright": "© 2025 Nguyen Duc Huy. 一个温暖的地方分享您的故事。"
+  },
+  "nav": {
+    "home": "首页",
+    "stories": "故事",
+    "gallery": "图库",
+    "videos": "视频"
+  },
   "common": {
     "welcome": "欢迎",
     "home": "首页",

@@ -4,11 +4,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Clock, Eye, ArrowLeft, Image, Video, Tag } from "lucide-react";
+import { Heart, MessageCircle, Clock, Eye, ArrowLeft, Image, Video, Tag, Share2, Facebook } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import VideoPlayer from "@/components/VideoPlayer";
 import EngagementSection from "@/components/EngagementSection";
+import { useI18n } from "@/hooks/useI18n";
 
 interface Post {
   id: string;
@@ -36,8 +37,22 @@ const StoryDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [story, setStory] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const shareOnFacebook = () => {
+    const url = window.location.href;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(facebookUrl, '_blank', 'width=600,height=400');
+  };
+
+  const shareOnTwitter = () => {
+    const url = window.location.href;
+    const text = story?.title || '';
+    const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+    window.open(twitterUrl, '_blank', 'width=600,height=400');
+  };
 
   useEffect(() => {
     if (id) {
@@ -169,7 +184,7 @@ const StoryDetail = () => {
             <CardTitle className="text-3xl font-serif mb-4">
               {story.title}
             </CardTitle>
-            <CardDescription className="flex items-center gap-4 text-base">
+            <CardDescription className="flex flex-wrap items-center gap-4 text-base">
               <span>by {story.profiles?.full_name || 'Anonymous'}</span>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
@@ -177,9 +192,34 @@ const StoryDetail = () => {
               </span>
               <span className="flex items-center gap-1">
                 <Eye className="h-4 w-4" />
-                {story.view_count} views
+                {story.view_count} {t("story.views") || "views"}
               </span>
             </CardDescription>
+            
+            {/* Social Share Buttons */}
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+              <span className="text-sm text-muted-foreground mr-2">
+                {t("story.share") || "Share"}:
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={shareOnFacebook}
+                className="flex items-center gap-2"
+              >
+                <Facebook className="h-4 w-4" />
+                Facebook
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={shareOnTwitter}
+                className="flex items-center gap-2"
+              >
+                <Share2 className="h-4 w-4" />
+                X
+              </Button>
+            </div>
           </CardHeader>
           
           <CardContent>

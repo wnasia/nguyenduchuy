@@ -23,9 +23,9 @@ const LanguageSelector = () => {
 
   return (
     <Select value={currentLanguage} onValueChange={changeLanguage}>
-      <SelectTrigger className="w-auto border-0 bg-transparent hover:bg-gray-100 focus:ring-0">
+      <SelectTrigger className="w-auto border-0 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-0">
         <div className="flex items-center gap-2">
-          <span className="text-xl">{currentLang?.flag}</span>
+          <span className="text-xl" role="img" aria-label={currentLang?.label}>{currentLang?.flag}</span>
         </div>
       </SelectTrigger>
       <SelectContent>

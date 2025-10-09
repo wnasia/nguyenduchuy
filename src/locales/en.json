@@ -1,9 +1,20 @@
-
 {
   "footer": {
+    "about": "About",
+    "about_description": "A warm place to share precious moments, unique stories, and life experiences.",
+    "quick_links": "Quick Links",
     "contact_us": "Contact Us",
     "contact_description": "We'd love to hear your stories and connect with you",
+    "follow_us": "Follow Us",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
     "copyright": "© 2025 Nguyen Duc Huy. A warm place to share your stories."
+  },
+  "nav": {
+    "home": "Home",
+    "stories": "Stories",
+    "gallery": "Gallery",
+    "videos": "Videos"
   },
   "common": {
     "welcome": "Welcome",
@@ -20,6 +31,18 @@
     "success": "Success",
     "unknown": "Unknown",
     "cancel": "Cancel"
+  },
+  "story": {
+    "read_more": "Read More",
+    "by_author": "by",
+    "anonymous": "Anonymous",
+    "views": "views",
+    "likes": "likes",
+    "comments": "comments",
+    "share": "Share",
+    "like": "Like",
+    "comment": "Comment",
+    "open": "Open"
   },
   "auth": {
     "welcome_back": "Welcome Back",
@@ -136,18 +159,6 @@
     "watch_story": "Watch Story",
     "load_more": "Load More Videos",
     "video_placeholder": "A beautiful story with videos waiting to be discovered..."
-  },
-  "story": {
-    "read_more": "Read More",
-    "by_author": "by",
-    "anonymous": "Anonymous",
-    "views": "views",
-    "likes": "likes",
-    "comments": "comments",
-    "share": "Share",
-    "like": "Like",
-    "comment": "Comment",
-    "open": "Open"
   },
   "submit": {
     "title": "Share Your Story",
