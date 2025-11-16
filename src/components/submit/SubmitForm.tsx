@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +23,11 @@ export interface FormData {
   tags: string[];
 }
 
-const SubmitForm = () => {
+interface SubmitFormProps {
+  editId?: string;
+}
+
+const SubmitForm = ({ editId }: SubmitFormProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -37,6 +41,69 @@ const SubmitForm = () => {
   });
   const [currentTag, setCurrentTag] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch post data if editing
+  useEffect(() => {
+    const fetchPostData = async () => {
+      if (!editId || !user) return;
+      
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('posts')
+          .select('*')
+          .eq('id', editId)
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching post:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load story for editing",
+            variant: "destructive",
+          });
+          navigate('/dashboard');
+          return;
+        }
+
+        if (data) {
+          // Parse content
+          try {
+            const parsed = JSON.parse(data.content || '{}');
+            setFormData({
+              title: data.title,
+              story: parsed.story || '',
+              imageLinks: parsed.imageLinks || [],
+              videoLinks: parsed.videoLinks?.length > 0 ? parsed.videoLinks : [''],
+              tags: parsed.tags || []
+            });
+          } catch (e) {
+            console.error('Error parsing content:', e);
+            setFormData({
+              title: data.title,
+              story: data.content || '',
+              imageLinks: [],
+              videoLinks: [''],
+              tags: []
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPostData();
+  }, [editId, user, navigate, toast]);
 
   const handleImageLinksChange = (links: string[]) => {
     setFormData(prev => ({
@@ -110,25 +177,44 @@ const SubmitForm = () => {
         tags: formData.tags
       });
 
-      console.log('Attempting to insert post with user_id:', user.id);
+      console.log('Attempting to save post with user_id:', user.id);
 
-      const { data, error } = await supabase
-        .from('posts')
-        .insert([
-          {
+      let result;
+      if (editId) {
+        // Update existing post
+        result = await supabase
+          .from('posts')
+          .update({
             title: formData.title,
             content: content,
-            type: 'story',
-            status: 'pending',
-            user_id: user.id,
-            view_count: 0
-          }
-        ])
-        .select()
-        .single();
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editId)
+          .eq('user_id', user.id)
+          .select()
+          .single();
+      } else {
+        // Create new post
+        result = await supabase
+          .from('posts')
+          .insert([
+            {
+              title: formData.title,
+              content: content,
+              type: 'story',
+              status: 'pending',
+              user_id: user.id,
+              view_count: 0
+            }
+          ])
+          .select()
+          .single();
+      }
+
+      const { data, error } = result;
 
       if (error) {
-        console.error('Error creating post:', error);
+        console.error('Error saving post:', error);
         
         // Check if it's a Row Level Security issue
         if (error.message.includes('row-level security') || error.message.includes('policy')) {
@@ -147,25 +233,16 @@ const SubmitForm = () => {
         return;
       }
 
-      console.log('Post created successfully:', data);
+      console.log('Post saved successfully:', data);
 
       toast({
-        title: t("submit.success_title"),
-        description: t("submit.success_message"),
+        title: editId ? "Story Updated" : t("submit.success_title"),
+        description: editId ? "Your story has been updated successfully" : t("submit.success_message"),
       });
       
-      // Reset form
-      setFormData({
-        title: "",
-        story: "",
-        imageLinks: [],
-        videoLinks: [""],
-        tags: []
-      });
-
-      // Navigate to home page instead of dashboard to avoid potential routing issues
+      // Navigate to dashboard instead of resetting form
       setTimeout(() => {
-        navigate('/');
+        navigate('/dashboard');
       }, 2000);
 
     } catch (error) {
@@ -179,6 +256,14 @@ const SubmitForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -222,7 +307,7 @@ const SubmitForm = () => {
               disabled={isSubmitting}
             />
 
-            <SubmitButton isSubmitting={isSubmitting} />
+            <SubmitButton isSubmitting={isSubmitting} isEditing={!!editId} />
           </form>
         </CardContent>
       </Card>
