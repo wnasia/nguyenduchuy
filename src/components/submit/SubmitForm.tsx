@@ -8,7 +8,7 @@ import { useI18n } from "@/hooks/useI18n";
 import { Card, CardContent } from "@/components/ui/card";
 import SubmitFormHeader from "./SubmitFormHeader";
 import StoryTitleInput from "./StoryTitleInput";
-import RichTextEditor from "./RichTextEditor";
+import TinyMCEEditor from "./TinyMCEEditor";
 import ImageUpload from "./ImageUpload";
 import VideoLinksManager from "./VideoLinksManager";
 import TagsManager from "./TagsManager";
@@ -187,17 +187,17 @@ const SubmitForm = () => {
       <Card className="border-0 shadow-xl">
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-8">
-            <StoryTitleInput
-              value={formData.title}
-              onChange={(value) => setFormData(prev => ({ ...prev, title: value }))}
-              disabled={isSubmitting}
-            />
+          <StoryTitleInput
+            value={formData.title}
+            onChange={(value) => setFormData(prev => ({ ...prev, title: value }))}
+            disabled={isSubmitting}
+          />
 
-            <RichTextEditor
-              value={formData.story}
-              onChange={(value) => setFormData(prev => ({ ...prev, story: value }))}
-              disabled={isSubmitting}
-            />
+          <TinyMCEEditor
+            value={formData.story}
+            onChange={(value) => setFormData(prev => ({ ...prev, story: value }))}
+            disabled={isSubmitting}
+          />
 
             <ImageUpload
               imageLinks={formData.imageLinks}
