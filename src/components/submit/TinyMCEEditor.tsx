@@ -63,7 +63,10 @@ const TinyMCEEditor = ({ value, onChange, disabled }: TinyMCEEditorProps) => {
       <div className="border rounded-lg overflow-hidden bg-background">
         <Editor
           apiKey="cprbnjl7pha6mv3y0k84abwnf1mpieroa1h9xlfsdw091tn4"
-          onInit={(evt, editor) => editorRef.current = editor}
+          onInit={(evt, editor) => {
+            editorRef.current = editor;
+            console.log('TinyMCE editor initialized successfully');
+          }}
           value={value}
           onEditorChange={onChange}
           disabled={disabled}
@@ -73,7 +76,7 @@ const TinyMCEEditor = ({ value, onChange, disabled }: TinyMCEEditorProps) => {
             plugins: [
               "advlist", "autolink", "lists", "link", "image", "charmap", "preview",
               "anchor", "searchreplace", "visualblocks", "code", "fullscreen",
-              "insertdatetime", "media", "table", "code", "help", "wordcount",
+              "insertdatetime", "media", "table", "help", "wordcount",
               "emoticons"
             ],
             toolbar: "undo redo | blocks | " +
@@ -82,7 +85,7 @@ const TinyMCEEditor = ({ value, onChange, disabled }: TinyMCEEditorProps) => {
               "bullist numlist outdent indent | " +
               "link image media | blockquote | " +
               "fontfamily fontsize | removeformat | help",
-            content_style: "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; font-size: 14px }",
+            content_style: "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; font-size: 14px; padding: 10px; }",
             images_upload_handler: handleImageUpload,
             automatic_uploads: true,
             file_picker_types: "image media",
@@ -90,14 +93,12 @@ const TinyMCEEditor = ({ value, onChange, disabled }: TinyMCEEditorProps) => {
             paste_data_images: true,
             promotion: false,
             branding: false,
+            resize: true,
+            statusbar: true,
+            elementpath: false,
             mobile: {
               menubar: true,
               toolbar_mode: 'scrolling'
-            },
-            setup: (editor) => {
-              editor.on('init', () => {
-                console.log('TinyMCE editor initialized successfully');
-              });
             }
           }}
         />
