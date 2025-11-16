@@ -4,9 +4,10 @@ import { useI18n } from "@/hooks/useI18n";
 
 interface SubmitButtonProps {
   isSubmitting: boolean;
+  isEditing?: boolean;
 }
 
-const SubmitButton = ({ isSubmitting }: SubmitButtonProps) => {
+const SubmitButton = ({ isSubmitting, isEditing }: SubmitButtonProps) => {
   const { t } = useI18n();
   
   return (
@@ -17,7 +18,10 @@ const SubmitButton = ({ isSubmitting }: SubmitButtonProps) => {
         className="w-full bg-primary hover:bg-primary/90"
         disabled={isSubmitting}
       >
-        {isSubmitting ? t("submit.submitting") : t("submit.submit_button")}
+        {isSubmitting 
+          ? (isEditing ? "Updating..." : t("submit.submitting"))
+          : (isEditing ? "Update Story" : t("submit.submit_button"))
+        }
       </Button>
       <p className="text-center text-sm text-gray-500 mt-4">
         {t("submit.submit_disclaimer")}

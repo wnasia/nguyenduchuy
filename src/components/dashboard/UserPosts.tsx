@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Calendar, FileText, Image, Video, Tag } from "lucide-react";
+import { Eye, Calendar, FileText, Image, Video, Tag, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Post {
   id: string;
@@ -29,6 +30,7 @@ interface ParsedContent {
 const UserPosts = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -227,22 +229,14 @@ const UserPosts = () => {
                       {new Date(post.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  
-                  {post.status === 'pending' && (
-                    <div className="text-amber-600 font-medium">
-                      Awaiting Review
-                    </div>
-                  )}
-                  {post.status === 'approved' && (
-                    <div className="text-green-600 font-medium">
-                      Published
-                    </div>
-                  )}
-                  {post.status === 'rejected' && (
-                    <div className="text-red-600 font-medium">
-                      Rejected
-                    </div>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/submit?edit=${post.id}`)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
                 </div>
               </div>
             );
