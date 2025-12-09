@@ -270,3 +270,60 @@
   fill: hsl(var(--primary)) !important;
 }
 
+/* Story Content Rendering - TinyMCE output */
+.prose img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+  margin: 1rem auto;
+  border-radius: 0.5rem;
+}
+
+.prose figure {
+  margin: 1.5rem 0;
+}
+
+.prose figure img {
+  margin: 0 auto;
+}
+
+.prose figcaption {
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.prose iframe {
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.prose table td,
+.prose table th {
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem;
+}
+
+.prose blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding-left: 1rem;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Ensure TinyMCE embedded images display */
+[dangerouslySetInnerHTML] img,
+.prose [src^="data:"],
+.prose [src^="http"],
+.prose [src^="https"],
+.prose [src^="/"] {
+  max-width: 100% !important;
+  height: auto !important;
+}
+

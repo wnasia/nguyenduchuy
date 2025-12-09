@@ -127,18 +127,27 @@ const StoryDetail = () => {
     }
   };
 
+  // Decode HTML entities that TinyMCE may have encoded
+  const decodeHtmlEntities = (html: string): string => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = html;
+    return textarea.value;
+  };
+
   const parseContent = (content: string): ParsedContent => {
     try {
       const parsed = JSON.parse(content);
+      // Decode HTML entities in the story content
+      const decodedStory = decodeHtmlEntities(parsed.story || '');
       return {
-        story: parsed.story || '',
+        story: decodedStory,
         imageLinks: parsed.imageLinks || [],
         videoLinks: parsed.videoLinks || [],
         tags: parsed.tags || []
       };
     } catch {
       return {
-        story: content,
+        story: decodeHtmlEntities(content),
         imageLinks: [],
         videoLinks: [],
         tags: []
