@@ -145,6 +145,7 @@ export type Database = {
           id: string
           is_featured: boolean
           media_url: string | null
+          slug: string | null
           status: string
           thumbnail_url: string | null
           title: string
@@ -159,6 +160,7 @@ export type Database = {
           id?: string
           is_featured?: boolean
           media_url?: string | null
+          slug?: string | null
           status?: string
           thumbnail_url?: string | null
           title: string
@@ -173,6 +175,7 @@ export type Database = {
           id?: string
           is_featured?: boolean
           media_url?: string | null
+          slug?: string | null
           status?: string
           thumbnail_url?: string | null
           title?: string
@@ -387,6 +390,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_slug: { Args: { title: string }; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
       has_role: {
         Args: {

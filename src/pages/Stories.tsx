@@ -16,6 +16,7 @@ interface Post {
   created_at: string;
   user_id: string;
   thumbnail_url?: string;
+  slug?: string;
   profiles?: {
     full_name: string | null;
     email: string | null;

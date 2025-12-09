@@ -15,6 +15,7 @@ interface Post {
   view_count: number;
   created_at: string;
   thumbnail_url?: string;
+  slug?: string;
   profiles?: {
     full_name: string | null;
   } | null;
@@ -82,9 +83,18 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
   };
 
 
+  // Strip HTML tags for excerpt display
+  const stripHtml = (html: string): string => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+
+  const storyExcerpt = stripHtml(parsedContent.story);
+
   return (
     <Link 
-      to={`/story/${story.id}`}
+      to={`/story/${story.slug || story.id}`}
       className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
       tabIndex={0}
       onKeyDown={handleKeyDown}
@@ -160,9 +170,9 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
           </CardHeader>
           
           <CardContent className="px-0">
-            {parsedContent.story && (
+            {storyExcerpt && (
               <p className="text-muted-foreground leading-relaxed mb-4 line-clamp-3">
-                {parsedContent.story}
+                {storyExcerpt}
               </p>
             )}
             

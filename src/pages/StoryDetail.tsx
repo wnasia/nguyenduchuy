@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Clock, Eye, ArrowLeft, Image, Video, Tag, Share2, Facebook } from "lucide-react";
+import { Clock, Eye, ArrowLeft, Image, Video, Tag, Share2, Facebook } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import VideoPlayer from "@/components/VideoPlayer";
@@ -20,6 +20,7 @@ interface Post {
   view_count: number;
   created_at: string;
   user_id: string;
+  slug?: string;
   profiles?: {
     full_name: string | null;
     email: string | null;
@@ -57,18 +58,27 @@ const StoryDetail = () => {
   useEffect(() => {
     if (id) {
       fetchStory(id);
-      incrementViews(id);
     }
   }, [id]);
 
-  const fetchStory = async (storyId: string) => {
+  const fetchStory = async (storyIdOrSlug: string) => {
     try {
-      const { data: postData, error: postError } = await supabase
+      // Try to fetch by slug first, then by ID
+      let query = supabase
         .from('posts')
         .select('*')
-        .eq('id', storyId)
-        .eq('status', 'approved')
-        .single();
+        .eq('status', 'approved');
+
+      // Check if it's a UUID or a slug
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storyIdOrSlug);
+      
+      if (isUUID) {
+        query = query.eq('id', storyIdOrSlug);
+      } else {
+        query = query.eq('slug', storyIdOrSlug);
+      }
+
+      const { data: postData, error: postError } = await query.maybeSingle();
 
       if (postError) {
         console.error('Error fetching story:', postError);
@@ -81,11 +91,24 @@ const StoryDetail = () => {
         return;
       }
 
+      if (!postData) {
+        toast({
+          title: "Error",
+          description: "Story not found",
+          variant: "destructive",
+        });
+        navigate('/stories');
+        return;
+      }
+
+      // Increment views
+      await supabase.rpc('increment_post_views', { post_id: postData.id });
+
       const { data: profileData } = await supabase
         .from('profiles')
         .select('full_name, email')
         .eq('id', postData.user_id)
-        .single();
+        .maybeSingle();
 
       setStory({
         ...postData,
@@ -101,14 +124,6 @@ const StoryDetail = () => {
       navigate('/stories');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const incrementViews = async (storyId: string) => {
-    try {
-      await supabase.rpc('increment_post_views', { post_id: storyId });
-    } catch (error) {
-      console.error('Error incrementing views:', error);
     }
   };
 
@@ -224,12 +239,19 @@ const StoryDetail = () => {
           </CardHeader>
           
           <CardContent>
+            {/* Render HTML content properly */}
             {parsedContent.story && (
-              <div className="prose prose-lg max-w-none mb-8">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {parsedContent.story}
-                </p>
-              </div>
+              <div 
+                className="prose prose-lg max-w-none mb-8 
+                  prose-headings:text-foreground 
+                  prose-p:text-foreground/90
+                  prose-strong:text-foreground
+                  prose-a:text-primary
+                  prose-img:rounded-lg prose-img:shadow-md
+                  [&_img]:max-w-full [&_img]:h-auto
+                  [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-lg"
+                dangerouslySetInnerHTML={{ __html: parsedContent.story }}
+              />
             )}
 
             {parsedContent.imageLinks && parsedContent.imageLinks.length > 0 && (
