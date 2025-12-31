@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
 import BannerSlider from "@/components/BannerSlider";
+import LunarCalendarWidget from "@/components/LunarCalendarWidget";
 
 interface Post {
   id: string;
@@ -433,6 +434,9 @@ const Home = () => {
                 ))}
               </div>
             </div>
+
+            {/* Lunar Calendar Widget */}
+            <LunarCalendarWidget />
 
             {/* Popular Topics */}
             <div className="bg-card rounded-lg border border-border p-5">
