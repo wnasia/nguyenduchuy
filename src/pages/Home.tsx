@@ -9,6 +9,7 @@ import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
 import BannerSlider from "@/components/BannerSlider";
 import LunarCalendarWidget from "@/components/LunarCalendarWidget";
+import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 
 interface Post {
   id: string;
@@ -405,6 +406,9 @@ const Home = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Flight Search Widget */}
+            <FlightSearchWidget />
+
             {/* Top Stories */}
             <div className="bg-card rounded-lg border border-border p-5">
               <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
