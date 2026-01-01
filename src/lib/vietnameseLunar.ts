@@ -195,27 +195,22 @@ function getLeapMonthOffset(a11: number, timeZone: number): number {
  */
 export function solarToLunar(year: number, month: number, day: number, timeZone: number = 7): LunarDate {
   const jd = dateToJd(year, month, day);
-  const a11 = getLunarMonth11(year, timeZone);
-  const b11 = getLunarMonth11(year - 1, timeZone);
   
-  let lunarYear: number;
-  let lunarMonth: number;
-  let lunarDay: number;
-  let lunarLeap: boolean;
+  // Find the lunar year by checking month 11 of current and previous year
+  let a11 = getLunarMonth11(year, timeZone);
+  let b11 = getLunarMonth11(year - 1, timeZone);
   
-  // Determine if jd is in the current year or previous year
-  let off = jd - b11;
-  
-  if (off < 0) {
-    // Use previous year's month 11
-    return solarToLunar(year - 1, month, day, timeZone);
+  // If jd is before the 11th month of the previous year, use even earlier reference
+  if (jd < b11) {
+    a11 = b11;
+    b11 = getLunarMonth11(year - 2, timeZone);
   }
   
-  // Find the lunar month containing jd
+  // Calculate the k value for new moon calculation
   const k = Math.floor(0.5 + (b11 - 2415021.076998695) / 29.530588853);
-  let monthStart = b11;
   
   // Find which lunar month jd falls into
+  let monthStart = b11;
   let i = 0;
   while (monthStart <= jd) {
     i++;
@@ -223,52 +218,53 @@ export function solarToLunar(year: number, month: number, day: number, timeZone:
   }
   monthStart = getNewMoonDay(k + i - 1, timeZone);
   
+  // Calculate lunar day
+  const lunarDay = jd - monthStart + 1;
+  
+  // Calculate the difference in months between a11 and b11
   const diff = Math.round((a11 - b11) / 29);
   
-  let leapMonthDiff = 0;
-  let isLeapMonth = false;
+  let lunarMonth: number;
+  let lunarYear: number;
+  let lunarLeap = false;
   
   if (diff >= 13) {
     // This lunar year has a leap month
-    leapMonthDiff = getLeapMonthOffset(b11, timeZone);
+    const leapMonthDiff = getLeapMonthOffset(b11, timeZone);
     
-    if (i - 1 >= leapMonthDiff) {
-      lunarMonth = i - 1 - 1;
-      if (i - 1 === leapMonthDiff) {
-        isLeapMonth = true;
+    if (i - 1 < leapMonthDiff) {
+      lunarMonth = i - 1 + 11;
+      if (lunarMonth > 12) {
+        lunarMonth = lunarMonth - 12;
+        lunarYear = year;
+      } else {
+        lunarYear = year - 1;
       }
+    } else if (i - 1 === leapMonthDiff) {
+      lunarLeap = true;
+      lunarMonth = (i - 2 + 11) % 12 + 1;
+      lunarYear = (i - 2 + 11 >= 12) ? year : year - 1;
     } else {
-      lunarMonth = i - 1;
-    }
-    
-    if (lunarMonth > 12) {
-      lunarMonth = lunarMonth - 12;
-    }
-    if (lunarMonth >= 11 && diff < 4) {
-      lunarYear = year - 1;
-    } else {
-      lunarYear = year;
+      lunarMonth = (i - 2 + 11) % 12 + 1;
+      lunarYear = (i - 2 + 11 >= 12) ? year : year - 1;
     }
   } else {
+    // Normal year without leap month
     lunarMonth = (i - 1 + 11) % 12;
     if (lunarMonth === 0) lunarMonth = 12;
     
-    if (i - 1 > diff + 1) {
-      // Month belongs to current year
-      lunarYear = year;
-    } else {
+    // Determine the lunar year
+    if (lunarMonth >= 11 && i <= 2) {
       lunarYear = year - 1;
+    } else {
+      lunarYear = year;
     }
   }
   
-  lunarDay = jd - monthStart + 1;
-  lunarLeap = isLeapMonth;
-  
-  // Adjust for months calculation - fix the off-by-one issues
-  if (lunarMonth <= 0) {
-    lunarMonth = 12 + lunarMonth;
-    lunarYear = lunarYear - 1;
-  }
+  // Safety bounds check
+  if (lunarMonth < 1) lunarMonth = 1;
+  if (lunarMonth > 12) lunarMonth = 12;
+  if (lunarDay < 1) lunarDay;
   
   return {
     day: lunarDay,
