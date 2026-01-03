@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { toast } from "@/hooks/use-toast";
 import FlightPriceCalendar from "./FlightPriceCalendar";
+import FlightResultsModal from "./FlightResultsModal";
 
 // Vietnamese airports data
 const AIRPORTS = [
@@ -51,12 +52,46 @@ export default function FlightSearchWidget() {
   const [showMonthlyPrices, setShowMonthlyPrices] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [passengerPopoverOpen, setPassengerPopoverOpen] = useState(false);
+  const [resultsModalOpen, setResultsModalOpen] = useState(false);
+  const [searchParamsForModal, setSearchParamsForModal] = useState<{
+    from: string;
+    fromCity: string;
+    to: string;
+    toCity: string;
+    departureDate: Date;
+    returnDate?: Date;
+    tripType: "one-way" | "round-trip";
+    adults: number;
+    children: number;
+    infants: number;
+    cabinClass: string;
+  } | null>(null);
 
   const swapCities = useCallback(() => {
     const temp = fromCity;
     setFromCity(toCity);
     setToCity(temp);
   }, [fromCity, toCity]);
+
+  const openSearchModal = useCallback((searchDate: Date) => {
+    const fromAirport = AIRPORTS.find(a => a.code === fromCity);
+    const toAirport = AIRPORTS.find(a => a.code === toCity);
+    
+    setSearchParamsForModal({
+      from: fromCity,
+      fromCity: fromAirport?.name || fromCity,
+      to: toCity,
+      toCity: toAirport?.name || toCity,
+      departureDate: searchDate,
+      returnDate: tripType === "round-trip" ? returnDate : undefined,
+      tripType,
+      adults,
+      children,
+      infants,
+      cabinClass,
+    });
+    setResultsModalOpen(true);
+  }, [fromCity, toCity, tripType, returnDate, adults, children, infants, cabinClass]);
 
   const handleSearch = useCallback(() => {
     // Validation
@@ -109,55 +144,19 @@ export default function FlightSearchWidget() {
       return;
     }
 
-    // Build search URL for external provider (using abay.vn as example)
-    const fromAirport = AIRPORTS.find(a => a.code === fromCity);
-    const toAirport = AIRPORTS.find(a => a.code === toCity);
-    
-    const searchParams = new URLSearchParams({
-      from: fromCity,
-      to: toCity,
-      departDate: format(departureDate, "yyyy-MM-dd"),
-      adults: adults.toString(),
-      children: children.toString(),
-      infants: infants.toString(),
-      cabinClass: cabinClass,
-      tripType: tripType,
-    });
-    
-    if (tripType === "round-trip" && returnDate) {
-      searchParams.append("returnDate", format(returnDate, "yyyy-MM-dd"));
-    }
-
-    // Open external search (abay.vn format)
-    const abayUrl = `https://abay.vn/tim-ve-may-bay?from=${fromCity}&to=${toCity}&depart=${format(departureDate, "dd-MM-yyyy")}&return=${tripType === "round-trip" && returnDate ? format(returnDate, "dd-MM-yyyy") : ""}&adult=${adults}&child=${children}&infant=${infants}&class=${cabinClass === "economy" ? "E" : cabinClass === "business" ? "C" : "F"}`;
-    
-    window.open(abayUrl, "_blank", "noopener,noreferrer");
-    
-    toast({
-      title: "Đang tìm kiếm",
-      description: `Tìm vé ${fromAirport?.name} → ${toAirport?.name}`,
-    });
-  }, [fromCity, toCity, departureDate, returnDate, tripType, adults, children, infants, cabinClass]);
+    // Open results modal instead of external redirect
+    openSearchModal(departureDate);
+  }, [fromCity, toCity, departureDate, returnDate, tripType, openSearchModal]);
 
   const handleDaySelect = useCallback((date: Date) => {
     setDepartureDate(date);
     setShowMonthlyPrices(false);
     
-    // Auto search when selecting from calendar
+    // Open modal when selecting from calendar
     if (fromCity && toCity) {
-      const fromAirport = AIRPORTS.find(a => a.code === fromCity);
-      const toAirport = AIRPORTS.find(a => a.code === toCity);
-      
-      const abayUrl = `https://abay.vn/tim-ve-may-bay?from=${fromCity}&to=${toCity}&depart=${format(date, "dd-MM-yyyy")}&return=&adult=${adults}&child=${children}&infant=${infants}&class=${cabinClass === "economy" ? "E" : cabinClass === "business" ? "C" : "F"}`;
-      
-      window.open(abayUrl, "_blank", "noopener,noreferrer");
-      
-      toast({
-        title: "Đang tìm kiếm",
-        description: `Tìm vé ${fromAirport?.name} → ${toAirport?.name} ngày ${format(date, "dd/MM/yyyy")}`,
-      });
+      openSearchModal(date);
     }
-  }, [fromCity, toCity, adults, children, infants, cabinClass]);
+  }, [fromCity, toCity, openSearchModal]);
 
   const totalPassengers = adults + children + infants;
 
@@ -495,6 +494,13 @@ export default function FlightSearchWidget() {
           </Button>
         )}
       </CardContent>
+
+      {/* Flight Results Modal */}
+      <FlightResultsModal
+        open={resultsModalOpen}
+        onOpenChange={setResultsModalOpen}
+        searchParams={searchParamsForModal}
+      />
     </Card>
   );
 }
