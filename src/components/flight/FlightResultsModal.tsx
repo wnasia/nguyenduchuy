@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { X, Plane, Clock, Loader2 } from "lucide-react";
+import { X, Plane, Clock, Loader2, AlertCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FlightResult {
   id: string;
@@ -22,6 +23,13 @@ interface FlightResult {
   duration: string;
   price: number;
   seatsLeft: number;
+  stops?: number;
+  priceBreakdown?: {
+    base: number;
+    taxes: number;
+    total: number;
+    currency: string;
+  };
 }
 
 interface FlightResultsModalProps {
@@ -42,58 +50,6 @@ interface FlightResultsModalProps {
   } | null;
 }
 
-// Airline data for simulation
-const AIRLINES = [
-  { code: "VN", name: "Vietnam Airlines", logo: "🇻🇳" },
-  { code: "VJ", name: "Vietjet Air", logo: "✈️" },
-  { code: "QH", name: "Bamboo Airways", logo: "🎋" },
-  { code: "BL", name: "Pacific Airlines", logo: "🌊" },
-];
-
-// Generate simulated flight results
-const generateFlightResults = (from: string, to: string, date: Date): FlightResult[] => {
-  const results: FlightResult[] = [];
-  const basePrice = 800000 + Math.random() * 600000;
-  
-  // Generate 4-8 flights
-  const numFlights = 4 + Math.floor(Math.random() * 5);
-  
-  for (let i = 0; i < numFlights; i++) {
-    const airline = AIRLINES[Math.floor(Math.random() * AIRLINES.length)];
-    const departHour = 5 + Math.floor(Math.random() * 17); // 5AM to 10PM
-    const departMinute = Math.floor(Math.random() * 4) * 15; // 0, 15, 30, 45
-    const durationMinutes = 90 + Math.floor(Math.random() * 60); // 1.5h to 2.5h
-    
-    const departTime = new Date(date);
-    departTime.setHours(departHour, departMinute, 0, 0);
-    
-    const arriveTime = new Date(departTime);
-    arriveTime.setMinutes(arriveTime.getMinutes() + durationMinutes);
-    
-    const priceVariation = 0.7 + Math.random() * 0.6;
-    const price = Math.round((basePrice * priceVariation) / 10000) * 10000;
-    
-    results.push({
-      id: `${airline.code}${100 + Math.floor(Math.random() * 900)}`,
-      airline: airline.name,
-      airlineLogo: airline.logo,
-      flightNumber: `${airline.code}${100 + Math.floor(Math.random() * 900)}`,
-      from,
-      fromCity: from,
-      to,
-      toCity: to,
-      departureTime: format(departTime, "HH:mm"),
-      arrivalTime: format(arriveTime, "HH:mm"),
-      duration: `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m`,
-      price,
-      seatsLeft: 1 + Math.floor(Math.random() * 9),
-    });
-  }
-  
-  // Sort by price
-  return results.sort((a, b) => a.price - b.price);
-};
-
 export default function FlightResultsModal({
   open,
   onOpenChange,
@@ -113,28 +69,52 @@ export default function FlightResultsModal({
       setError(null);
       setResults([]);
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-
-      if (cancelled) return;
-
       try {
-        // In production, this would be a real API call
-        const flightResults = generateFlightResults(
-          searchParams.from,
-          searchParams.to,
-          searchParams.departureDate
-        );
+        // Call the edge function with real API
+        const { data, error: fetchError } = await supabase.functions.invoke('flight-search', {
+          body: {
+            from: searchParams.from,
+            to: searchParams.to,
+            departureDate: format(searchParams.departureDate, 'yyyy-MM-dd'),
+            returnDate: searchParams.returnDate ? format(searchParams.returnDate, 'yyyy-MM-dd') : undefined,
+            adults: searchParams.adults,
+            children: searchParams.children,
+            infants: searchParams.infants,
+            cabinClass: searchParams.cabinClass,
+            currencyCode: 'VND',
+          },
+        });
 
-        if (flightResults.length === 0) {
-          setError("Không tìm thấy chuyến bay nào cho ngày này. Vui lòng thử ngày khác.");
-        } else {
-          setResults(flightResults);
+        if (cancelled) return;
+
+        if (fetchError) {
+          console.error('Flight search error:', fetchError);
+          setError('Không thể kết nối đến hệ thống tìm kiếm chuyến bay. Vui lòng thử lại sau.');
+          return;
         }
+
+        if (!data?.success) {
+          setError(data?.error || 'Đã có lỗi xảy ra khi tìm kiếm chuyến bay.');
+          return;
+        }
+
+        if (!data.flights || data.flights.length === 0) {
+          setError('Không tìm thấy chuyến bay nào cho ngày này. Vui lòng thử ngày khác hoặc tuyến bay khác.');
+          return;
+        }
+
+        // Sort by price
+        const sortedFlights = data.flights.sort((a: FlightResult, b: FlightResult) => a.price - b.price);
+        setResults(sortedFlights);
       } catch (err) {
-        setError("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+        console.error('Flight search exception:', err);
+        if (!cancelled) {
+          setError('Đã có lỗi xảy ra. Vui lòng thử lại sau.');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
@@ -157,6 +137,12 @@ export default function FlightResultsModal({
       first: "Hạng nhất",
     };
     return labels[cabinClass] || "Phổ thông";
+  };
+
+  const getStopsLabel = (stops: number | undefined) => {
+    if (stops === undefined || stops === 0) return "Bay thẳng";
+    if (stops === 1) return "1 điểm dừng";
+    return `${stops} điểm dừng`;
   };
 
   return (
@@ -188,7 +174,7 @@ export default function FlightResultsModal({
               <>
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="ml-3 text-muted-foreground">Đang tìm kiếm chuyến bay...</span>
+                  <span className="ml-3 text-muted-foreground">Đang tìm kiếm chuyến bay từ Amadeus...</span>
                 </div>
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="p-4 border border-border rounded-lg">
@@ -206,22 +192,24 @@ export default function FlightResultsModal({
 
             {!loading && error && (
               <div className="py-12 text-center">
-                <div className="text-4xl mb-4">✈️</div>
-                <p className="text-muted-foreground">{error}</p>
+                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground mb-4">{error}</p>
                 <Button
                   variant="outline"
-                  className="mt-4"
                   onClick={() => onOpenChange(false)}
                 >
-                  Thử lại
+                  Đóng
                 </Button>
               </div>
             )}
 
             {!loading && !error && results.length > 0 && (
               <>
-                <div className="text-sm text-muted-foreground mb-2">
-                  Tìm thấy {results.length} chuyến bay
+                <div className="text-sm text-muted-foreground mb-2 flex items-center justify-between">
+                  <span>Tìm thấy {results.length} chuyến bay</span>
+                  <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                    Giá đã bao gồm thuế & phí
+                  </span>
                 </div>
                 {results.map((flight, index) => (
                   <div
@@ -243,7 +231,7 @@ export default function FlightResultsModal({
                       <div className="flex items-center gap-6 text-center">
                         <div>
                           <div className="text-lg font-bold">{flight.departureTime}</div>
-                          <div className="text-xs text-muted-foreground">{searchParams?.fromCity}</div>
+                          <div className="text-xs text-muted-foreground">{flight.from}</div>
                         </div>
                         
                         <div className="flex flex-col items-center">
@@ -254,12 +242,12 @@ export default function FlightResultsModal({
                           <div className="w-20 h-px bg-border my-1 relative">
                             <Plane className="h-3 w-3 absolute -top-1.5 right-0 text-primary" />
                           </div>
-                          <div className="text-xs text-muted-foreground">Bay thẳng</div>
+                          <div className="text-xs text-muted-foreground">{getStopsLabel(flight.stops)}</div>
                         </div>
 
                         <div>
                           <div className="text-lg font-bold">{flight.arrivalTime}</div>
-                          <div className="text-xs text-muted-foreground">{searchParams?.toCity}</div>
+                          <div className="text-xs text-muted-foreground">{flight.to}</div>
                         </div>
                       </div>
 
@@ -283,7 +271,11 @@ export default function FlightResultsModal({
 
                     <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
                       <div className="text-xs text-muted-foreground">
-                        Giá đã bao gồm thuế và phí
+                        {flight.priceBreakdown && (
+                          <span>
+                            Giá vé: {formatPrice(flight.priceBreakdown.base)} + Thuế phí: {formatPrice(flight.priceBreakdown.taxes)}
+                          </span>
+                        )}
                       </div>
                       <Button size="sm" className="h-8">
                         Chọn chuyến bay
