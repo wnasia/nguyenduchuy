@@ -1,1 +1,4 @@
 project_id = "onihezlpgofqzutuxahv"
+
+[functions.flight-search]
+verify_jwt = false

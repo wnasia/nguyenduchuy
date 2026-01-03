@@ -3,6 +3,9 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay,
 import { vi } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FlightPriceCalendarProps {
   from: string;
@@ -25,65 +28,6 @@ const formatPrice = (price: number): string => {
   return `${(price / 1000).toFixed(0)}k`;
 };
 
-// Generate simulated prices for demo (in production, this would call a real API)
-const generateSimulatedPrices = (from: string, to: string, month: Date): DayPrice[] => {
-  const start = startOfMonth(month);
-  const end = endOfMonth(month);
-  const days = eachDayOfInterval({ start, end });
-  const today = startOfDay(new Date());
-  
-  // Base prices for different routes (simulated)
-  const routePrices: Record<string, number> = {
-    "HAN-SGN": 1200000,
-    "SGN-HAN": 1150000,
-    "HAN-DAD": 850000,
-    "DAD-HAN": 800000,
-    "SGN-DAD": 750000,
-    "DAD-SGN": 720000,
-    "HAN-PQC": 1400000,
-    "SGN-PQC": 950000,
-    "HAN-CXR": 1100000,
-    "SGN-CXR": 650000,
-  };
-  
-  const routeKey = `${from}-${to}`;
-  const reverseKey = `${to}-${from}`;
-  const basePrice = routePrices[routeKey] || routePrices[reverseKey] || 1000000;
-  
-  return days.map((date) => {
-    // Past dates are not available
-    if (isBefore(date, today)) {
-      return { date, price: null, available: false };
-    }
-    
-    const dayOfWeek = getDay(date);
-    const dayOfMonth = date.getDate();
-    
-    // Weekends are more expensive
-    let priceMultiplier = 1;
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      priceMultiplier = 1.2 + Math.random() * 0.3;
-    } else if (dayOfWeek === 5) {
-      priceMultiplier = 1.1 + Math.random() * 0.2;
-    } else {
-      priceMultiplier = 0.85 + Math.random() * 0.3;
-    }
-    
-    // Add some variation based on day of month
-    const dayVariation = Math.sin(dayOfMonth / 5) * 0.1;
-    priceMultiplier += dayVariation;
-    
-    // Some days might not have flights (10% chance)
-    if (Math.random() < 0.05) {
-      return { date, price: null, available: false };
-    }
-    
-    const price = Math.round(basePrice * priceMultiplier / 10000) * 10000;
-    
-    return { date, price, available: true };
-  });
-};
-
 export default function FlightPriceCalendar({
   from,
   to,
@@ -92,36 +36,75 @@ export default function FlightPriceCalendar({
 }: FlightPriceCalendarProps) {
   const [prices, setPrices] = useState<DayPrice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // Fetch prices when route or month changes
-  useEffect(() => {
-    let cancelled = false;
+  // Fetch prices from real API
+  const fetchPrices = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     
-    const fetchPrices = async () => {
-      setLoading(true);
+    const monthStr = format(month, 'yyyy-MM');
+    
+    try {
+      const { data, error: fetchError } = await supabase.functions.invoke('flight-search?action=month-prices', {
+        body: {
+          from,
+          to,
+          month: monthStr,
+          adults: 1,
+        },
+      });
+
+      if (fetchError) {
+        console.error('Month prices fetch error:', fetchError);
+        setError('Không thể tải giá vé. Vui lòng thử lại.');
+        setLoading(false);
+        return;
+      }
+
+      if (!data?.success) {
+        setError(data?.error || 'Không tìm thấy giá vé cho tháng này.');
+        setLoading(false);
+        return;
+      }
+
+      // Transform API response to DayPrice array
+      const start = startOfMonth(month);
+      const end = endOfMonth(month);
+      const days = eachDayOfInterval({ start, end });
+      const today = startOfDay(new Date());
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
+      const pricesData = data.prices || {};
       
-      if (cancelled) return;
+      const dayPrices: DayPrice[] = days.map((date) => {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        const price = pricesData[dateStr];
+        const isPast = isBefore(date, today);
+        
+        return {
+          date,
+          price: isPast ? null : (typeof price === 'number' ? price : null),
+          available: !isPast && typeof price === 'number' && price > 0,
+        };
+      });
       
-      // In production, replace this with actual API call
-      const simulatedPrices = generateSimulatedPrices(from, to, month);
-      setPrices(simulatedPrices);
+      setPrices(dayPrices);
+    } catch (err) {
+      console.error('Month prices exception:', err);
+      setError('Đã có lỗi xảy ra. Vui lòng thử lại.');
+    } finally {
       setLoading(false);
-    };
-    
-    fetchPrices();
-    
-    return () => {
-      cancelled = true;
-    };
+    }
   }, [from, to, month]);
+
+  useEffect(() => {
+    fetchPrices();
+  }, [fetchPrices]);
 
   // Find cheapest price
   const cheapestPrice = useMemo(() => {
-    const availablePrices = prices.filter(p => p.price !== null).map(p => p.price!);
+    const availablePrices = prices.filter(p => p.price !== null && p.price > 0).map(p => p.price!);
     return availablePrices.length > 0 ? Math.min(...availablePrices) : null;
   }, [prices]);
 
@@ -162,6 +145,22 @@ export default function FlightPriceCalendar({
             <Skeleton key={i} className="aspect-square rounded-lg" />
           ))}
         </div>
+        <div className="text-center text-xs text-muted-foreground">
+          Đang tải giá từ Amadeus API...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground mb-3">{error}</p>
+        <Button variant="outline" size="sm" onClick={fetchPrices}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Thử lại
+        </Button>
       </div>
     );
   }
@@ -200,7 +199,6 @@ export default function FlightPriceCalendar({
           const available = dayPrice?.available ?? false;
           const isCheapest = price !== null && price === cheapestPrice;
           const isSelected = selectedDate && isSameDay(day, selectedDate);
-          const isPast = !available && dayPrice !== undefined;
           const isSunday = getDay(day) === 0;
           
           return (
@@ -253,11 +251,16 @@ export default function FlightPriceCalendar({
       </div>
       
       {/* Info */}
-      {cheapestPrice && (
-        <div className="text-center text-xs text-muted-foreground">
-          Giá rẻ nhất: <span className="font-semibold text-green-600 dark:text-green-400">{cheapestPrice.toLocaleString('vi-VN')}đ</span>
+      <div className="text-center space-y-1">
+        {cheapestPrice && (
+          <div className="text-xs text-muted-foreground">
+            Giá rẻ nhất: <span className="font-semibold text-green-600 dark:text-green-400">{cheapestPrice.toLocaleString('vi-VN')}đ</span>
+          </div>
+        )}
+        <div className="text-[10px] text-muted-foreground">
+          Giá đã bao gồm thuế & phí • Nguồn: Amadeus API
         </div>
-      )}
+      </div>
     </div>
   );
 }
