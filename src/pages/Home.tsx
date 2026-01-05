@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BannerSlider from "@/components/BannerSlider";
 import LunarCalendarWidget from "@/components/LunarCalendarWidget";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
+import { parsePostContent, getExcerpt, decodeHtmlEntities, type ParsedContent } from "@/lib/htmlUtils";
 
 interface Post {
   id: string;
@@ -21,13 +22,6 @@ interface Post {
   profiles?: {
     full_name: string | null;
   } | null;
-}
-
-interface ParsedContent {
-  story: string;
-  imageLinks?: string[];
-  videoLinks?: string[];
-  tags?: string[];
 }
 
 const Home = () => {
@@ -50,22 +44,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
 
   const parseContent = useCallback((content: string): ParsedContent => {
-    try {
-      const parsed = JSON.parse(content);
-      return {
-        story: parsed.story || '',
-        imageLinks: parsed.imageLinks || [],
-        videoLinks: parsed.videoLinks || [],
-        tags: parsed.tags || []
-      };
-    } catch {
-      return {
-        story: content,
-        imageLinks: [],
-        videoLinks: [],
-        tags: []
-      };
-    }
+    return parsePostContent(content);
   }, []);
 
   const fetchHotPosts = useCallback(async () => {
@@ -286,9 +265,7 @@ const Home = () => {
   };
 
   const getPostExcerpt = (content: string, maxLength: number = 120) => {
-    const parsed = parseContent(content);
-    const text = parsed.story.replace(/<[^>]*>/g, '');
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    return getExcerpt(content, maxLength);
   };
 
   const getPostThumbnail = (content: string): string | null => {
@@ -380,7 +357,7 @@ const Home = () => {
                         )}
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                            {post.title}
+                            {decodeHtmlEntities(post.title)}
                           </h3>
                           <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                             {excerpt}
@@ -427,7 +404,7 @@ const Home = () => {
                     </span>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                        {post.title}
+                        {decodeHtmlEntities(post.title)}
                       </h4>
                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                         <Eye className="h-3 w-3" />

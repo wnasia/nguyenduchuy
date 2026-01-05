@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import VideoPlayer from "@/components/VideoPlayer";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
+import { parsePostContent, stripHtmlAndDecode, decodeHtmlEntities } from "@/lib/htmlUtils";
 
 interface Post {
   id: string;
@@ -20,13 +21,6 @@ interface Post {
   profiles?: {
     full_name: string | null;
   } | null;
-}
-
-interface ParsedContent {
-  story: string;
-  imageLinks?: string[];
-  videoLinks?: string[];
-  tags?: string[];
 }
 
 const Videos = () => {
@@ -98,25 +92,6 @@ const Videos = () => {
     }
   };
 
-  const parseContent = (content: string): ParsedContent => {
-    try {
-      const parsed = JSON.parse(content);
-      return {
-        story: parsed.story || '',
-        imageLinks: parsed.imageLinks || [],
-        videoLinks: parsed.videoLinks || [],
-        tags: parsed.tags || []
-      };
-    } catch {
-      return {
-        story: content,
-        imageLinks: [],
-        videoLinks: [],
-        tags: []
-      };
-    }
-  };
-
   const handleWatchStory = (storyId: string) => {
     navigate(`/story/${storyId}`);
   };
@@ -152,8 +127,10 @@ const Videos = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post, index) => {
-              const parsedContent = parseContent(post.content);
+              const parsedContent = parsePostContent(post.content);
               const firstVideoUrl = parsedContent.videoLinks?.[0] || '';
+              const decodedTitle = decodeHtmlEntities(post.title);
+              const storyExcerpt = stripHtmlAndDecode(parsedContent.story);
               
               return (
                 <Card key={post.id} className="overflow-hidden hover-scale cursor-pointer border-0 shadow-lg animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
@@ -191,7 +168,7 @@ const Videos = () => {
                   
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-serif line-clamp-2 hover:text-primary transition-colors">
-                      {post.title}
+                      {decodedTitle}
                     </CardTitle>
                     <CardDescription className="text-sm">
                       {t("story.by_author")} {post.profiles?.full_name || t("story.anonymous")} • {new Date(post.created_at).toLocaleDateString()}
@@ -200,7 +177,7 @@ const Videos = () => {
                   
                   <CardContent>
                     <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
-                      {parsedContent.story || t("videos.video_placeholder")}
+                      {storyExcerpt || t("videos.video_placeholder")}
                     </p>
                     
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-4">

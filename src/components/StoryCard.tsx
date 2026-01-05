@@ -6,6 +6,7 @@ import { Heart, MessageCircle, Clock, Eye, Image, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { parsePostContent, stripHtmlAndDecode, decodeHtmlEntities } from "@/lib/htmlUtils";
 
 interface Post {
   id: string;
@@ -21,13 +22,6 @@ interface Post {
   } | null;
 }
 
-interface ParsedContent {
-  story: string;
-  imageLinks?: string[];
-  videoLinks?: string[];
-  tags?: string[];
-}
-
 interface StoryCardProps {
   story: Post;
   index: number;
@@ -36,69 +30,32 @@ interface StoryCardProps {
 const StoryCard = ({ story, index }: StoryCardProps) => {
   const { t } = useI18n();
 
-  // Decode HTML entities that TinyMCE may have encoded
-  const decodeHtmlEntities = (html: string): string => {
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = html;
-    return textarea.value;
-  };
-
-  const parseContent = (content: string): ParsedContent => {
-    try {
-      const parsed = JSON.parse(content);
-      const decodedStory = decodeHtmlEntities(parsed.story || '');
-      return {
-        story: decodedStory,
-        imageLinks: parsed.imageLinks || [],
-        videoLinks: parsed.videoLinks || [],
-        tags: parsed.tags || []
-      };
-    } catch {
-      return {
-        story: decodeHtmlEntities(content),
-        imageLinks: [],
-        videoLinks: [],
-        tags: []
-      };
-    }
-  };
-
-  const parsedContent = parseContent(story.content);
+  // Decode title for proper Vietnamese display
+  const decodedTitle = decodeHtmlEntities(story.title);
+  
+  const parsedContent = parsePostContent(story.content);
   const hasMedia = (parsedContent.imageLinks && parsedContent.imageLinks.length > 0) || 
                  (parsedContent.videoLinks && parsedContent.videoLinks.length > 0);
 
   // Get thumbnail - proper fallback logic: thumbnail_url → first imageLink → placeholder
   const getThumbnail = () => {
-    // First priority: use thumbnail_url if available
     if (story.thumbnail_url) {
       return story.thumbnail_url;
     }
-    
-    // Second priority: use first image from imageLinks if available
     if (parsedContent.imageLinks && parsedContent.imageLinks.length > 0) {
       return parsedContent.imageLinks[0];
     }
-    
-    // Fallback: use placeholder
     return "/placeholder.svg";
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      // Link component will handle navigation
     }
   };
 
-
-  // Strip HTML tags for excerpt display
-  const stripHtml = (html: string): string => {
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || '';
-  };
-
-  const storyExcerpt = stripHtml(parsedContent.story);
+  // Get decoded excerpt for display
+  const storyExcerpt = stripHtmlAndDecode(parsedContent.story);
 
   return (
     <Link 
@@ -106,14 +63,14 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
       className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      aria-label={`${t("story.open")}: ${story.title}`}
+      aria-label={`${t("story.open")}: ${decodedTitle}`}
     >
       <Card className="overflow-hidden hover:shadow-xl hover:scale-[1.02] cursor-pointer border-0 shadow-lg animate-fade-in transition-all duration-300 min-h-[44px]" style={{ animationDelay: `${index * 0.1}s` }}>
         {/* Thumbnail Image */}
         <AspectRatio ratio={16 / 9} className="overflow-hidden bg-muted">
           <img
             src={getThumbnail()}
-            alt={story.title}
+            alt={decodedTitle}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -166,7 +123,7 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
               </Badge>
             </div>
             <CardTitle className="text-xl font-serif mb-2 hover:text-primary transition-colors line-clamp-2">
-              {story.title}
+              {decodedTitle}
             </CardTitle>
             <CardDescription className="flex items-center gap-4 text-sm">
               <span>{t("story.by_author")} {story.profiles?.full_name || t("story.anonymous")}</span>

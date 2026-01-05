@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, Calendar, FileText, Image, Video, Tag, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { parsePostContent, stripHtmlAndDecode, decodeHtmlEntities } from "@/lib/htmlUtils";
 
 interface Post {
   id: string;
@@ -18,13 +19,6 @@ interface Post {
   view_count: number;
   created_at: string;
   updated_at: string;
-}
-
-interface ParsedContent {
-  story: string;
-  imageLinks?: string[];
-  videoLinks?: string[];
-  tags?: string[];
 }
 
 const UserPosts = () => {
@@ -69,27 +63,6 @@ const UserPosts = () => {
 
     fetchUserPosts();
   }, [user, toast]);
-
-  const parseContent = (content: string): ParsedContent => {
-    try {
-      // Try to parse as JSON first
-      const parsed = JSON.parse(content);
-      return {
-        story: parsed.story || '',
-        imageLinks: parsed.imageLinks || [],
-        videoLinks: parsed.videoLinks || [],
-        tags: parsed.tags || []
-      };
-    } catch {
-      // If parsing fails, treat as plain text
-      return {
-        story: content,
-        imageLinks: [],
-        videoLinks: [],
-        tags: []
-      };
-    }
-  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -160,15 +133,17 @@ const UserPosts = () => {
       <CardContent>
         <div className="space-y-6">
           {posts.map((post) => {
-            const parsedContent = parseContent(post.content);
+            const parsedContent = parsePostContent(post.content);
             const hasMedia = (parsedContent.imageLinks && parsedContent.imageLinks.length > 0) || 
                            (parsedContent.videoLinks && parsedContent.videoLinks.length > 0);
+            const decodedTitle = decodeHtmlEntities(post.title);
+            const storyExcerpt = stripHtmlAndDecode(parsedContent.story);
             
             return (
               <div key={post.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-xl text-gray-900 mb-2">{post.title}</h3>
+                    <h3 className="font-semibold text-xl text-gray-900 mb-2">{decodedTitle}</h3>
                     <div className="flex items-center gap-2 mb-3">
                       <Badge variant={getStatusBadgeVariant(post.status)} className={getStatusColor(post.status)}>
                         {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
@@ -178,10 +153,10 @@ const UserPosts = () => {
                   </div>
                 </div>
                 
-                {parsedContent.story && (
+                {storyExcerpt && (
                   <div className="mb-4">
                     <p className="text-gray-700 leading-relaxed line-clamp-3">
-                      {parsedContent.story}
+                      {storyExcerpt}
                     </p>
                   </div>
                 )}
