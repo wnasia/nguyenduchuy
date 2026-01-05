@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import VideoPlayer from "@/components/VideoPlayer";
 import EngagementSection from "@/components/EngagementSection";
 import { useI18n } from "@/hooks/useI18n";
+import { parsePostContent, decodeHtmlEntities } from "@/lib/htmlUtils";
 
 interface Post {
   id: string;
@@ -25,13 +26,6 @@ interface Post {
     full_name: string | null;
     email: string | null;
   } | null;
-}
-
-interface ParsedContent {
-  story: string;
-  imageLinks?: string[];
-  videoLinks?: string[];
-  tags?: string[];
 }
 
 const StoryDetail = () => {
@@ -127,33 +121,8 @@ const StoryDetail = () => {
     }
   };
 
-  // Decode HTML entities that TinyMCE may have encoded
-  const decodeHtmlEntities = (html: string): string => {
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = html;
-    return textarea.value;
-  };
-
-  const parseContent = (content: string): ParsedContent => {
-    try {
-      const parsed = JSON.parse(content);
-      // Decode HTML entities in the story content
-      const decodedStory = decodeHtmlEntities(parsed.story || '');
-      return {
-        story: decodedStory,
-        imageLinks: parsed.imageLinks || [],
-        videoLinks: parsed.videoLinks || [],
-        tags: parsed.tags || []
-      };
-    } catch {
-      return {
-        story: decodeHtmlEntities(content),
-        imageLinks: [],
-        videoLinks: [],
-        tags: []
-      };
-    }
-  };
+  const parsedContent = parsePostContent(story?.content || '');
+  const decodedTitle = decodeHtmlEntities(story?.title || '');
 
   if (loading) {
     return (
@@ -177,8 +146,6 @@ const StoryDetail = () => {
       </div>
     );
   }
-
-  const parsedContent = parseContent(story.content);
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -206,7 +173,7 @@ const StoryDetail = () => {
               </Badge>
             </div>
             <CardTitle className="text-3xl font-serif mb-4">
-              {story.title}
+              {decodedTitle}
             </CardTitle>
             <CardDescription className="flex flex-wrap items-center gap-4 text-base">
               <span>by {story.profiles?.full_name || 'Anonymous'}</span>
