@@ -27,35 +27,6 @@ interface MonthPriceRequest {
   adults?: number;
 }
 
-// Vietnam domestic route base prices (realistic market prices in VND)
-const VIETNAM_ROUTE_PRICES: Record<string, number> = {
-  'SGN-HAN': 1500000, 'HAN-SGN': 1500000,
-  'SGN-DAD': 900000, 'DAD-SGN': 900000,
-  'SGN-CXR': 700000, 'CXR-SGN': 700000,
-  'SGN-UIH': 800000, 'UIH-SGN': 800000,
-  'SGN-PQC': 600000, 'PQC-SGN': 600000,
-  'SGN-VDO': 1200000, 'VDO-SGN': 1200000,
-  'SGN-HPH': 1400000, 'HPH-SGN': 1400000,
-  'SGN-VII': 1000000, 'VII-SGN': 1000000,
-  'SGN-VCL': 750000, 'VCL-SGN': 750000,
-  'SGN-BMV': 650000, 'BMV-SGN': 650000,
-  'SGN-DLI': 500000, 'DLI-SGN': 500000,
-  'HAN-DAD': 800000, 'DAD-HAN': 800000,
-  'HAN-CXR': 1200000, 'CXR-HAN': 1200000,
-  'HAN-PQC': 1400000, 'PQC-HAN': 1400000,
-  'HAN-UIH': 900000, 'UIH-HAN': 900000,
-  'HAN-HPH': 400000, 'HPH-HAN': 400000,
-  'HAN-DLI': 1100000, 'DLI-HAN': 1100000,
-};
-
-// Airline data for Vietnam
-const VIETNAM_AIRLINES = [
-  { code: 'VN', name: 'Vietnam Airlines', logo: '🇻🇳', priceMultiplier: 1.0 },
-  { code: 'VJ', name: 'VietJet Air', logo: '✈️', priceMultiplier: 0.75 },
-  { code: 'QH', name: 'Bamboo Airways', logo: '🎋', priceMultiplier: 0.85 },
-  { code: 'BL', name: 'Pacific Airlines', logo: '🌊', priceMultiplier: 0.7 },
-];
-
 // Get Amadeus OAuth token
 async function getAmadeusToken(): Promise<string> {
   const apiKey = Deno.env.get('AMADEUS_API_KEY');
@@ -145,139 +116,6 @@ async function searchFlightsAmadeus(token: string, params: FlightSearchRequest) 
   return data;
 }
 
-// Generate realistic Vietnam domestic flights based on market data
-function generateVietnamFlights(params: FlightSearchRequest): any[] {
-  const routeKey = `${params.from}-${params.to}`;
-  const basePrice = VIETNAM_ROUTE_PRICES[routeKey] || 1000000;
-  
-  const departureDate = new Date(params.departureDate);
-  const dayOfWeek = departureDate.getDay();
-  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-  const isHoliday = false; // Could check Vietnamese holidays
-  
-  // Price adjustments
-  let priceMultiplier = 1.0;
-  if (isWeekend) priceMultiplier *= 1.15;
-  
-  // Days until departure affects price
-  const today = new Date();
-  const daysUntil = Math.ceil((departureDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (daysUntil <= 3) priceMultiplier *= 1.5;
-  else if (daysUntil <= 7) priceMultiplier *= 1.25;
-  else if (daysUntil > 30) priceMultiplier *= 0.9;
-  
-  // Flight times based on route
-  const flightDurations: Record<string, number> = {
-    'SGN-HAN': 125, 'HAN-SGN': 130,
-    'SGN-DAD': 75, 'DAD-SGN': 80,
-    'SGN-CXR': 55, 'CXR-SGN': 60,
-    'SGN-UIH': 70, 'UIH-SGN': 75,
-    'SGN-PQC': 55, 'PQC-SGN': 60,
-  };
-  
-  const duration = flightDurations[routeKey] || 90;
-  
-  const departureTimes = ['06:00', '07:30', '09:00', '11:00', '13:30', '15:00', '17:00', '19:00', '21:00'];
-  
-  const flights: any[] = [];
-  
-  // Generate 2-4 flights per airline
-  for (const airline of VIETNAM_AIRLINES) {
-    const numFlights = 2 + Math.floor(Math.random() * 3);
-    const selectedTimes = departureTimes
-      .sort(() => Math.random() - 0.5)
-      .slice(0, numFlights);
-    
-    for (const depTime of selectedTimes) {
-      const [hours, mins] = depTime.split(':').map(Number);
-      const arrivalMinutes = hours * 60 + mins + duration;
-      const arrHours = Math.floor(arrivalMinutes / 60) % 24;
-      const arrMins = arrivalMinutes % 60;
-      const arrTime = `${String(arrHours).padStart(2, '0')}:${String(arrMins).padStart(2, '0')}`;
-      
-      // Price variation per flight
-      const flightVariation = 0.9 + Math.random() * 0.2;
-      const finalPrice = Math.round(basePrice * priceMultiplier * airline.priceMultiplier * flightVariation);
-      
-      // Taxes are about 20% of total
-      const taxAmount = Math.round(finalPrice * 0.20);
-      const baseAmount = finalPrice - taxAmount;
-      
-      flights.push({
-        id: `${airline.code}${100 + Math.floor(Math.random() * 900)}-${Date.now()}`,
-        airline: airline.name,
-        airlineLogo: airline.logo,
-        flightNumber: `${airline.code}${100 + Math.floor(Math.random() * 900)}`,
-        from: params.from,
-        fromCity: params.from,
-        to: params.to,
-        toCity: params.to,
-        departureTime: depTime,
-        arrivalTime: arrTime,
-        duration: `${Math.floor(duration / 60)}h ${duration % 60}m`,
-        price: finalPrice,
-        seatsLeft: 3 + Math.floor(Math.random() * 12),
-        stops: 0,
-        priceBreakdown: {
-          base: baseAmount,
-          taxes: taxAmount,
-          total: finalPrice,
-          currency: 'VND',
-        },
-        dataSource: 'market_estimate',
-      });
-    }
-  }
-  
-  // Sort by price
-  return flights.sort((a, b) => a.price - b.price);
-}
-
-// Generate month prices for Vietnam routes
-function generateVietnamMonthPrices(params: MonthPriceRequest): Record<string, number | null> {
-  const routeKey = `${params.from}-${params.to}`;
-  const basePrice = VIETNAM_ROUTE_PRICES[routeKey] || 1000000;
-  
-  const [year, month] = params.month.split('-').map(Number);
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const prices: Record<string, number | null> = {};
-  
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const checkDate = new Date(dateStr);
-    
-    if (checkDate < today) {
-      prices[dateStr] = null;
-      continue;
-    }
-    
-    const dayOfWeek = checkDate.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    
-    // Days until departure
-    const daysUntil = Math.ceil((checkDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    let priceMultiplier = 1.0;
-    if (isWeekend) priceMultiplier *= 1.15;
-    if (daysUntil <= 3) priceMultiplier *= 1.4;
-    else if (daysUntil <= 7) priceMultiplier *= 1.2;
-    else if (daysUntil > 21) priceMultiplier *= 0.85;
-    
-    // Add some daily variation
-    const dailyVariation = 0.95 + (Math.sin(day * 0.7) * 0.1);
-    
-    // Use VietJet (lowest) price as the minimum shown
-    const lowestAirlineMultiplier = 0.7;
-    
-    prices[dateStr] = Math.round(basePrice * priceMultiplier * dailyVariation * lowestAirlineMultiplier);
-  }
-  
-  return prices;
-}
-
 // Transform Amadeus response to our format
 function transformFlightOffers(amadeusData: any, dictionaries: any) {
   if (!amadeusData || !Array.isArray(amadeusData)) {
@@ -331,12 +169,6 @@ function transformFlightOffers(amadeusData: any, dictionaries: any) {
   });
 }
 
-// Check if route is a Vietnam domestic route
-function isVietnamRoute(from: string, to: string): boolean {
-  const vietnamAirports = ['SGN', 'HAN', 'DAD', 'CXR', 'UIH', 'PQC', 'VDO', 'HPH', 'VII', 'VCL', 'BMV', 'DLI', 'VCS', 'PXU', 'TBB', 'VKG', 'CAH', 'VCA'];
-  return vietnamAirports.includes(from) && vietnamAirports.includes(to);
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -360,7 +192,16 @@ serve(async (req) => {
     try {
       amadeusToken = await getAmadeusToken();
     } catch (error) {
-      console.log('Amadeus auth failed, will use Vietnam market data:', error);
+      console.error('Amadeus auth failed:', error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Flight search is temporarily unavailable. Amadeus API authentication failed.',
+          success: false,
+          unavailable: true,
+          reason: 'api_auth_failed'
+        }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
     
     if (action === 'month-prices') {
@@ -373,54 +214,53 @@ serve(async (req) => {
         );
       }
       
-      let prices: Record<string, number | null> = {};
-      let dataSource = 'market_estimate';
-      
-      // For Vietnam routes, use market data (sandbox doesn't have VN data)
-      if (isVietnamRoute(from, to)) {
-        console.log('Using Vietnam market data for month prices');
-        prices = generateVietnamMonthPrices({ from, to, month, adults });
-        dataSource = 'vietnam_market';
-      } else if (amadeusToken) {
-        // Try Amadeus for international routes
-        try {
-          // Simplified: just get a sample and use that price
-          const sampleDate = `${month}-15`;
-          const result = await searchFlightsAmadeus(amadeusToken, {
-            from, to, departureDate: sampleDate, adults: adults || 1
-          });
+      // Only return real data from Amadeus API - no simulated prices
+      try {
+        const sampleDate = `${month}-15`;
+        const result = await searchFlightsAmadeus(amadeusToken, {
+          from, to, departureDate: sampleDate, adults: adults || 1
+        });
+        
+        if (result?.data?.length > 0) {
+          const basePrice = parseFloat(result.data[0].price?.grandTotal || '0');
+          const [year, monthNum] = month.split('-').map(Number);
+          const daysInMonth = new Date(year, monthNum, 0).getDate();
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
           
-          if (result?.data?.length > 0) {
-            const basePrice = parseFloat(result.data[0].price?.grandTotal || '0');
-            const [year, monthNum] = month.split('-').map(Number);
-            const daysInMonth = new Date(year, monthNum, 0).getDate();
-            const today = new Date();
-            
-            for (let day = 1; day <= daysInMonth; day++) {
-              const dateStr = `${year}-${String(monthNum).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-              const checkDate = new Date(dateStr);
-              if (checkDate < today) {
-                prices[dateStr] = null;
-              } else {
-                prices[dateStr] = Math.round(basePrice * (0.9 + Math.random() * 0.2));
-              }
+          const prices: Record<string, number | null> = {};
+          
+          for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(monthNum).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const checkDate = new Date(dateStr);
+            if (checkDate < today) {
+              prices[dateStr] = null;
+            } else {
+              // Use the actual price from API
+              prices[dateStr] = Math.round(basePrice);
             }
-            dataSource = 'amadeus';
           }
-        } catch (e) {
-          console.error('Amadeus month price error:', e);
+          
+          return new Response(
+            JSON.stringify({ success: true, prices, dataSource: 'amadeus' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
+      } catch (e) {
+        console.error('Amadeus month price error:', e);
       }
       
-      // Fallback to generic estimate if nothing else worked
-      if (Object.keys(prices).length === 0) {
-        prices = generateVietnamMonthPrices({ from, to, month, adults });
-      }
-      
+      // No real data available - return unavailable status
       return new Response(
-        JSON.stringify({ success: true, prices, dataSource }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          success: false, 
+          unavailable: true,
+          error: 'No real-time price data available for this route. The Amadeus API sandbox has limited coverage.',
+          reason: 'no_data_available'
+        }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+      
     } else {
       // Standard flight search
       const searchParams = body as FlightSearchRequest;
@@ -432,48 +272,42 @@ serve(async (req) => {
         );
       }
       
-      let flights: any[] = [];
-      let dataSource = 'market_estimate';
-      
-      // For Vietnam routes, use market data
-      if (isVietnamRoute(searchParams.from, searchParams.to)) {
-        console.log('Using Vietnam market data for flight search');
-        flights = generateVietnamFlights(searchParams);
-        dataSource = 'vietnam_market';
-      } else if (amadeusToken) {
-        // Try Amadeus for international routes
-        try {
-          const amadeusData = await searchFlightsAmadeus(amadeusToken, searchParams);
-          if (amadeusData?.data?.length > 0) {
-            flights = transformFlightOffers(amadeusData.data, amadeusData.dictionaries);
-            dataSource = 'amadeus';
-          }
-        } catch (e) {
-          console.error('Amadeus search error:', e);
+      // Only return real data from Amadeus API
+      try {
+        const amadeusData = await searchFlightsAmadeus(amadeusToken, searchParams);
+        if (amadeusData?.data?.length > 0) {
+          const flights = transformFlightOffers(amadeusData.data, amadeusData.dictionaries);
+          
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              flights,
+              meta: {
+                count: flights.length,
+                currency: 'VND',
+                priceType: 'grandTotal',
+                dataSource: 'amadeus',
+                note: 'Real-time data from Amadeus API',
+              }
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
+      } catch (e) {
+        console.error('Amadeus search error:', e);
       }
       
-      // Fallback to Vietnam market data
-      if (flights.length === 0) {
-        flights = generateVietnamFlights(searchParams);
-        dataSource = 'market_estimate';
-      }
-      
+      // No real data available - return unavailable status
       return new Response(
         JSON.stringify({ 
-          success: true, 
-          flights,
-          meta: {
-            count: flights.length,
-            currency: 'VND',
-            priceType: 'grandTotal',
-            dataSource,
-            note: dataSource === 'vietnam_market' || dataSource === 'market_estimate' 
-              ? 'Prices based on Vietnam domestic market rates' 
-              : 'Real-time Amadeus data',
-          }
+          success: false,
+          unavailable: true,
+          flights: [],
+          error: 'No real-time flight data available for this route. The Amadeus API sandbox has limited coverage for Vietnam domestic routes.',
+          reason: 'no_data_available',
+          suggestion: 'Try searching for international routes (e.g., SGN to BKK, SIN, HKG) or upgrade to Amadeus Production API.'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
   } catch (error) {

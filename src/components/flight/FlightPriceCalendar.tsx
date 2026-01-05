@@ -63,8 +63,11 @@ export default function FlightPriceCalendar({
         return;
       }
 
-      if (!data?.success) {
-        setError(data?.error || 'Không tìm thấy giá vé cho tháng này.');
+      if (!data?.success || data?.unavailable) {
+        const errorMsg = data?.suggestion 
+          ? `${data?.error}\n\n💡 Gợi ý: Thử tuyến quốc tế (SGN → BKK, SIN, HKG)`
+          : data?.error || 'Amadeus sandbox không có dữ liệu giá thực cho tuyến này.';
+        setError(errorMsg);
         setLoading(false);
         return;
       }

@@ -93,13 +93,16 @@ export default function FlightResultsModal({
           return;
         }
 
-        if (!data?.success) {
-          setError(data?.error || 'Đã có lỗi xảy ra khi tìm kiếm chuyến bay.');
+        if (!data?.success || data?.unavailable) {
+          const errorMsg = data?.suggestion 
+            ? `${data?.error}\n\n💡 ${data?.suggestion}`
+            : data?.error || 'Không có dữ liệu giá thực từ API cho tuyến bay này.';
+          setError(errorMsg);
           return;
         }
 
         if (!data.flights || data.flights.length === 0) {
-          setError('Không tìm thấy chuyến bay nào cho ngày này. Vui lòng thử ngày khác hoặc tuyến bay khác.');
+          setError('Không tìm thấy chuyến bay nào cho ngày này. Vui lòng thử tuyến bay quốc tế (VD: SGN → BKK, SIN, HKG).');
           return;
         }
 
