@@ -115,9 +115,25 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans text-base;
     background: hsl(var(--background));
     min-height: 100vh;
+    font-size: 1.0625rem; /* 17px base for better readability */
+    line-height: 1.7;
+  }
+
+  /* Body text sizing for content areas */
+  p, li, td, th, label, span:not([class*="text-"]) {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  /* Larger text for article/content sections */
+  article p,
+  .prose p,
+  .prose li {
+    font-size: 1.125rem; /* 18px for article content */
+    line-height: 1.8;
   }
 
   h1, h2, h3, h4, h5, h6 {
