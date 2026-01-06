@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, TrendingUp, Users, Eye, ArrowRight, Clock, Flame, Star, Tag, MessageCircle } from "lucide-react";
+import { Heart, TrendingUp, Users, Eye, ArrowRight, Clock, Flame, Star, Tag, MessageCircle, Share2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import BannerSlider from "@/components/BannerSlider";
 import LunarCalendarWidget from "@/components/LunarCalendarWidget";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 import { parsePostContent, getExcerpt, decodeHtmlEntities, type ParsedContent } from "@/lib/htmlUtils";
+import SocialShareButtons from "@/components/SocialShareButtons";
 
 interface Post {
   id: string;
@@ -19,8 +20,10 @@ interface Post {
   type: string;
   view_count: number;
   created_at: string;
+  slug?: string;
   profiles?: {
     full_name: string | null;
+    avatar_url: string | null;
   } | null;
 }
 
@@ -63,7 +66,7 @@ const Home = () => {
           postsData.map(async (post) => {
             const { data: profileData } = await supabase
               .from('profiles')
-              .select('full_name')
+              .select('full_name, avatar_url')
               .eq('id', post.user_id)
               .single();
             return { ...post, profiles: profileData };
@@ -92,7 +95,7 @@ const Home = () => {
           postsData.map(async (post) => {
             const { data: profileData } = await supabase
               .from('profiles')
-              .select('full_name')
+              .select('full_name, avatar_url')
               .eq('id', post.user_id)
               .single();
             return { ...post, profiles: profileData };
@@ -122,7 +125,7 @@ const Home = () => {
           postsData.map(async (post) => {
             const { data: profileData } = await supabase
               .from('profiles')
-              .select('full_name')
+              .select('full_name, avatar_url')
               .eq('id', post.user_id)
               .single();
             return { ...post, profiles: profileData };
@@ -248,8 +251,8 @@ const Home = () => {
     document.title = t("meta.home_title");
   }, [fetchHotPosts, fetchLatestPosts, fetchTopPosts, fetchGalleryImages, fetchPopularTags, fetchStats, fetchActiveBanner, t]);
 
-  const handleReadStory = (id: string) => {
-    navigate(`/story/${id}`);
+  const handleReadStory = (slug: string | undefined, id: string) => {
+    navigate(`/story/${slug || id}`);
   };
 
   const handleGalleryImageClick = () => {
@@ -343,7 +346,7 @@ const Home = () => {
                     return (
                       <div 
                         key={post.id}
-                        onClick={() => handleReadStory(post.id)}
+                        onClick={() => handleReadStory(post.slug, post.id)}
                         className="flex gap-4 p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all cursor-pointer group"
                       >
                         {thumbnail && (
@@ -362,15 +365,35 @@ const Home = () => {
                           <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                             {excerpt}
                           </p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="font-medium">{post.profiles?.full_name || "Anonymous"}</span>
-                            <span>•</span>
-                            <div className="flex items-center gap-1">
-                              <Eye className="h-3 w-3" />
-                              <span>{post.view_count}</span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                {post.profiles?.avatar_url ? (
+                                  <img 
+                                    src={post.profiles.avatar_url} 
+                                    alt={post.profiles.full_name || "Author"}
+                                    className="w-5 h-5 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
+                                    <User className="w-3 h-3 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <span className="font-medium">{post.profiles?.full_name || "Tác giả"}</span>
+                              </div>
+                              <span>•</span>
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                <span>{post.view_count}</span>
+                              </div>
+                              <span>•</span>
+                              <span>{new Date(post.created_at).toLocaleDateString('vi-VN')}</span>
                             </div>
-                            <span>•</span>
-                            <span>{new Date(post.created_at).toLocaleDateString('vi-VN')}</span>
+                            <SocialShareButtons 
+                              url={`${window.location.origin}/story/${post.slug || post.id}`}
+                              title={decodeHtmlEntities(post.title)}
+                              compact
+                            />
                           </div>
                         </div>
                       </div>
@@ -396,7 +419,7 @@ const Home = () => {
                 {hotPosts.slice(0, 5).map((post, index) => (
                   <div 
                     key={post.id}
-                    onClick={() => handleReadStory(post.id)}
+                    onClick={() => handleReadStory(post.slug, post.id)}
                     className="flex gap-3 cursor-pointer group"
                   >
                     <span className="text-2xl font-bold text-muted-foreground/30 flex-shrink-0">
@@ -521,7 +544,7 @@ const Home = () => {
               return (
                 <div 
                   key={post.id}
-                  onClick={() => handleReadStory(post.id)}
+                  onClick={() => handleReadStory(post.slug, post.id)}
                   className="bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
                 >
                   {thumbnail && (
