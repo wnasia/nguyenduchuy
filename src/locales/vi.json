@@ -31,6 +31,7 @@
     "error": "Lỗi",
     "success": "Thành công",
     "unknown": "Không xác định",
+    "unknown_author": "Người dùng",
     "cancel": "Hủy"
   },
   "auth": {

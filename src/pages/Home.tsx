@@ -379,7 +379,7 @@ const Home = () => {
                                     <User className="w-3 h-3 text-muted-foreground" />
                                   </div>
                                 )}
-                                <span className="font-medium">{post.profiles?.full_name || "Tác giả"}</span>
+                                <span className="font-medium">{post.profiles?.full_name || t("common.unknown_author")}</span>
                               </div>
                               <span>•</span>
                               <div className="flex items-center gap-1">

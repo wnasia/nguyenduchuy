@@ -30,6 +30,7 @@
     "error": "Error",
     "success": "Success",
     "unknown": "Unknown",
+    "unknown_author": "User",
     "cancel": "Cancel"
   },
   "story": {

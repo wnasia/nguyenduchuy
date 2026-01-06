@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, Calendar, Image, Video, Tag, DollarSign, User } from "lucide-react";
+import { parsePostContent, stripHtmlAndDecode, decodeHtmlEntities } from "@/lib/htmlUtils";
 
 interface Post {
   id: string;
@@ -129,22 +129,13 @@ const AdminContent = () => {
   };
 
   const parseContent = (content: string): ParsedContent => {
-    try {
-      const parsed = JSON.parse(content);
-      return {
-        story: parsed.story || '',
-        imageLinks: parsed.imageLinks || [],
-        videoLinks: parsed.videoLinks || [],
-        tags: parsed.tags || []
-      };
-    } catch {
-      return {
-        story: content,
-        imageLinks: [],
-        videoLinks: [],
-        tags: []
-      };
-    }
+    const parsed = parsePostContent(content);
+    return {
+      story: stripHtmlAndDecode(parsed.story),
+      imageLinks: parsed.imageLinks || [],
+      videoLinks: parsed.videoLinks || [],
+      tags: parsed.tags || []
+    };
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -213,7 +204,7 @@ const AdminContent = () => {
                 <div key={post.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{post.title}</h3>
+                      <h3 className="font-semibold text-lg">{decodeHtmlEntities(post.title)}</h3>
                       <p className="text-sm text-gray-500">
                         By {post.profiles?.full_name || 'Unknown User'} ({post.profiles?.email || 'No email'})
                       </p>
