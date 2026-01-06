@@ -29,7 +29,8 @@
     "language": "语言",
     "loading": "加载中...",
     "error": "错误",
-    "success": "成功"
+    "success": "成功",
+    "unknown_author": "用户"
   },
   "auth": {
     "welcome_back": "欢迎回来",
