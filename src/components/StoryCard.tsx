@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { parsePostContent, stripHtmlAndDecode, decodeHtmlEntities } from "@/lib/htmlUtils";
+import SocialShareButtons from "./SocialShareButtons";
 
 interface Post {
   id: string;
@@ -126,7 +127,7 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
               {decodedTitle}
             </CardTitle>
             <CardDescription className="flex items-center gap-4 text-sm">
-              <span>{t("story.by_author")} {story.profiles?.full_name || t("story.anonymous")}</span>
+              <span>{t("story.by_author")} {story.profiles?.full_name || t("story.author")}</span>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 {new Date(story.created_at).toLocaleDateString()}
@@ -141,7 +142,7 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
               </p>
             )}
             
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <span className="flex items-center gap-2">
                   <Eye className="h-4 w-4" />
@@ -156,12 +157,19 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
                   {Math.floor(Math.random() * 20) + 5}
                 </span>
               </div>
-              <Button 
-                variant="outline" 
-                className="story-link min-h-[44px] min-w-[44px]"
-              >
-                {t("story.read_more")}
-              </Button>
+              <div className="flex items-center gap-2">
+                <SocialShareButtons 
+                  url={`${window.location.origin}/story/${story.slug || story.id}`}
+                  title={decodedTitle}
+                  compact
+                />
+                <Button 
+                  variant="outline" 
+                  className="story-link min-h-[44px] min-w-[44px]"
+                >
+                  {t("story.read_more")}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </div>
