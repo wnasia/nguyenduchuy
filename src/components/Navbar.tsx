@@ -47,12 +47,21 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2 group">
+            <a 
+              href="/" 
+              onClick={(e) => {
+                if (window.location.pathname === '/') {
+                  e.preventDefault();
+                  window.location.reload();
+                }
+              }}
+              className="flex items-center space-x-2 group"
+            >
               <Heart className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
               <span className="text-2xl font-serif font-semibold text-gray-900">
                 {t("brand.name")}
               </span>
-            </Link>
+            </a>
           </div>
 
           {/* Desktop navigation */}
