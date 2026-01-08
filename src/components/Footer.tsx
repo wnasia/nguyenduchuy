@@ -8,7 +8,7 @@ const Footer = () => {
   return (
     <footer className="bg-gradient-to-br from-gray-50 via-white to-gray-100 border-t border-gray-200 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* About Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-serif font-semibold text-gray-900">
@@ -44,24 +44,6 @@ const Footer = () => {
             </nav>
           </div>
 
-          {/* Contact Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-serif font-semibold text-gray-900">
-              {t("footer.contact_us") || "Contact Us"}
-            </h3>
-            <div className="flex flex-col space-y-3">
-              <a 
-                href="https://t.me/tkwni"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-2 text-sm text-gray-600 hover:text-primary transition-colors group"
-              >
-                <Send className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                <span>Telegram: @tkwni</span>
-              </a>
-            </div>
-          </div>
-
           {/* Social Media */}
           <div className="space-y-4">
             <h3 className="text-lg font-serif font-semibold text-gray-900">
@@ -72,7 +54,7 @@ const Footer = () => {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-primary hover:border-primary transition-all hover:scale-110"
+                className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-[#1877F2] hover:border-[#1877F2] transition-all hover:scale-110"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
@@ -81,10 +63,19 @@ const Footer = () => {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-primary hover:border-primary transition-all hover:scale-110"
+                className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-foreground hover:border-foreground transition-all hover:scale-110"
                 aria-label="Twitter"
               >
                 <Twitter className="h-5 w-5" />
+              </a>
+              <a
+                href="https://t.me/tkwni"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-[#0088cc] hover:border-[#0088cc] transition-all hover:scale-110"
+                aria-label="Telegram"
+              >
+                <Send className="h-5 w-5" />
               </a>
             </div>
           </div>
