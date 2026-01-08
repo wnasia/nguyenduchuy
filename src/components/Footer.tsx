@@ -1,4 +1,4 @@
-import { Mail, MessageCircle, Home, BookOpen, Image as ImageIcon, Video, Facebook, Twitter } from "lucide-react";
+import { Home, BookOpen, Image as ImageIcon, Video, Facebook, Twitter, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
 
@@ -51,21 +51,13 @@ const Footer = () => {
             </h3>
             <div className="flex flex-col space-y-3">
               <a 
-                href="mailto:huy110qt@gmail.com"
-                className="flex items-center space-x-2 text-sm text-gray-600 hover:text-primary transition-colors group"
-              >
-                <Mail className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                <span>huy110qt@gmail.com</span>
-              </a>
-              
-              <a 
-                href="https://wa.me/84918795578"
+                href="https://t.me/tkwni"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center space-x-2 text-sm text-gray-600 hover:text-primary transition-colors group"
               >
-                <MessageCircle className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                <span>0918795578</span>
+                <Send className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                <span>Telegram: @tkwni</span>
               </a>
             </div>
           </div>

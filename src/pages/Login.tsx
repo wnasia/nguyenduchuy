@@ -26,10 +26,10 @@ const Login = () => {
     name: ""
   });
 
-  // Redirect if already logged in
+  // Redirect if already logged in - go to dashboard
   useEffect(() => {
     if (user) {
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     }
   }, [user, navigate]);
 
@@ -74,7 +74,7 @@ const Login = () => {
             title: t("common.welcome"),
             description: t("auth.login_success"),
           });
-          navigate('/', { replace: true });
+          navigate('/dashboard', { replace: true });
         }
       }
     } catch (error: any) {
