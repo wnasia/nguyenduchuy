@@ -11,6 +11,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import EngagementSection from "@/components/EngagementSection";
 import { useI18n } from "@/hooks/useI18n";
 import { parsePostContent, decodeHtmlEntities } from "@/lib/htmlUtils";
+import ArticleSidebar from "@/components/article/ArticleSidebar";
 
 interface Post {
   id: string;
@@ -149,7 +150,7 @@ const StoryDetail = () => {
 
   return (
     <div className="min-h-screen py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <Button 
           variant="outline" 
           onClick={() => navigate('/stories')}
@@ -159,122 +160,135 @@ const StoryDetail = () => {
           Back to Stories
         </Button>
 
-        <Card className="border-0 shadow-lg">
-          <CardHeader>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {parsedContent.tags && parsedContent.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-xs">
-                  <Tag className="h-3 w-3 mr-1" />
-                  {tag}
-                </Badge>
-              ))}
-              <Badge variant="outline" className="text-xs">
-                {story.type}
-              </Badge>
-            </div>
-            <CardTitle className="text-3xl font-serif mb-4">
-              {decodedTitle}
-            </CardTitle>
-            <CardDescription className="flex flex-wrap items-center gap-4 text-base">
-              <span>by {story.profiles?.full_name || 'Anonymous'}</span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                {new Date(story.created_at).toLocaleDateString()}
-              </span>
-              <span className="flex items-center gap-1">
-                <Eye className="h-4 w-4" />
-                {story.view_count} {t("story.views") || "views"}
-              </span>
-            </CardDescription>
-            {/* Social Share Buttons */}
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-              <span className="text-sm text-muted-foreground mr-2">
-                {t("story.share") || "Share"}:
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={shareOnFacebook}
-                className="btn-social btn-facebook"
-                aria-label="Share on Facebook"
-              >
-                <Facebook className="h-4 w-4" />
-                Facebook
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={shareOnTwitter}
-                className="btn-social btn-x"
-                aria-label="Share on X"
-              >
-                <Share2 className="h-4 w-4" />
-                X
-              </Button>
-            </div>
-          </CardHeader>
-          
-          <CardContent>
-            {/* Render HTML content properly */}
-            {parsedContent.story && (
-              <div 
-                className="prose prose-lg max-w-none mb-8 
-                  prose-headings:text-foreground 
-                  prose-p:text-foreground/90
-                  prose-strong:text-foreground
-                  prose-a:text-primary
-                  prose-img:rounded-lg prose-img:shadow-md
-                  [&_img]:max-w-full [&_img]:h-auto
-                  [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-lg"
-                dangerouslySetInnerHTML={{ __html: parsedContent.story }}
-              />
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content - Left Column */}
+          <div className="lg:col-span-2">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {parsedContent.tags && parsedContent.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">
+                      <Tag className="h-3 w-3 mr-1" />
+                      {tag}
+                    </Badge>
+                  ))}
+                  <Badge variant="outline" className="text-xs">
+                    {story.type}
+                  </Badge>
+                </div>
+                <CardTitle className="text-3xl font-serif mb-4">
+                  {decodedTitle}
+                </CardTitle>
+                <CardDescription className="flex flex-wrap items-center gap-4 text-base">
+                  <span>by {story.profiles?.full_name || 'Anonymous'}</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    {new Date(story.created_at).toLocaleDateString()}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Eye className="h-4 w-4" />
+                    {story.view_count} {t("story.views") || "views"}
+                  </span>
+                </CardDescription>
+                {/* Social Share Buttons */}
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                  <span className="text-sm text-muted-foreground mr-2">
+                    {t("story.share") || "Share"}:
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={shareOnFacebook}
+                    className="btn-social btn-facebook"
+                    aria-label="Share on Facebook"
+                  >
+                    <Facebook className="h-4 w-4" />
+                    Facebook
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={shareOnTwitter}
+                    className="btn-social btn-x"
+                    aria-label="Share on X"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    X
+                  </Button>
+                </div>
+              </CardHeader>
+              
+              <CardContent>
+                {/* Render HTML content properly */}
+                {parsedContent.story && (
+                  <div 
+                    className="prose prose-lg max-w-none mb-8 
+                      prose-headings:text-foreground 
+                      prose-p:text-foreground/90
+                      prose-strong:text-foreground
+                      prose-a:text-primary
+                      prose-img:rounded-lg prose-img:shadow-md
+                      [&_img]:max-w-full [&_img]:h-auto
+                      [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-lg"
+                    dangerouslySetInnerHTML={{ __html: parsedContent.story }}
+                  />
+                )}
 
-            {parsedContent.imageLinks && parsedContent.imageLinks.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <Image className="h-5 w-5" />
-                  Images ({parsedContent.imageLinks.length})
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {parsedContent.imageLinks.map((imageUrl, index) => (
-                    <div key={index} className="rounded-lg overflow-hidden shadow-md">
-                      <img 
-                        src={imageUrl} 
-                        alt={`Story image ${index + 1}`}
-                        className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/placeholder.svg';
-                        }}
-                      />
+                {parsedContent.imageLinks && parsedContent.imageLinks.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                      <Image className="h-5 w-5" />
+                      Images ({parsedContent.imageLinks.length})
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {parsedContent.imageLinks.map((imageUrl, index) => (
+                        <div key={index} className="rounded-lg overflow-hidden shadow-md">
+                          <img 
+                            src={imageUrl} 
+                            alt={`Story image ${index + 1}`}
+                            className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/placeholder.svg';
+                            }}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {parsedContent.videoLinks && parsedContent.videoLinks.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <Video className="h-5 w-5" />
-                  Videos ({parsedContent.videoLinks.length})
-                </h3>
-                <div className="space-y-4">
-                  {parsedContent.videoLinks.map((videoUrl, index) => (
-                    <VideoPlayer
-                      key={index}
-                      src={videoUrl}
-                      poster="/placeholder.svg"
-                      className="shadow-md"
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <EngagementSection postId={story.id} />
-          </CardContent>
-        </Card>
+                {parsedContent.videoLinks && parsedContent.videoLinks.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                      <Video className="h-5 w-5" />
+                      Videos ({parsedContent.videoLinks.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {parsedContent.videoLinks.map((videoUrl, index) => (
+                        <VideoPlayer
+                          key={index}
+                          src={videoUrl}
+                          poster="/placeholder.svg"
+                          className="shadow-md"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <EngagementSection postId={story.id} />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Right Column */}
+          <div className="hidden lg:block">
+            <ArticleSidebar 
+              contentHtml={parsedContent.story || ""} 
+              currentPostId={story.id} 
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
