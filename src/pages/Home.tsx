@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import BannerSlider from "@/components/BannerSlider";
 import LunarCalendarWidget from "@/components/LunarCalendarWidget";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
+import ExchangeRateWidget from "@/components/widgets/ExchangeRateWidget";
+import WeatherWidget from "@/components/widgets/WeatherWidget";
 import { parsePostContent, getExcerpt, decodeHtmlEntities, type ParsedContent } from "@/lib/htmlUtils";
 import SocialShareButtons from "@/components/SocialShareButtons";
 
@@ -406,8 +408,11 @@ const Home = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Flight Search Widget */}
-            <FlightSearchWidget />
+            {/* Exchange Rate Widget - First */}
+            <ExchangeRateWidget />
+
+            {/* Weather Widget - Second */}
+            <WeatherWidget />
 
             {/* Top Stories */}
             <div className="bg-card rounded-lg border border-border p-5">
@@ -485,6 +490,9 @@ const Home = () => {
                 </div>
               </div>
             </div>
+
+            {/* Flight Search Widget - Always Last */}
+            <FlightSearchWidget />
           </div>
         </div>
       </div>

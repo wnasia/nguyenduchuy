@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { parsePostContent, decodeHtmlEntities } from "@/lib/htmlUtils";
 import TableOfContents from "./TableOfContents";
+import ExchangeRateWidget from "@/components/widgets/ExchangeRateWidget";
+import WeatherWidget from "@/components/widgets/WeatherWidget";
+import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 
 interface Post {
   id: string;
@@ -105,8 +108,14 @@ const ArticleSidebar = ({ contentHtml, currentPostId }: ArticleSidebarProps) => 
 
   return (
     <div className="space-y-6 sticky top-24">
-      {/* Table of Contents */}
+      {/* Table of Contents - First */}
       <TableOfContents contentHtml={contentHtml} />
+
+      {/* Exchange Rate Widget - Second */}
+      <ExchangeRateWidget />
+
+      {/* Weather Widget - Third */}
+      <WeatherWidget />
 
       {/* Top Stories */}
       <div className="bg-card rounded-lg border border-border p-5">
@@ -194,6 +203,9 @@ const ArticleSidebar = ({ contentHtml, currentPostId }: ArticleSidebarProps) => 
           })}
         </div>
       </div>
+
+      {/* Flight Search Widget - Always Last */}
+      <FlightSearchWidget />
     </div>
   );
 };
