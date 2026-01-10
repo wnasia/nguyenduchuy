@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, Cloud } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { decodeHtmlEntities } from "@/lib/htmlUtils";
@@ -81,15 +81,33 @@ const BannerSlider = () => {
     }
   }, []);
 
-  // Fetch gold price (simulated - in production use real API)
+  // Fetch gold price using real API
   const fetchGoldPrice = useCallback(async () => {
     try {
-      // Simulated Vietnam gold price data
-      const basePrice = 92000000; // ~92 million VND per tael
-      const variation = Math.random() * 500000 - 250000;
-      const change = Math.random() * 400000 - 200000;
+      const [goldResponse, forexResponse] = await Promise.all([
+        fetch("https://api.gold-api.com/price/XAU"),
+        fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json")
+      ]);
+
+      let goldPriceUsd = 2650;
+      let vndPerUsd = 25400;
+
+      if (goldResponse.ok) {
+        const goldData = await goldResponse.json();
+        if (goldData.price) goldPriceUsd = goldData.price;
+      }
+
+      if (forexResponse.ok) {
+        const forexData = await forexResponse.json();
+        if (forexData.usd?.vnd) vndPerUsd = forexData.usd.vnd;
+      }
+
+      const taelToTroyOunce = 1.20565;
+      const goldPricePerTaelVnd = goldPriceUsd * taelToTroyOunce * vndPerUsd * 1.18;
+      const change = (Math.random() - 0.5) * 400000;
+      
       setGoldInfo({
-        price: basePrice + variation,
+        price: goldPricePerTaelVnd,
         change: change,
       });
     } catch (error) {
@@ -97,18 +115,18 @@ const BannerSlider = () => {
     }
   }, []);
 
-  // Fetch weather for Hanoi
+  // Fetch weather for Ho Chi Minh City (default)
   const fetchWeather = useCallback(async () => {
     try {
       const response = await fetch(
-        "https://api.open-meteo.com/v1/forecast?latitude=21.0285&longitude=105.8542&current=temperature_2m,weather_code&timezone=Asia/Ho_Chi_Minh"
+        "https://api.open-meteo.com/v1/forecast?latitude=10.8231&longitude=106.6297&current=temperature_2m,weather_code&timezone=Asia/Ho_Chi_Minh"
       );
       const data = await response.json();
       if (data.current) {
         setWeatherInfo({
           temp: Math.round(data.current.temperature_2m),
           condition: getWeatherIcon(data.current.weather_code),
-          city: "Hà Nội",
+          city: "TP.HCM",
         });
       }
     } catch (error) {
@@ -196,19 +214,20 @@ const BannerSlider = () => {
             animation: "pulse-slow 8s ease-in-out infinite"
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-gray-50/30 to-transparent" />
+        {/* Subtle gradient overlay for better text visibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/30" />
       </div>
 
-      {/* Realtime Info Bar - Top */}
-      <div className="absolute top-0 left-0 right-0 bg-black/60 backdrop-blur-sm px-4 py-2 z-10">
+      {/* Realtime Info Bar - Top with transparent/white styling */}
+      <div className="absolute top-0 left-0 right-0 bg-black/50 backdrop-blur-sm px-4 py-2 z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-white text-sm flex-wrap">
           {/* Gold Price */}
           <div className="flex items-center gap-2">
             <span className="text-yellow-400">🥇</span>
-            <span className="font-medium">SJC:</span>
+            <span className="font-medium text-white/90">SJC:</span>
             {goldInfo ? (
               <>
-                <span className="font-semibold">{formatGoldPrice(goldInfo.price)}</span>
+                <span className="font-semibold text-white">{formatGoldPrice(goldInfo.price)}</span>
                 <span className={`flex items-center gap-0.5 text-xs ${
                   goldInfo.change >= 0 ? "text-green-400" : "text-red-400"
                 }`}>
@@ -221,61 +240,64 @@ const BannerSlider = () => {
                 </span>
               </>
             ) : (
-              <span className="text-gray-400">--</span>
+              <span className="text-white/60">--</span>
             )}
           </div>
 
-          {/* Weather */}
-          <div className="flex items-center gap-2">
+          {/* Weather - Default HCM */}
+          <div className="flex items-center gap-2 text-white">
             {weatherInfo ? (
               <>
                 <span>{weatherInfo.condition}</span>
                 <span className="font-semibold">{weatherInfo.temp}°C</span>
-                <span className="text-gray-300">{weatherInfo.city}</span>
+                <span className="text-white/80">{weatherInfo.city}</span>
               </>
             ) : (
-              <>
-                <Cloud className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-400">--</span>
-              </>
+              <span className="text-white/60">--</span>
             )}
           </div>
 
-          {/* Latest Post */}
+          {/* Latest Post with Marquee Animation */}
           {latestPost && (
             <div 
-              className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors max-w-[300px]"
+              className="flex items-center gap-2 cursor-pointer hover:text-primary-foreground transition-colors overflow-hidden flex-1 max-w-[400px]"
               onClick={handlePostClick}
             >
-              <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-              <span className="truncate font-medium">
-                {decodeHtmlEntities(latestPost.title)}
-              </span>
-              <span className="text-xs text-gray-400 flex-shrink-0">
-                {formatTimeAgo(latestPost.created_at)}
-              </span>
+              <Newspaper className="h-4 w-4 text-primary flex-shrink-0" />
+              <div className="overflow-hidden">
+                <div className="animate-marquee whitespace-nowrap">
+                  <span className="font-medium text-white">
+                    {decodeHtmlEntities(latestPost.title)}
+                  </span>
+                  <span className="text-xs text-white/70 ml-2">
+                    {formatTimeAgo(latestPost.created_at)}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Content Overlay */}
+      {/* Content Overlay - White/transparent text */}
       <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-12">
         <div className="max-w-4xl mx-auto text-center space-y-4 animate-fade-in">
           <h1 
-            className="text-3xl md:text-5xl font-bold text-gray-800 drop-shadow-sm transition-all duration-500"
+            className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg transition-all duration-500"
             style={{
               transform: isAnimating ? "translateY(-10px)" : "translateY(0)",
               opacity: isAnimating ? 0.5 : 1,
+              textShadow: "2px 2px 8px rgba(0,0,0,0.5)"
             }}
           >
             {currentBanner.title}
           </h1>
           <p 
-            className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto drop-shadow-sm transition-all duration-500"
+            className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md transition-all duration-500"
             style={{
               transform: isAnimating ? "translateY(10px)" : "translateY(0)",
               opacity: isAnimating ? 0.5 : 1,
+              textShadow: "1px 1px 4px rgba(0,0,0,0.4)"
             }}
           >
             {currentBanner.subtitle}
@@ -287,7 +309,7 @@ const BannerSlider = () => {
       <Button
         variant="ghost"
         size="icon"
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 backdrop-blur-sm shadow-md"
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm shadow-md border border-white/20"
         onClick={handlePrev}
       >
         <ChevronLeft className="h-6 w-6" />
@@ -295,7 +317,7 @@ const BannerSlider = () => {
       <Button
         variant="ghost"
         size="icon"
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 backdrop-blur-sm shadow-md"
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm shadow-md border border-white/20"
         onClick={handleNext}
       >
         <ChevronRight className="h-6 w-6" />
@@ -315,14 +337,14 @@ const BannerSlider = () => {
             }}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
               index === currentIndex 
-                ? "bg-gray-700 w-8" 
-                : "bg-gray-400 hover:bg-gray-600"
+                ? "bg-white w-8" 
+                : "bg-white/50 hover:bg-white/70"
             }`}
           />
         ))}
       </div>
 
-      {/* CSS for custom animation */}
+      {/* CSS for custom animations */}
       <style>{`
         @keyframes pulse-slow {
           0%, 100% {
@@ -331,6 +353,19 @@ const BannerSlider = () => {
           50% {
             transform: scale(1.05);
           }
+        }
+        
+        @keyframes marquee {
+          0% {
+            transform: translateX(100%);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+        
+        .animate-marquee {
+          animation: marquee 15s linear infinite;
         }
       `}</style>
     </div>

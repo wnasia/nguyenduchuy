@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Cloud, Sun, CloudRain, CloudSnow, Wind, Droplets, RefreshCw, MapPin } from "lucide-react";
+import { Cloud, Sun, CloudRain, CloudSnow, Wind, Droplets, RefreshCw, MapPin, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
@@ -17,14 +17,19 @@ interface CityWeather {
   name: string;
   lat: number;
   lon: number;
+  timezone: string;
   data?: WeatherData;
 }
 
 const WeatherWidget = () => {
   const [cities, setCities] = useState<CityWeather[]>([
-    { name: "Hà Nội", lat: 21.0285, lon: 105.8542 },
-    { name: "TP.HCM", lat: 10.8231, lon: 106.6297 },
-    { name: "Đà Nẵng", lat: 16.0544, lon: 108.2022 },
+    { name: "TP.HCM", lat: 10.8231, lon: 106.6297, timezone: "Asia/Ho_Chi_Minh" },
+    { name: "Hà Nội", lat: 21.0285, lon: 105.8542, timezone: "Asia/Ho_Chi_Minh" },
+    { name: "Quy Nhơn", lat: 13.7765, lon: 109.2236, timezone: "Asia/Ho_Chi_Minh" },
+    { name: "New York", lat: 40.7128, lon: -74.0060, timezone: "America/New_York" },
+    { name: "Sydney", lat: -33.8688, lon: 151.2093, timezone: "Australia/Sydney" },
+    { name: "Tokyo", lat: 35.6762, lon: 139.6503, timezone: "Asia/Tokyo" },
+    { name: "London", lat: 51.5074, lon: -0.1278, timezone: "Europe/London" },
   ]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,13 +37,13 @@ const WeatherWidget = () => {
 
   const getWeatherIcon = (code: number) => {
     // WMO Weather interpretation codes
-    if (code === 0) return <Sun className="h-6 w-6 text-yellow-500" />;
-    if (code >= 1 && code <= 3) return <Cloud className="h-6 w-6 text-gray-400" />;
-    if (code >= 45 && code <= 48) return <Cloud className="h-6 w-6 text-gray-500" />;
-    if (code >= 51 && code <= 67) return <CloudRain className="h-6 w-6 text-blue-400" />;
-    if (code >= 71 && code <= 77) return <CloudSnow className="h-6 w-6 text-blue-200" />;
-    if (code >= 80 && code <= 99) return <CloudRain className="h-6 w-6 text-blue-500" />;
-    return <Sun className="h-6 w-6 text-yellow-500" />;
+    if (code === 0) return <Sun className="h-5 w-5 text-yellow-500" />;
+    if (code >= 1 && code <= 3) return <Cloud className="h-5 w-5 text-gray-400" />;
+    if (code >= 45 && code <= 48) return <Cloud className="h-5 w-5 text-gray-500" />;
+    if (code >= 51 && code <= 67) return <CloudRain className="h-5 w-5 text-blue-400" />;
+    if (code >= 71 && code <= 77) return <CloudSnow className="h-5 w-5 text-blue-200" />;
+    if (code >= 80 && code <= 99) return <CloudRain className="h-5 w-5 text-blue-500" />;
+    return <Sun className="h-5 w-5 text-yellow-500" />;
   };
 
   const getWeatherDescription = (code: number): string => {
@@ -63,7 +68,7 @@ const WeatherWidget = () => {
       // Using Open-Meteo API - completely free, no API key needed
       const weatherPromises = cities.map(async (city) => {
         const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia/Ho_Chi_Minh`
+          `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=${city.timezone}`
         );
 
         if (!response.ok) {
@@ -108,11 +113,12 @@ const WeatherWidget = () => {
   if (error) {
     return (
       <div className="bg-card rounded-lg border border-border p-5">
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
           <Cloud className="h-5 w-5 text-primary" />
           Thời tiết
         </h3>
         <div className="text-center py-4">
+          <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground mb-3">{error}</p>
           <Button variant="outline" size="sm" onClick={fetchWeather}>
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -126,9 +132,9 @@ const WeatherWidget = () => {
   return (
     <div className="bg-card rounded-lg border border-border p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
           <Cloud className="h-5 w-5 text-primary" />
-          Thời tiết Việt Nam
+          Thời tiết
         </h3>
         <Button
           variant="ghost"
@@ -142,23 +148,23 @@ const WeatherWidget = () => {
       </div>
 
       {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
             <div key={i} className="flex items-center justify-between">
-              <Skeleton className="h-12 w-20" />
-              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-10 w-20" />
+              <Skeleton className="h-6 w-14" />
             </div>
           ))}
         </div>
       ) : (
         <>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {cities.map((city) => (
               <div
                 key={city.name}
-                className="flex items-center justify-between py-3 border-b border-border/50 last:border-0"
+                className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   {city.data && getWeatherIcon(city.data.weatherCode)}
                   <div>
                     <div className="flex items-center gap-1">
@@ -173,17 +179,13 @@ const WeatherWidget = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-bold text-foreground">
+                  <div className="text-lg font-bold text-foreground">
                     {city.data?.temperature}°C
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="flex items-center gap-0.5">
                       <Droplets className="h-3 w-3" />
                       {city.data?.humidity}%
-                    </span>
-                    <span className="flex items-center gap-0.5">
-                      <Wind className="h-3 w-3" />
-                      {city.data?.windSpeed}km/h
                     </span>
                   </div>
                 </div>

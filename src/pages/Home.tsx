@@ -322,17 +322,17 @@ const Home = () => {
           {/* Main Content Feed */}
           <div className="lg:col-span-2">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-3 mb-6">
-                <TabsTrigger value="hot" className="flex items-center gap-2">
-                  <Flame className="h-4 w-4" />
+              <TabsList className="w-full grid grid-cols-3 mb-6 bg-muted">
+                <TabsTrigger value="hot" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:text-primary">
+                  <Flame className="h-4 w-4 text-orange-500" />
                   <span>Hot</span>
                 </TabsTrigger>
-                <TabsTrigger value="latest" className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
+                <TabsTrigger value="latest" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:text-primary">
+                  <Clock className="h-4 w-4 text-blue-500" />
                   <span>Mới nhất</span>
                 </TabsTrigger>
-                <TabsTrigger value="favorite" className="flex items-center gap-2">
-                  <Star className="h-4 w-4" />
+                <TabsTrigger value="favorite" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:text-primary">
+                  <Star className="h-4 w-4 text-yellow-500" />
                   <span>Yêu thích</span>
                 </TabsTrigger>
               </TabsList>
