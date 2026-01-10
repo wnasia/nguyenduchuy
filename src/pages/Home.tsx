@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, TrendingUp, Users, Eye, ArrowRight, Clock, Flame, Star, Tag, MessageCircle, Share2, User } from "lucide-react";
+import { TrendingUp, Eye, ArrowRight, Clock, Flame, Star, Tag, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import LunarCalendarWidget from "@/components/LunarCalendarWidget";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 import ExchangeRateWidget from "@/components/widgets/ExchangeRateWidget";
 import WeatherWidget from "@/components/widgets/WeatherWidget";
+import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
+import CommunityStatsWidget from "@/components/widgets/CommunityStatsWidget";
 import { parsePostContent, getExcerpt, decodeHtmlEntities, type ParsedContent } from "@/lib/htmlUtils";
 import SocialShareButtons from "@/components/SocialShareButtons";
 
@@ -406,48 +408,24 @@ const Home = () => {
             </Tabs>
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar - STRICT ORDER */}
           <div className="space-y-6">
-            {/* Exchange Rate Widget - First */}
-            <ExchangeRateWidget />
+            {/* 1. Vietnam Gold Price - FIRST */}
+            <GoldPriceWidget />
 
-            {/* Weather Widget - Second */}
+            {/* 2. Weather */}
             <WeatherWidget />
 
-            {/* Top Stories */}
-            <div className="bg-card rounded-lg border border-border p-5">
-              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Top Stories
-              </h3>
-              <div className="space-y-3">
-                {hotPosts.slice(0, 5).map((post, index) => (
-                  <div 
-                    key={post.id}
-                    onClick={() => handleReadStory(post.slug, post.id)}
-                    className="flex gap-3 cursor-pointer group"
-                  >
-                    <span className="text-2xl font-bold text-muted-foreground/30 flex-shrink-0">
-                      {(index + 1).toString().padStart(2, '0')}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                        {decodeHtmlEntities(post.title)}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                        <Eye className="h-3 w-3" />
-                        <span>{post.view_count}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Lunar Calendar Widget */}
+            {/* 3. Lunar / Solar Calendar */}
             <LunarCalendarWidget />
 
-            {/* Popular Topics */}
+            {/* 4. Flight Booking */}
+            <FlightSearchWidget />
+
+            {/* 5. Exchange Rates */}
+            <ExchangeRateWidget />
+
+            {/* 6. Popular Topics */}
             <div className="bg-card rounded-lg border border-border p-5">
               <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Tag className="h-5 w-5 text-primary" />
@@ -466,33 +444,8 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Community Stats */}
-            <div className="bg-card rounded-lg border border-border p-5">
-              <h3 className="text-lg font-semibold text-foreground mb-4">
-                Thống kê cộng đồng
-              </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Câu chuyện</span>
-                  <span className="font-semibold text-foreground">{stats.stories.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Hình ảnh</span>
-                  <span className="font-semibold text-foreground">{stats.images.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Thành viên</span>
-                  <span className="font-semibold text-foreground">{stats.members.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Lượt xem</span>
-                  <span className="font-semibold text-foreground">{stats.views.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Flight Search Widget - Always Last */}
-            <FlightSearchWidget />
+            {/* 7. Community Stats - LAST */}
+            <CommunityStatsWidget />
           </div>
         </div>
       </div>
