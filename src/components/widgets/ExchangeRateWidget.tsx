@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { DollarSign, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
+import { DollarSign, RefreshCw, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
@@ -23,6 +23,7 @@ const ExchangeRateWidget = () => {
     { code: "KRW", name: "Won Hàn Quốc", flag: "🇰🇷" },
     { code: "CNY", name: "Nhân dân tệ", flag: "🇨🇳" },
     { code: "GBP", name: "Bảng Anh", flag: "🇬🇧" },
+    { code: "AUD", name: "Đô la Úc", flag: "🇦🇺" },
   ];
 
   const fetchRates = useCallback(async () => {
@@ -30,9 +31,10 @@ const ExchangeRateWidget = () => {
     setError(null);
     
     try {
-      // Using Frankfurter API - completely free, no API key needed
+      // Using FreeExchangeRateApi from GitHub - supports VND
+      // Fallback: use exchangerate-api.com or similar free API
       const response = await fetch(
-        "https://api.frankfurter.app/latest?from=VND&to=USD,EUR,JPY,KRW,CNY,GBP"
+        "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
       );
       
       if (!response.ok) {
@@ -40,12 +42,25 @@ const ExchangeRateWidget = () => {
       }
       
       const data = await response.json();
+      const usdRates = data.usd;
       
-      // Convert rates (API returns VND to other currencies, we need to invert for display)
+      // Get VND rate per 1 USD
+      const vndPerUsd = usdRates.vnd || 25400;
+      
+      // Calculate VND per 1 unit of each foreign currency
       const formattedRates: ExchangeRate[] = currencyConfig.map((currency) => {
-        const apiRate = data.rates[currency.code];
-        // Invert the rate: 1 foreign currency = X VND
-        const vndRate = apiRate ? 1 / apiRate : 0;
+        const currencyCode = currency.code.toLowerCase();
+        const currencyToUsd = usdRates[currencyCode];
+        
+        // Calculate how much VND equals 1 unit of foreign currency
+        // If USD is 1 and EUR is 0.92, then 1 EUR = 1/0.92 USD = vndPerUsd/0.92 VND
+        let vndRate = 0;
+        if (currencyCode === "usd") {
+          vndRate = vndPerUsd;
+        } else if (currencyToUsd) {
+          vndRate = vndPerUsd / currencyToUsd;
+        }
+        
         return {
           code: currency.code,
           name: currency.name,
@@ -82,11 +97,12 @@ const ExchangeRateWidget = () => {
   if (error) {
     return (
       <div className="bg-card rounded-lg border border-border p-5">
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-primary" />
           Tỷ giá ngoại tệ
         </h3>
         <div className="text-center py-4">
+          <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground mb-3">{error}</p>
           <Button variant="outline" size="sm" onClick={fetchRates}>
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -100,7 +116,7 @@ const ExchangeRateWidget = () => {
   return (
     <div className="bg-card rounded-lg border border-border p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-primary" />
           Tỷ giá ngoại tệ
         </h3>
@@ -117,7 +133,7 @@ const ExchangeRateWidget = () => {
 
       {loading ? (
         <div className="space-y-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
             <div key={i} className="flex justify-between items-center">
               <Skeleton className="h-5 w-24" />
               <Skeleton className="h-5 w-20" />

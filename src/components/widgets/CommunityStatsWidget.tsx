@@ -79,7 +79,7 @@ const CommunityStatsWidget = () => {
   if (error) {
     return (
       <div className="bg-card rounded-lg border border-border p-5">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Thống kê cộng đồng</h3>
+        <h3 className="text-lg font-semibold text-primary mb-4">Thống kê cộng đồng</h3>
         <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
           <AlertCircle className="h-5 w-5" />
           <span className="text-sm">Không thể tải dữ liệu</span>
@@ -90,7 +90,7 @@ const CommunityStatsWidget = () => {
 
   return (
     <div className="bg-card rounded-lg border border-border p-5">
-      <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+      <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
         <Users className="h-5 w-5 text-primary" />
         Thống kê cộng đồng
       </h3>
