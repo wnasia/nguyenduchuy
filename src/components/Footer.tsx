@@ -11,9 +11,13 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* About Section */}
-          <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2 mb-3">
-              <img src={huyLogo} alt="HUY" className="h-16 w-auto" />
+          <div className="space-y-4 text-center md:text-left">
+            <Link to="/" className="inline-flex items-center mb-3">
+              <img 
+                src={huyLogo} 
+                alt="HUY" 
+                className="h-14 sm:h-16 lg:h-20 w-auto object-contain" 
+              />
             </Link>
             <p className="text-sm text-gray-600 leading-relaxed">
               {t("footer.about_description") || "A warm place to share precious moments, unique stories, and life experiences."}
