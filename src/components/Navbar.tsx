@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart, Menu, X, LogOut, User, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
 import LanguageSelector from "./LanguageSelector";
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import huyLogo from "@/assets/huy-logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,10 +58,11 @@ const Navbar = () => {
               }}
               className="flex items-center space-x-2 group"
             >
-              <Heart className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-              <span className="text-2xl font-serif font-semibold text-gray-900">
-                {t("brand.name")}
-              </span>
+              <img 
+                src={huyLogo} 
+                alt="HUY" 
+                className="h-10 w-auto group-hover:scale-105 transition-transform" 
+              />
             </a>
           </div>
 

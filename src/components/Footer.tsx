@@ -1,6 +1,7 @@
 import { Home, BookOpen, Image as ImageIcon, Video, Facebook, Twitter, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
+import huyLogo from "@/assets/huy-logo.png";
 
 const Footer = () => {
   const { t } = useI18n();
@@ -11,9 +12,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* About Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-serif font-semibold text-gray-900">
-              {t("footer.about") || "About"}
-            </h3>
+            <Link to="/" className="flex items-center space-x-2 mb-3">
+              <img src={huyLogo} alt="HUY" className="h-12 w-auto" />
+            </Link>
             <p className="text-sm text-gray-600 leading-relaxed">
               {t("footer.about_description") || "A warm place to share precious moments, unique stories, and life experiences."}
             </p>
