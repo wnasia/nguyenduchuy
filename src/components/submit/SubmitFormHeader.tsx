@@ -1,7 +1,7 @@
 
-import { Heart } from "lucide-react";
 import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useI18n } from "@/hooks/useI18n";
+import huyLogo from "@/assets/huy-logo.png";
 
 const SubmitFormHeader = () => {
   const { t } = useI18n();
@@ -17,7 +17,7 @@ const SubmitFormHeader = () => {
       
       <CardHeader className="text-center pb-6">
         <CardTitle className="text-2xl font-serif flex items-center justify-center gap-2">
-          <Heart className="h-6 w-6 text-primary" />
+          <img src={huyLogo} alt="H" className="h-6 w-auto" />
           {t("submit.form_title")}
         </CardTitle>
         <CardDescription>

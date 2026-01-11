@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Mail, Lock } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import huyLogo from "@/assets/huy-logo.png";
 
 const Login = () => {
   const { toast } = useToast();
@@ -115,7 +116,7 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Heart className="h-12 w-12 text-primary" />
+            <img src={huyLogo} alt="HUY" className="h-16 w-auto" />
           </div>
           <h1 className="text-3xl font-serif font-semibold mb-2">
             {isLogin ? t("auth.welcome_back") : t("auth.join_community")}

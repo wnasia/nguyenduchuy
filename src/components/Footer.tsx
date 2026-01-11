@@ -13,7 +13,7 @@ const Footer = () => {
           {/* About Section */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2 mb-3">
-              <img src={huyLogo} alt="HUY" className="h-12 w-auto" />
+              <img src={huyLogo} alt="HUY" className="h-16 w-auto" />
             </Link>
             <p className="text-sm text-gray-600 leading-relaxed">
               {t("footer.about_description") || "A warm place to share precious moments, unique stories, and life experiences."}
