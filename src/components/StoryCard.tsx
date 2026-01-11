@@ -66,7 +66,7 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
       onKeyDown={handleKeyDown}
       aria-label={`${t("story.open")}: ${decodedTitle}`}
     >
-      <Card className="overflow-hidden hover:shadow-xl hover:scale-[1.02] cursor-pointer border-0 shadow-lg animate-fade-in transition-all duration-300 min-h-[44px]" style={{ animationDelay: `${index * 0.1}s` }}>
+      <Card className="overflow-hidden hover:shadow-xl hover:scale-[1.01] sm:hover:scale-[1.02] cursor-pointer border-0 shadow-lg animate-fade-in transition-all duration-300 min-h-[44px]" style={{ animationDelay: `${index * 0.1}s` }}>
         {/* Thumbnail Image */}
         <AspectRatio ratio={16 / 9} className="overflow-hidden bg-muted">
           <img
@@ -116,20 +116,20 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
           )}
         </AspectRatio>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <CardHeader className="px-0 pt-0">
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
               <Badge variant="outline" className="text-xs">
                 {story.type}
               </Badge>
             </div>
-            <CardTitle className="text-xl font-serif mb-2 hover:text-primary transition-colors line-clamp-2">
+            <CardTitle className="text-lg sm:text-xl font-serif mb-1.5 sm:mb-2 hover:text-primary transition-colors line-clamp-2">
               {decodedTitle}
             </CardTitle>
-            <CardDescription className="flex items-center gap-4 text-sm">
+            <CardDescription className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm">
               <span>{t("story.by_author")} {story.profiles?.full_name || t("story.author")}</span>
               <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 {new Date(story.created_at).toLocaleDateString()}
               </span>
             </CardDescription>
@@ -142,18 +142,18 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
               </p>
             )}
             
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                <span className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
+                <span className="flex items-center gap-1 sm:gap-2">
+                  <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {story.view_count}
                 </span>
-                <span className="flex items-center gap-2">
-                  <Heart className="h-4 w-4" />
+                <span className="flex items-center gap-1 sm:gap-2">
+                  <Heart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {Math.floor(Math.random() * 50) + 10}
                 </span>
-                <span className="flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4" />
+                <span className="flex items-center gap-1 sm:gap-2">
+                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {Math.floor(Math.random() * 20) + 5}
                 </span>
               </div>
@@ -165,7 +165,7 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
                 />
                 <Button 
                   variant="outline" 
-                  className="story-link min-h-[44px] min-w-[44px]"
+                  className="story-link min-h-[36px] sm:min-h-[44px] min-w-[36px] sm:min-w-[44px] text-xs sm:text-sm px-2 sm:px-4"
                 >
                   {t("story.read_more")}
                 </Button>

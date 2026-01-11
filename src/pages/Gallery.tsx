@@ -119,11 +119,11 @@ const Gallery = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("gallery.title")}</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-semibold mb-2 sm:mb-4">{t("gallery.title")}</h1>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-2">
               {t("gallery.subtitle")}
             </p>
           </div>
@@ -136,27 +136,27 @@ const Gallery = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("gallery.title")}</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-semibold mb-2 sm:mb-4">{t("gallery.title")}</h1>
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-2">
             {t("gallery.subtitle")}
           </p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-xs sm:text-sm text-gray-500 mt-2">
             {images.length > 0 && (
               <span>{images.length} {t("gallery.image_count")} • {t("gallery.click_to_view")}</span>
             )}
           </p>
-          <div className="mt-6">
-            <Button onClick={handleUploadClick} size="lg" className="gap-2">
-              <Upload className="h-5 w-5" />
+          <div className="mt-4 sm:mt-6">
+            <Button onClick={handleUploadClick} size="lg" className="gap-2 text-sm sm:text-base">
+              <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
               {t("gallery.upload_button")}
             </Button>
           </div>
         </div>
 
-        <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+        <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-3 xl:columns-4 gap-3 sm:gap-4 lg:gap-6 space-y-3 sm:space-y-4 lg:space-y-6">
         {images.length === 0 ? (
           <div className="col-span-full text-center py-16">
             <div className="text-gray-500">

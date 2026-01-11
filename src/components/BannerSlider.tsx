@@ -198,7 +198,7 @@ const BannerSlider = () => {
   const currentBanner = defaultBanners[currentIndex];
 
   return (
-    <div className="relative w-full h-[300px] md:h-[400px] overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="relative w-full h-[220px] sm:h-[280px] md:h-[350px] lg:h-[400px] overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Background Image with Animation */}
       <div 
         className="absolute inset-0 transition-opacity duration-500 ease-in-out"
@@ -219,8 +219,8 @@ const BannerSlider = () => {
       </div>
 
       {/* Realtime Info Bar - Top with transparent/white styling */}
-      <div className="absolute top-0 left-0 right-0 bg-black/50 backdrop-blur-sm px-4 py-2 z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-white text-sm flex-wrap">
+      <div className="absolute top-0 left-0 right-0 bg-black/50 backdrop-blur-sm px-2 sm:px-4 py-1.5 sm:py-2 z-10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 text-white text-xs sm:text-sm flex-wrap">
           {/* Gold Price */}
           <div className="flex items-center gap-2">
             <span className="text-yellow-400">🥇</span>
@@ -257,10 +257,10 @@ const BannerSlider = () => {
             )}
           </div>
 
-          {/* Latest Post with Marquee Animation */}
+          {/* Latest Post with Marquee Animation - Hidden on very small screens */}
           {latestPost && (
             <div 
-              className="flex items-center gap-2 cursor-pointer hover:text-primary-foreground transition-colors overflow-hidden flex-1 max-w-[400px]"
+              className="hidden sm:flex items-center gap-2 cursor-pointer hover:text-primary-foreground transition-colors overflow-hidden flex-1 max-w-[400px]"
               onClick={handlePostClick}
             >
               <Newspaper className="h-4 w-4 text-primary flex-shrink-0" />
@@ -280,10 +280,10 @@ const BannerSlider = () => {
       </div>
 
       {/* Content Overlay - White/transparent text */}
-      <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-12">
-        <div className="max-w-4xl mx-auto text-center space-y-4 animate-fade-in">
+      <div className="relative h-full flex items-center justify-center px-3 sm:px-6 lg:px-8 pt-10 sm:pt-12">
+        <div className="max-w-4xl mx-auto text-center space-y-2 sm:space-y-4 animate-fade-in">
           <h1 
-            className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg transition-all duration-500"
+            className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg transition-all duration-500 px-2"
             style={{
               transform: isAnimating ? "translateY(-10px)" : "translateY(0)",
               opacity: isAnimating ? 0.5 : 1,
@@ -293,7 +293,7 @@ const BannerSlider = () => {
             {currentBanner.title}
           </h1>
           <p 
-            className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md transition-all duration-500"
+            className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md transition-all duration-500 px-4"
             style={{
               transform: isAnimating ? "translateY(10px)" : "translateY(0)",
               opacity: isAnimating ? 0.5 : 1,
@@ -309,18 +309,18 @@ const BannerSlider = () => {
       <Button
         variant="ghost"
         size="icon"
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm shadow-md border border-white/20"
+        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm shadow-md border border-white/20 h-8 w-8 sm:h-10 sm:w-10"
         onClick={handlePrev}
       >
-        <ChevronLeft className="h-6 w-6" />
+        <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
       </Button>
       <Button
         variant="ghost"
         size="icon"
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm shadow-md border border-white/20"
+        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white backdrop-blur-sm shadow-md border border-white/20 h-8 w-8 sm:h-10 sm:w-10"
         onClick={handleNext}
       >
-        <ChevronRight className="h-6 w-6" />
+        <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
       </Button>
 
       {/* Dots Indicator */}
