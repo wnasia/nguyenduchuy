@@ -98,7 +98,7 @@ const Videos = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-center p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -109,23 +109,23 @@ const Videos = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("videos.title")}</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-semibold mb-2 sm:mb-4">{t("videos.title")}</h1>
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-2">
             {t("videos.subtitle")}
           </p>
         </div>
 
         {posts.length === 0 ? (
-          <div className="text-center py-12">
-            <Play className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">{t("videos.no_videos_title")}</h3>
-            <p className="text-gray-500">{t("videos.no_videos_desc")}</p>
+          <div className="text-center py-8 sm:py-12">
+            <Play className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">{t("videos.no_videos_title")}</h3>
+            <p className="text-gray-500 text-sm sm:text-base">{t("videos.no_videos_desc")}</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {posts.map((post, index) => {
               const parsedContent = parsePostContent(post.content);
               const firstVideoUrl = parsedContent.videoLinks?.[0] || '';

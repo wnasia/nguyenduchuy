@@ -84,11 +84,11 @@ const Stories = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("common.stories")}</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-semibold mb-2 sm:mb-4">{t("common.stories")}</h1>
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
               {t("home.story_placeholder")}
             </p>
           </div>
@@ -101,22 +101,22 @@ const Stories = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif font-semibold mb-4">{t("common.stories")}</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-semibold mb-2 sm:mb-4">{t("common.stories")}</h1>
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
             {t("home.story_placeholder")}
           </p>
         </div>
 
         {stories.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-muted-foreground text-lg mb-4">{t("videos.no_videos_title")}</div>
+          <div className="text-center py-8 sm:py-12 lg:py-16">
+            <div className="text-muted-foreground text-base sm:text-lg mb-4">{t("videos.no_videos_title")}</div>
             <p className="text-muted-foreground">{t("videos.no_videos_desc")}</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {stories.map((story, index) => (
               <StoryCard key={story.id} story={story} index={index} />
             ))}
@@ -124,8 +124,8 @@ const Stories = () => {
         )}
 
         {stories.length > 0 && (
-          <div className="text-center mt-12">
-            <button className="px-8 py-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors" disabled>
+          <div className="text-center mt-6 sm:mt-8 lg:mt-12">
+            <button className="px-6 sm:px-8 py-2.5 sm:py-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors text-sm sm:text-base" disabled>
               {t("videos.load_more")}
             </button>
           </div>

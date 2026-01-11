@@ -112,16 +112,16 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-8 px-4">
+    <div className="min-h-screen flex items-center justify-center py-6 sm:py-8 px-3 sm:px-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <img src={huyLogo} alt="HUY" className="h-16 w-auto" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="flex justify-center mb-3 sm:mb-4">
+            <img src={huyLogo} alt="HUY" className="h-12 sm:h-16 w-auto" />
           </div>
-          <h1 className="text-3xl font-serif font-semibold mb-2">
+          <h1 className="text-2xl sm:text-3xl font-serif font-semibold mb-1.5 sm:mb-2">
             {isLogin ? t("auth.welcome_back") : t("auth.join_community")}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600 px-2">
             {isLogin 
               ? t("auth.sign_in_description")
               : t("auth.create_account_description")
@@ -130,8 +130,8 @@ const Login = () => {
         </div>
 
         <Card className="border-0 shadow-xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">
+          <CardHeader className="text-center p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl">
               {isLogin ? t("auth.sign_in") : t("auth.create_account")}
             </CardTitle>
             <CardDescription>

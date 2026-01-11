@@ -149,23 +149,23 @@ const StoryDetail = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-6">
       <div className="max-w-7xl mx-auto">
         <Button 
           variant="outline" 
           onClick={() => navigate('/stories')}
-          className="mb-6"
+          className="mb-4 sm:mb-6 text-sm sm:text-base"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Stories
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content - Left Column */}
           <div className="lg:col-span-2">
             <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <div className="flex flex-wrap gap-2 mb-3">
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                   {parsedContent.tags && parsedContent.tags.map((tag) => (
                     <Badge key={tag} variant="secondary" className="text-xs">
                       <Tag className="h-3 w-3 mr-1" />
@@ -176,10 +176,10 @@ const StoryDetail = () => {
                     {story.type}
                   </Badge>
                 </div>
-                <CardTitle className="text-3xl font-serif mb-4">
+                <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-serif mb-2 sm:mb-4">
                   {decodedTitle}
                 </CardTitle>
-                <CardDescription className="flex flex-wrap items-center gap-4 text-base">
+                <CardDescription className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4 text-sm sm:text-base">
                   <span>by {story.profiles?.full_name || 'Anonymous'}</span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
@@ -191,38 +191,40 @@ const StoryDetail = () => {
                   </span>
                 </CardDescription>
                 {/* Social Share Buttons */}
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <span className="text-sm text-muted-foreground mr-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
+                  <span className="text-sm text-muted-foreground sm:mr-2">
                     {t("story.share") || "Share"}:
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={shareOnFacebook}
-                    className="btn-social btn-facebook"
-                    aria-label="Share on Facebook"
-                  >
-                    <Facebook className="h-4 w-4" />
-                    Facebook
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={shareOnTwitter}
-                    className="btn-social btn-x"
-                    aria-label="Share on X"
-                  >
-                    <Share2 className="h-4 w-4" />
-                    X
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={shareOnFacebook}
+                      className="btn-social btn-facebook text-xs sm:text-sm"
+                      aria-label="Share on Facebook"
+                    >
+                      <Facebook className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-1">Facebook</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={shareOnTwitter}
+                      className="btn-social btn-x text-xs sm:text-sm"
+                      aria-label="Share on X"
+                    >
+                      <Share2 className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-1">X</span>
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 {/* Render HTML content properly */}
                 {parsedContent.story && (
                   <div 
-                    className="prose prose-lg max-w-none mb-8 
+                    className="prose prose-sm sm:prose-base lg:prose-lg max-w-none mb-6 sm:mb-8 
                       prose-headings:text-foreground 
                       prose-p:text-foreground/90
                       prose-strong:text-foreground
@@ -235,18 +237,18 @@ const StoryDetail = () => {
                 )}
 
                 {parsedContent.imageLinks && parsedContent.imageLinks.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                      <Image className="h-5 w-5" />
+                  <div className="mb-6 sm:mb-8">
+                    <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+                      <Image className="h-4 w-4 sm:h-5 sm:w-5" />
                       Images ({parsedContent.imageLinks.length})
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {parsedContent.imageLinks.map((imageUrl, index) => (
                         <div key={index} className="rounded-lg overflow-hidden shadow-md">
                           <img 
                             src={imageUrl} 
                             alt={`Story image ${index + 1}`}
-                            className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
+                            className="w-full h-48 sm:h-56 lg:h-64 object-cover hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = '/placeholder.svg';
                             }}
@@ -258,12 +260,12 @@ const StoryDetail = () => {
                 )}
 
                 {parsedContent.videoLinks && parsedContent.videoLinks.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                      <Video className="h-5 w-5" />
+                  <div className="mb-6 sm:mb-8">
+                    <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+                      <Video className="h-4 w-4 sm:h-5 sm:w-5" />
                       Videos ({parsedContent.videoLinks.length})
                     </h3>
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {parsedContent.videoLinks.map((videoUrl, index) => (
                         <VideoPlayer
                           key={index}

@@ -294,20 +294,20 @@ const Home = () => {
     <div className="min-h-screen bg-background">
       {/* Homepage Banner - Replaces "Chia sẻ" Hero Section */}
       {activeBanner ? (
-        <section className="relative w-full">
+        <section className="relative w-full overflow-hidden">
           {activeBanner.link_url ? (
             <a href={activeBanner.link_url} target="_blank" rel="noopener noreferrer" className="block">
               <img 
                 src={activeBanner.image_url} 
                 alt="Homepage Banner" 
-                className="w-full h-auto max-h-[400px] object-cover"
+                className="w-full h-auto max-h-[250px] sm:max-h-[350px] lg:max-h-[400px] object-cover"
               />
             </a>
           ) : (
             <img 
               src={activeBanner.image_url} 
               alt="Homepage Banner" 
-              className="w-full h-auto max-h-[400px] object-cover"
+              className="w-full h-auto max-h-[250px] sm:max-h-[350px] lg:max-h-[400px] object-cover"
             />
           )}
         </section>
@@ -317,23 +317,23 @@ const Home = () => {
       )}
 
       {/* Main Content Area with Sidebar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content Feed */}
           <div className="lg:col-span-2">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-3 mb-6 bg-muted">
-                <TabsTrigger value="hot" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:text-primary">
-                  <Flame className="h-4 w-4 text-orange-500" />
-                  <span>Hot</span>
+              <TabsList className="w-full grid grid-cols-3 mb-4 sm:mb-6 bg-muted h-auto p-1">
+                <TabsTrigger value="hot" className="flex items-center gap-1 sm:gap-2 py-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary">
+                  <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />
+                  <span className="truncate">Hot</span>
                 </TabsTrigger>
-                <TabsTrigger value="latest" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:text-primary">
-                  <Clock className="h-4 w-4 text-blue-500" />
-                  <span>Mới nhất</span>
+                <TabsTrigger value="latest" className="flex items-center gap-1 sm:gap-2 py-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary">
+                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500 flex-shrink-0" />
+                  <span className="truncate">Mới nhất</span>
                 </TabsTrigger>
-                <TabsTrigger value="favorite" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:text-primary">
-                  <Star className="h-4 w-4 text-yellow-500" />
-                  <span>Yêu thích</span>
+                <TabsTrigger value="favorite" className="flex items-center gap-1 sm:gap-2 py-2 px-2 sm:px-3 text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary">
+                  <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500 flex-shrink-0" />
+                  <span className="truncate">Yêu thích</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -351,10 +351,10 @@ const Home = () => {
                       <div 
                         key={post.id}
                         onClick={() => handleReadStory(post.slug, post.id)}
-                        className="flex gap-4 p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all cursor-pointer group"
+                        className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all cursor-pointer group"
                       >
                         {thumbnail && (
-                          <div className="flex-shrink-0 w-32 h-32 rounded-lg overflow-hidden bg-muted">
+                          <div className="flex-shrink-0 w-full sm:w-24 md:w-32 h-40 sm:h-24 md:h-32 rounded-lg overflow-hidden bg-muted">
                             <img 
                               src={thumbnail} 
                               alt={post.title}
@@ -363,35 +363,35 @@ const Home = () => {
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1.5 sm:mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                             {decodeHtmlEntities(post.title)}
                           </h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-2 sm:mb-3 hidden sm:block">
                             {excerpt}
                           </p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <div className="flex items-center gap-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div className="flex items-center flex-wrap gap-2 sm:gap-4 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1.5 sm:gap-2">
                                 {post.profiles?.avatar_url ? (
                                   <img 
                                     src={post.profiles.avatar_url} 
                                     alt={post.profiles.full_name || "Author"}
-                                    className="w-5 h-5 rounded-full object-cover"
+                                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full object-cover"
                                   />
                                 ) : (
-                                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
-                                    <User className="w-3 h-3 text-muted-foreground" />
+                                  <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-muted flex items-center justify-center">
+                                    <User className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-muted-foreground" />
                                   </div>
                                 )}
-                                <span className="font-medium">{post.profiles?.full_name || t("common.unknown_author")}</span>
+                                <span className="font-medium truncate max-w-[100px] sm:max-w-none">{post.profiles?.full_name || t("common.unknown_author")}</span>
                               </div>
-                              <span>•</span>
+                              <span className="hidden sm:inline">•</span>
                               <div className="flex items-center gap-1">
                                 <Eye className="h-3 w-3" />
                                 <span>{post.view_count}</span>
                               </div>
-                              <span>•</span>
-                              <span>{new Date(post.created_at).toLocaleDateString('vi-VN')}</span>
+                              <span className="hidden sm:inline">•</span>
+                              <span className="hidden sm:inline">{new Date(post.created_at).toLocaleDateString('vi-VN')}</span>
                             </div>
                             <SocialShareButtons 
                               url={`${window.location.origin}/story/${post.slug || post.id}`}
@@ -408,8 +408,8 @@ const Home = () => {
             </Tabs>
           </div>
 
-          {/* Sidebar - STRICT ORDER */}
-          <div className="space-y-6">
+          {/* Sidebar - STRICT ORDER - Hidden on mobile, show on lg+ */}
+          <div className="hidden lg:block space-y-6">
             {/* 1. Vietnam Gold Price - FIRST */}
             <GoldPriceWidget />
 
@@ -452,15 +452,15 @@ const Home = () => {
 
       {/* Photo Gallery Section - Show only 4 images */}
       {galleryImages.length > 0 && (
-        <section className="py-12 px-4 sm:px-6 lg:px-8 bg-muted/30 border-t border-border">
+        <section className="py-6 sm:py-8 lg:py-12 px-3 sm:px-6 lg:px-8 bg-muted/30 border-t border-border">
           <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-serif font-bold text-foreground">
+            <div className="flex justify-between items-center mb-4 sm:mb-6 lg:mb-8">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-foreground">
                 Thư viện ảnh
               </h2>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
               {galleryImages.map((imageUrl, index) => (
                 <div 
                   key={index}
