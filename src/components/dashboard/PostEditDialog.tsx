@@ -1,15 +1,15 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { X } from "lucide-react";
+import { Editor } from "@tinymce/tinymce-react";
+import { decodeHtmlEntities } from "@/lib/htmlUtils";
 
 interface Post {
   id: string;
@@ -35,6 +35,7 @@ interface PostEditDialogProps {
 
 const PostEditDialog = ({ post, isOpen, onClose, onPostUpdated }: PostEditDialogProps) => {
   const { toast } = useToast();
+  const editorRef = useRef<any>(null);
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [story, setStory] = useState("");
@@ -57,12 +58,14 @@ const PostEditDialog = ({ post, isOpen, onClose, onPostUpdated }: PostEditDialog
       
       try {
         const parsed = JSON.parse(post.content);
-        setStory(parsed.story || "");
+        // Decode HTML entities for clean WYSIWYG editing
+        setStory(decodeHtmlEntities(parsed.story || ""));
         setImageLinks(parsed.imageLinks || []);
         setVideoLinks(parsed.videoLinks || []);
         setTags(parsed.tags || []);
       } catch {
-        setStory(post.content);
+        // Decode HTML entities even for plain content
+        setStory(decodeHtmlEntities(post.content || ""));
         setImageLinks([]);
         setVideoLinks([]);
         setTags([]);
@@ -218,13 +221,41 @@ const PostEditDialog = ({ post, isOpen, onClose, onPostUpdated }: PostEditDialog
 
           <div className="space-y-2">
             <Label htmlFor="story">Story Content</Label>
-            <Textarea
-              id="story"
-              value={story}
-              onChange={(e) => setStory(e.target.value)}
-              placeholder="Enter the story content"
-              rows={6}
-            />
+            <div className="border rounded-lg overflow-hidden bg-background">
+              <Editor
+                apiKey="cprbnjl7pha6mv3y0k84abwnf1mpieroa1h9xlfsdw091tn4"
+                onInit={(evt, editor) => {
+                  editorRef.current = editor;
+                }}
+                value={story}
+                onEditorChange={setStory}
+                disabled={loading}
+                init={{
+                  height: 400,
+                  menubar: true,
+                  plugins: [
+                    "advlist", "autolink", "lists", "link", "image", "charmap", "preview",
+                    "anchor", "searchreplace", "visualblocks", "code", "fullscreen",
+                    "insertdatetime", "media", "table", "help", "wordcount",
+                    "emoticons"
+                  ],
+                  toolbar: "undo redo | blocks | " +
+                    "bold italic underline strikethrough | forecolor backcolor | " +
+                    "alignleft aligncenter alignright alignjustify | " +
+                    "bullist numlist outdent indent | " +
+                    "link image media | blockquote | " +
+                    "fontfamily fontsize | removeformat | help",
+                  content_style: "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; font-size: 14px; padding: 10px; }",
+                  promotion: false,
+                  branding: false,
+                  resize: true,
+                  statusbar: true,
+                  elementpath: false,
+                  entity_encoding: 'raw',
+                  encoding: 'UTF-8',
+                }}
+              />
+            </div>
           </div>
 
           <div className="space-y-4">
