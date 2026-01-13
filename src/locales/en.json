@@ -22,6 +22,7 @@
     "stories": "Stories",
     "gallery": "Gallery",
     "videos": "Videos",
+    "utilities": "Utilities",
     "submit_story": "Submit Your Story",
     "login": "Login",
     "logout": "Logout",
@@ -234,7 +235,27 @@
     "stories_title": "Stories - Huy's",
     "submit_title": "Submit Story - Huy's",
     "login_title": "Login - Huy's",
-    "dashboard_title": "Dashboard - Huy's"
+    "dashboard_title": "Dashboard - Huy's",
+    "utilities_title": "Utilities - Huy's"
+  },
+  "utilities": {
+    "title": "Utilities",
+    "subtitle": "Useful tools and utilities for your daily life",
+    "lunar_calendar": "Lunar-Solar Calendar",
+    "lunar_calendar_desc": "View lunar-solar calendar, auspicious days, and lucky hours according to Vietnamese tradition",
+    "horoscope": "Horoscope",
+    "horoscope_desc": "Check daily, weekly, and yearly horoscopes by zodiac sign",
+    "gold_price": "Vietnam / World Gold Prices",
+    "gold_price_desc": "Real-time updates on SJC, PNJ, DOJI gold prices and world gold prices",
+    "stock_market": "Vietnam Stock Market (VNINDEX)",
+    "stock_market_desc": "Track VNINDEX, HNX indices and popular stocks on the exchange",
+    "flight_booking": "Flight Tickets",
+    "flight_booking_desc": "Search and compare domestic and international flight ticket prices",
+    "view": "View",
+    "search": "Search",
+    "coming_soon": "Coming Soon",
+    "horoscope_coming_soon": "Horoscope feature is under development and will be available soon.",
+    "stock_coming_soon": "Stock market tracking feature is under development and will be available soon."
   },
   "dashboard": {
     "title": "Dashboard",

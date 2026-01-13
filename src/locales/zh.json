@@ -23,6 +23,7 @@
     "stories": "故事",
     "gallery": "图库",
     "videos": "视频",
+    "utilities": "实用工具",
     "submit_story": "提交您的故事",
     "login": "登录",
     "logout": "退出",
@@ -184,7 +185,27 @@
     "stories_title": "故事 - Huy's", 
     "submit_title": "提交故事 - Huy's",
     "login_title": "登录 - Huy's",
-    "dashboard_title": "仪表板 - Huy's"
+    "dashboard_title": "仪表板 - Huy's",
+    "utilities_title": "实用工具 - Huy's"
+  },
+  "utilities": {
+    "title": "实用工具",
+    "subtitle": "日常生活中有用的工具和实用程序",
+    "lunar_calendar": "农历阳历",
+    "lunar_calendar_desc": "根据越南传统查看农历阳历、吉日、吉时",
+    "horoscope": "星座运势",
+    "horoscope_desc": "按星座查看每日、每周和每年的运势",
+    "gold_price": "越南/世界金价",
+    "gold_price_desc": "实时更新SJC、PNJ、DOJI金价和世界金价",
+    "stock_market": "越南股票市场 (VNINDEX)",
+    "stock_market_desc": "跟踪VNINDEX、HNX指数和交易所热门股票",
+    "flight_booking": "机票",
+    "flight_booking_desc": "搜索和比较国内外机票价格",
+    "view": "查看",
+    "search": "搜索",
+    "coming_soon": "即将推出",
+    "horoscope_coming_soon": "星座运势功能正在开发中，即将推出。",
+    "stock_coming_soon": "股票市场跟踪功能正在开发中，即将推出。"
   },
   "gallery": {
     "title": "回忆画廊",

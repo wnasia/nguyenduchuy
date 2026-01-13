@@ -23,6 +23,7 @@
     "stories": "Câu chuyện",
     "gallery": "Thư viện ảnh",
     "videos": "Video",
+    "utilities": "Tiện ích",
     "submit_story": "Gửi câu chuyện",
     "login": "Đăng nhập",
     "logout": "Đăng xuất",
@@ -235,7 +236,27 @@
     "stories_title": "Câu chuyện - Huy's",
     "submit_title": "Gửi câu chuyện - Huy's",
     "login_title": "Đăng nhập - Huy's",
-    "dashboard_title": "Bảng điều khiển - Huy's"
+    "dashboard_title": "Bảng điều khiển - Huy's",
+    "utilities_title": "Tiện ích - Huy's"
+  },
+  "utilities": {
+    "title": "Tiện ích",
+    "subtitle": "Các công cụ và tiện ích hữu ích cho cuộc sống hàng ngày của bạn",
+    "lunar_calendar": "Lịch âm dương",
+    "lunar_calendar_desc": "Xem lịch âm dương, ngày tốt xấu, giờ hoàng đạo theo truyền thống Việt Nam",
+    "horoscope": "Xem tử vi",
+    "horoscope_desc": "Tra cứu tử vi hàng ngày, hàng tuần và hàng năm theo cung hoàng đạo",
+    "gold_price": "Giá vàng Việt Nam / Thế giới",
+    "gold_price_desc": "Cập nhật giá vàng SJC, PNJ, DOJI và giá vàng thế giới theo thời gian thực",
+    "stock_market": "Chứng khoán Việt Nam (VNINDEX)",
+    "stock_market_desc": "Theo dõi chỉ số VNINDEX, HNX và các cổ phiếu phổ biến trên sàn giao dịch",
+    "flight_booking": "Vé máy bay",
+    "flight_booking_desc": "Tìm kiếm và so sánh giá vé máy bay nội địa và quốc tế",
+    "view": "Xem",
+    "search": "Tìm kiếm",
+    "coming_soon": "Sắp ra mắt",
+    "horoscope_coming_soon": "Tính năng xem tử vi đang được phát triển và sẽ sớm có mặt.",
+    "stock_coming_soon": "Tính năng theo dõi chứng khoán đang được phát triển và sẽ sớm có mặt."
   },
   "dashboard": {
     "title": "Bảng điều khiển",
