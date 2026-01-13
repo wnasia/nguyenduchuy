@@ -19,6 +19,7 @@ const moduleConfig: Record<string, { title: string; component: React.ComponentTy
   dashboard: { title: "Dashboard", component: AdminOverview },
   posts: { title: "Post Management", component: AdminPosts },
   media: { title: "Media Management", component: AdminGallery },
+  banners: { title: "Banner Management", component: AdminBanners },
   videos: { title: "Video / YouTube", component: AdminYouTube },
   users: { title: "User Management", component: AdminUsers },
   roles: { title: "Roles & Permissions", component: AdminRoles },
