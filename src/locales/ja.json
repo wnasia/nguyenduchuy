@@ -23,6 +23,7 @@
     "stories": "ストーリー",
     "gallery": "ギャラリー",
     "videos": "動画",
+    "utilities": "ユーティリティ",
     "submit_story": "あなたのストーリーを投稿",
     "login": "ログイン",
     "logout": "ログアウト",
@@ -184,7 +185,27 @@
     "stories_title": "ストーリー - Huy's",
     "submit_title": "ストーリーを送信 - Huy's", 
     "login_title": "ログイン - Huy's",
-    "dashboard_title": "ダッシュボード - Huy's"
+    "dashboard_title": "ダッシュボード - Huy's",
+    "utilities_title": "ユーティリティ - Huy's"
+  },
+  "utilities": {
+    "title": "ユーティリティ",
+    "subtitle": "日常生活に役立つツールとユーティリティ",
+    "lunar_calendar": "旧暦・新暦カレンダー",
+    "lunar_calendar_desc": "ベトナムの伝統に基づいた旧暦・新暦、吉日、吉時を表示",
+    "horoscope": "星占い",
+    "horoscope_desc": "星座別の日次、週次、年次の運勢をチェック",
+    "gold_price": "ベトナム/世界の金価格",
+    "gold_price_desc": "SJC、PNJ、DOJIの金価格と世界の金価格のリアルタイム更新",
+    "stock_market": "ベトナム株式市場 (VNINDEX)",
+    "stock_market_desc": "VNINDEX、HNX指数と取引所の人気株を追跡",
+    "flight_booking": "航空券",
+    "flight_booking_desc": "国内外の航空券価格を検索・比較",
+    "view": "表示",
+    "search": "検索",
+    "coming_soon": "近日公開",
+    "horoscope_coming_soon": "星占い機能は開発中で、まもなく利用可能になります。",
+    "stock_coming_soon": "株式市場追跡機能は開発中で、まもなく利用可能になります。"
   },
   "gallery": {
     "title": "メモリーギャラリー",

@@ -25,6 +25,7 @@ const Navbar = () => {
     { name: t("common.stories"), href: "/stories" },
     { name: t("common.gallery"), href: "/gallery" },
     { name: t("common.videos"), href: "/videos" },
+    { name: t("common.utilities") || "Tiện ích", href: "/utilities" },
     { name: "Crypto", href: "/crypto" },
   ];
 
