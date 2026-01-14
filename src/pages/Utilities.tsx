@@ -14,9 +14,9 @@ import {
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import LunarCalendarFull from "@/components/LunarCalendarFull";
-import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 import HoroscopeWidget from "@/components/widgets/HoroscopeWidget";
+import GoldPriceHistoryWidget from "@/components/widgets/GoldPriceHistoryWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 
 const Utilities = () => {
@@ -87,11 +87,7 @@ const Utilities = () => {
       case "lunar-calendar":
         return <LunarCalendarFull />;
       case "gold-price":
-        return (
-          <div className="max-w-md mx-auto">
-            <GoldPriceWidget />
-          </div>
-        );
+        return <GoldPriceHistoryWidget />;
       case "flight-booking":
         return (
           <div className="max-w-lg mx-auto">
