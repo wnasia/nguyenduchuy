@@ -9,7 +9,6 @@ import {
   TrendingUp, 
   Plane,
   ArrowRight,
-  Sparkles,
   Globe
 } from "lucide-react";
 import { useState } from "react";
@@ -17,6 +16,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import LunarCalendarFull from "@/components/LunarCalendarFull";
 import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
+import HoroscopeWidget from "@/components/widgets/HoroscopeWidget";
+import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 
 const Utilities = () => {
   const { t } = useI18n();
@@ -98,29 +99,9 @@ const Utilities = () => {
           </div>
         );
       case "horoscope":
-        return (
-          <div className="text-center py-12">
-            <Sparkles className="h-16 w-16 mx-auto text-purple-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {t("utilities.coming_soon") || "Sắp ra mắt"}
-            </h3>
-            <p className="text-gray-600">
-              {t("utilities.horoscope_coming_soon") || "Tính năng xem tử vi đang được phát triển và sẽ sớm có mặt."}
-            </p>
-          </div>
-        );
+        return <HoroscopeWidget />;
       case "stock-market":
-        return (
-          <div className="text-center py-12">
-            <TrendingUp className="h-16 w-16 mx-auto text-green-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {t("utilities.coming_soon") || "Sắp ra mắt"}
-            </h3>
-            <p className="text-gray-600">
-              {t("utilities.stock_coming_soon") || "Tính năng theo dõi chứng khoán đang được phát triển và sẽ sớm có mặt."}
-            </p>
-          </div>
-        );
+        return <StockMarketWidget />;
       default:
         return null;
     }
