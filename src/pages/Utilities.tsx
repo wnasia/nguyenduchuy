@@ -9,9 +9,11 @@ import {
   TrendingUp, 
   Plane,
   ArrowRight,
-  Globe
+  Globe,
+  Bitcoin
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import LunarCalendarFull from "@/components/LunarCalendarFull";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
@@ -21,6 +23,7 @@ import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 
 const Utilities = () => {
   const { t } = useI18n();
+  const navigate = useNavigate();
   usePageTitle(t("meta.utilities_title") || "Tiện ích - Huy's");
   
   const [openModal, setOpenModal] = useState<string | null>(null);
@@ -75,11 +78,25 @@ const Utilities = () => {
       color: "from-blue-500 to-cyan-500",
       bgColor: "bg-blue-50",
       iconColor: "text-blue-600"
+    },
+    {
+      id: "crypto",
+      icon: Bitcoin,
+      title: t("utilities.crypto") || "Crypto Tracker",
+      description: t("utilities.crypto_desc") || "Theo dõi giá tiền điện tử Bitcoin, Ethereum và các altcoin phổ biến theo thời gian thực",
+      action: t("utilities.view") || "Xem Crypto",
+      color: "from-amber-500 to-orange-500",
+      bgColor: "bg-amber-50",
+      iconColor: "text-amber-600"
     }
   ];
 
   const handleCardClick = (id: string) => {
-    setOpenModal(id);
+    if (id === "crypto") {
+      navigate("/crypto");
+    } else {
+      setOpenModal(id);
+    }
   };
 
   const renderModalContent = (id: string) => {
