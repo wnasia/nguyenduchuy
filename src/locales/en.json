@@ -32,7 +32,8 @@
     "success": "Success",
     "unknown": "Unknown",
     "unknown_author": "User",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "back": "Back"
   },
   "story": {
     "read_more": "Read More",
@@ -251,6 +252,8 @@
     "stock_market_desc": "Track VNINDEX, HNX indices and popular stocks on the exchange",
     "flight_booking": "Flight Tickets",
     "flight_booking_desc": "Search and compare domestic and international flight ticket prices",
+    "crypto": "Cryptocurrency",
+    "crypto_desc": "Track Bitcoin, Ethereum and popular cryptocurrency prices",
     "view": "View",
     "search": "Search",
     "coming_soon": "Coming Soon",

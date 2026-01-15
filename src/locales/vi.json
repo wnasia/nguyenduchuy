@@ -33,7 +33,8 @@
     "success": "Thành công",
     "unknown": "Không xác định",
     "unknown_author": "Người dùng",
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "back": "Quay lại"
   },
   "auth": {
     "welcome_back": "Chào mừng trở lại",
@@ -252,6 +253,8 @@
     "stock_market_desc": "Theo dõi chỉ số VNINDEX, HNX và các cổ phiếu phổ biến trên sàn giao dịch",
     "flight_booking": "Vé máy bay",
     "flight_booking_desc": "Tìm kiếm và so sánh giá vé máy bay nội địa và quốc tế",
+    "crypto": "Tiền điện tử",
+    "crypto_desc": "Theo dõi giá Bitcoin, Ethereum và các đồng tiền điện tử phổ biến",
     "view": "Xem",
     "search": "Tìm kiếm",
     "coming_soon": "Sắp ra mắt",
