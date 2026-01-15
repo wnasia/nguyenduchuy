@@ -31,7 +31,8 @@
     "loading": "加载中...",
     "error": "错误",
     "success": "成功",
-    "unknown_author": "用户"
+    "unknown_author": "用户",
+    "back": "返回"
   },
   "auth": {
     "welcome_back": "欢迎回来",
@@ -201,6 +202,8 @@
     "stock_market_desc": "跟踪VNINDEX、HNX指数和交易所热门股票",
     "flight_booking": "机票",
     "flight_booking_desc": "搜索和比较国内外机票价格",
+    "crypto": "加密货币",
+    "crypto_desc": "跟踪比特币、以太坊和热门加密货币价格",
     "view": "查看",
     "search": "搜索",
     "coming_soon": "即将推出",
