@@ -236,28 +236,7 @@ const StoryDetail = () => {
                   />
                 )}
 
-                {parsedContent.imageLinks && parsedContent.imageLinks.length > 0 && (
-                  <div className="mb-6 sm:mb-8">
-                    <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
-                      <Image className="h-4 w-4 sm:h-5 sm:w-5" />
-                      Images ({parsedContent.imageLinks.length})
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      {parsedContent.imageLinks.map((imageUrl, index) => (
-                        <div key={index} className="rounded-lg overflow-hidden shadow-md">
-                          <img 
-                            src={imageUrl} 
-                            alt={`Story image ${index + 1}`}
-                            className="w-full h-48 sm:h-56 lg:h-64 object-cover hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/placeholder.svg';
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* Images are now embedded within the story content via TinyMCE editor */}
 
                 {parsedContent.videoLinks && parsedContent.videoLinks.length > 0 && (
                   <div className="mb-6 sm:mb-8">
