@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Wallet, FileText, TrendingUp, Image as ImageIcon, Youtube, Eye, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface WalletData {
   balance: number;
@@ -109,6 +110,8 @@ const UserOverview = () => {
       icon: Wallet,
       color: "text-green-600",
       bgColor: "bg-green-50",
+      hoverBg: "group-hover:bg-green-100",
+      ringColor: "group-hover:ring-green-200",
     },
     {
       title: "Total Earned",
@@ -116,6 +119,8 @@ const UserOverview = () => {
       icon: TrendingUp,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
+      hoverBg: "group-hover:bg-blue-100",
+      ringColor: "group-hover:ring-blue-200",
     },
     {
       title: "Total Views",
@@ -123,6 +128,8 @@ const UserOverview = () => {
       icon: Eye,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
+      hoverBg: "group-hover:bg-purple-100",
+      ringColor: "group-hover:ring-purple-200",
     },
     {
       title: "My Stories",
@@ -130,6 +137,8 @@ const UserOverview = () => {
       icon: FileText,
       color: "text-orange-600",
       bgColor: "bg-orange-50",
+      hoverBg: "group-hover:bg-orange-100",
+      ringColor: "group-hover:ring-orange-200",
     },
     {
       title: "My Images",
@@ -137,6 +146,8 @@ const UserOverview = () => {
       icon: ImageIcon,
       color: "text-pink-600",
       bgColor: "bg-pink-50",
+      hoverBg: "group-hover:bg-pink-100",
+      ringColor: "group-hover:ring-pink-200",
     },
     {
       title: "My Videos",
@@ -144,15 +155,17 @@ const UserOverview = () => {
       icon: Youtube,
       color: "text-red-600",
       bgColor: "bg-red-50",
+      hoverBg: "group-hover:bg-red-100",
+      ringColor: "group-hover:ring-red-200",
     },
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'text-green-600 bg-green-100';
-      case 'pending': return 'text-yellow-600 bg-yellow-100';
-      case 'rejected': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'approved': return 'text-green-700 bg-green-100 ring-green-200';
+      case 'pending': return 'text-yellow-700 bg-yellow-100 ring-yellow-200';
+      case 'rejected': return 'text-red-700 bg-red-100 ring-red-200';
+      default: return 'text-gray-700 bg-gray-100 ring-gray-200';
     }
   };
 
@@ -161,23 +174,35 @@ const UserOverview = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {stats.map((stat) => (
-          <Card key={stat.title} className="border hover:shadow-md transition-shadow">
+          <Card 
+            key={stat.title} 
+            className={cn(
+              "group border cursor-default transition-all duration-200",
+              "hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5",
+              "hover:border-primary/20"
+            )}
+          >
             <CardContent className="p-4">
-              <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center mb-3`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <div className={cn(
+                "w-10 h-10 rounded-lg flex items-center justify-center mb-3 transition-all duration-200 ring-2 ring-transparent",
+                stat.bgColor,
+                stat.hoverBg,
+                stat.ringColor
+              )}>
+                <stat.icon className={cn("h-5 w-5 transition-transform duration-200 group-hover:scale-110", stat.color)} />
               </div>
-              <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
-              <p className="text-xl font-bold">{stat.value}</p>
+              <p className="text-sm text-muted-foreground mb-1 group-hover:text-foreground transition-colors">{stat.title}</p>
+              <p className="text-xl font-bold group-hover:text-primary transition-colors">{stat.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Recent Activity */}
-      <Card>
+      <Card className="border hover:shadow-md transition-shadow duration-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
+            <Clock className="h-5 w-5 text-primary" />
             Recent Stories
           </CardTitle>
         </CardHeader>
@@ -187,24 +212,33 @@ const UserOverview = () => {
               You haven't created any stories yet. Click "Create Story" to get started!
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {recentPosts.map((post) => (
                 <div 
                   key={post.id} 
-                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                  className={cn(
+                    "flex items-center justify-between p-4 rounded-xl border",
+                    "transition-all duration-200 cursor-pointer group/row",
+                    "hover:bg-primary/5 hover:border-primary/20 hover:shadow-sm",
+                    "hover:translate-x-1"
+                  )}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{post.title}</p>
+                    <p className="font-medium truncate group-hover/row:text-primary transition-colors">{post.title}</p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(post.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground flex items-center gap-1 group-hover/row:text-foreground transition-colors">
                       <Eye className="h-4 w-4" />
                       {post.view_count}
                     </span>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(post.status)}`}>
+                    <span className={cn(
+                      "text-xs px-2.5 py-1 rounded-full font-medium ring-1 transition-all duration-200",
+                      "group-hover/row:ring-2",
+                      getStatusColor(post.status)
+                    )}>
                       {post.status}
                     </span>
                   </div>
