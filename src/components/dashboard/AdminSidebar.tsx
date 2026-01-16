@@ -145,7 +145,7 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
       <SidebarHeader className="border-b border-sidebar-border bg-sidebar">
         <div className="flex items-center justify-between p-3">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200 group-hover:scale-105">
               <img
                 src={huyLogo}
                 alt="Logo"
@@ -154,7 +154,7 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
             </div>
             {!isCollapsed && (
               <div className="flex flex-col">
-                <span className="font-bold text-base text-sidebar-foreground tracking-tight">
+                <span className="font-bold text-base text-sidebar-foreground tracking-tight group-hover:text-primary transition-colors">
                   Admin Panel
                 </span>
                 <span className="text-[10px] text-sidebar-foreground/60 font-medium uppercase tracking-wider">
@@ -164,7 +164,7 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
             )}
           </Link>
           {!isMobile && (
-            <SidebarTrigger className="ml-auto opacity-70 hover:opacity-100 transition-opacity" />
+            <SidebarTrigger className="ml-auto opacity-70 hover:opacity-100 hover:bg-sidebar-accent rounded-md transition-all duration-200" />
           )}
         </div>
       </SidebarHeader>
@@ -179,7 +179,7 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
               </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-0.5">
+              <SidebarMenu className="space-y-1">
                 {section.items.map((item) => {
                   const isActive = activeModule === item.id;
                   return (
@@ -189,30 +189,46 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
                         onClick={() => onModuleChange(item.id)}
                         tooltip={isCollapsed ? item.title : undefined}
                         className={cn(
-                          "w-full h-10 px-3 rounded-lg transition-all duration-200",
-                          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                          "w-full h-11 px-3 rounded-lg transition-all duration-200 group/menu-item",
+                          // Default state
+                          "text-sidebar-foreground/80",
+                          // Hover state - more prominent
+                          !isActive && [
+                            "hover:bg-primary/10 hover:text-primary",
+                            "hover:shadow-sm hover:translate-x-0.5",
+                          ],
+                          // Active state - strong visual distinction
                           isActive && [
-                            "bg-primary text-primary-foreground",
-                            "hover:bg-primary/90 hover:text-primary-foreground",
-                            "shadow-sm",
+                            "bg-gradient-to-r from-primary to-primary/90",
+                            "text-primary-foreground font-medium",
+                            "shadow-md shadow-primary/25",
+                            "hover:from-primary/95 hover:to-primary/85",
+                            "border-l-4 border-l-white/30",
                           ]
                         )}
                       >
                         <item.icon className={cn(
-                          "h-4 w-4 shrink-0 transition-colors",
-                          isActive ? "text-primary-foreground" : "text-sidebar-foreground/70"
+                          "h-4 w-4 shrink-0 transition-all duration-200",
+                          isActive 
+                            ? "text-primary-foreground" 
+                            : "text-sidebar-foreground/60 group-hover/menu-item:text-primary group-hover/menu-item:scale-110"
                         )} />
                         {!isCollapsed && (
                           <>
                             <span className={cn(
-                              "flex-1 truncate text-sm font-medium",
-                              isActive ? "text-primary-foreground" : "text-sidebar-foreground"
+                              "flex-1 truncate text-sm transition-all duration-200",
+                              isActive 
+                                ? "text-primary-foreground font-medium" 
+                                : "text-sidebar-foreground/80 group-hover/menu-item:text-primary group-hover/menu-item:font-medium"
                             )}>
                               {item.title}
                             </span>
-                            {isActive && (
-                              <ChevronRight className="h-3.5 w-3.5 text-primary-foreground/70" />
-                            )}
+                            <ChevronRight className={cn(
+                              "h-3.5 w-3.5 transition-all duration-200",
+                              isActive 
+                                ? "text-primary-foreground/80 opacity-100" 
+                                : "opacity-0 group-hover/menu-item:opacity-60 group-hover/menu-item:translate-x-0.5"
+                            )} />
                           </>
                         )}
                       </SidebarMenuButton>
@@ -231,10 +247,10 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
       {/* Footer with User Info */}
       <SidebarFooter className="border-t border-sidebar-border bg-sidebar p-3">
         <div className={cn(
-          "flex items-center gap-3 rounded-lg p-2 transition-colors",
-          "hover:bg-sidebar-accent/50"
+          "flex items-center gap-3 rounded-lg p-2 transition-all duration-200 cursor-pointer",
+          "hover:bg-primary/5 hover:shadow-sm"
         )}>
-          <Avatar className="h-9 w-9 shrink-0 ring-2 ring-sidebar-border">
+          <Avatar className="h-9 w-9 shrink-0 ring-2 ring-sidebar-border transition-all duration-200 hover:ring-primary/50">
             <AvatarImage src={user?.user_metadata?.avatar_url} />
             <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
               {user?.email?.charAt(0).toUpperCase() || "A"}
@@ -257,8 +273,10 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
           size={isCollapsed ? "icon" : "sm"}
           onClick={handleLogout}
           className={cn(
-            "w-full mt-2 text-destructive/80 hover:text-destructive",
-            "hover:bg-destructive/10 transition-colors",
+            "w-full mt-2 transition-all duration-200",
+            "text-destructive/70 hover:text-destructive",
+            "hover:bg-destructive/10 hover:shadow-sm",
+            "active:scale-[0.98]",
             isCollapsed ? "h-9 w-9" : "justify-start h-9"
           )}
         >
