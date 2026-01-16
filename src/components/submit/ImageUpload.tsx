@@ -1,13 +1,13 @@
-
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, X, Image } from "lucide-react";
+import { Upload, X, Image, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/hooks/useI18n";
+import { Progress } from "@/components/ui/progress";
 
 interface ImageUploadProps {
   imageLinks: string[];
@@ -19,33 +19,46 @@ const ImageUpload = ({ imageLinks, onImageLinksChange, disabled }: ImageUploadPr
   const { toast } = useToast();
   const { t } = useI18n();
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadCount, setUploadCount] = useState({ current: 0, total: 0 });
   const [newImageUrl, setNewImageUrl] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: t("submit.invalid_file_type"),
-        description: t("submit.select_image_file"),
-        variant: "destructive",
-      });
-      return;
+    // Convert FileList to array for processing
+    const fileArray = Array.from(files);
+    
+    // Validate all files first
+    const validFiles: File[] = [];
+    for (const file of fileArray) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: t("submit.invalid_file_type"),
+          description: `${file.name}: ${t("submit.select_image_file")}`,
+          variant: "destructive",
+        });
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: t("submit.file_too_large"),
+          description: `${file.name}: ${t("submit.image_size_limit")}`,
+          variant: "destructive",
+        });
+        continue;
+      }
+      validFiles.push(file);
     }
 
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: t("submit.file_too_large"),
-        description: t("submit.image_size_limit"),
-        variant: "destructive",
-      });
-      return;
-    }
+    if (validFiles.length === 0) return;
 
     setUploading(true);
+    setUploadCount({ current: 0, total: validFiles.length });
+    setUploadProgress(0);
+
     try {
       // Check if user is authenticated
       const { data: { user } } = await supabase.auth.getUser();
@@ -59,38 +72,52 @@ const ImageUpload = ({ imageLinks, onImageLinksChange, disabled }: ImageUploadPr
         return;
       }
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = fileName;
+      const uploadedUrls: string[] = [];
 
-      const { error: uploadError } = await supabase.storage
-        .from('story-images')
-        .upload(filePath, file);
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        setUploadCount({ current: i + 1, total: validFiles.length });
+        setUploadProgress(((i) / validFiles.length) * 100);
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        toast({
-          title: t("submit.upload_failed"),
-          description: t("submit.upload_failed_desc"),
-          variant: "destructive",
-        });
-        return;
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = fileName;
+
+        const { error: uploadError } = await supabase.storage
+          .from('story-images')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast({
+            title: t("submit.upload_failed"),
+            description: `${file.name}: ${t("submit.upload_failed_desc")}`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('story-images')
+          .getPublicUrl(filePath);
+
+        if (publicUrlData?.publicUrl) {
+          uploadedUrls.push(publicUrlData.publicUrl);
+        }
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from('story-images')
-        .getPublicUrl(filePath);
-
-      if (publicUrlData?.publicUrl) {
-        const updatedLinks = [...imageLinks, publicUrlData.publicUrl];
+      if (uploadedUrls.length > 0) {
+        const updatedLinks = [...imageLinks, ...uploadedUrls];
         onImageLinksChange(updatedLinks);
         toast({
           title: t("common.success"),
-          description: t("submit.image_uploaded_success"),
+          description: `${uploadedUrls.length} ${uploadedUrls.length === 1 ? 'image' : 'images'} uploaded successfully`,
         });
       }
+
+      setUploadProgress(100);
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error uploading images:', error);
       toast({
         title: t("common.error"),
         description: t("submit.unexpected_upload_error"),
@@ -98,8 +125,12 @@ const ImageUpload = ({ imageLinks, onImageLinksChange, disabled }: ImageUploadPr
       });
     } finally {
       setUploading(false);
+      setUploadProgress(0);
+      setUploadCount({ current: 0, total: 0 });
       // Reset file input
-      event.target.value = '';
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -116,6 +147,28 @@ const ImageUpload = ({ imageLinks, onImageLinksChange, disabled }: ImageUploadPr
     onImageLinksChange(updatedLinks);
   };
 
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && fileInputRef.current) {
+      // Create a new DataTransfer to set files
+      const dataTransfer = new DataTransfer();
+      Array.from(files).forEach(file => dataTransfer.items.add(file));
+      fileInputRef.current.files = dataTransfer.files;
+      
+      // Trigger the change event
+      const event = new Event('change', { bubbles: true });
+      fileInputRef.current.dispatchEvent(event);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   return (
     <div className="space-y-4">
       <Label className="text-lg font-semibold flex items-center gap-2">
@@ -124,23 +177,44 @@ const ImageUpload = ({ imageLinks, onImageLinksChange, disabled }: ImageUploadPr
       </Label>
       
       <div className="space-y-4">
-        {/* File Upload */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <div className="space-y-2">
-            <p className="text-sm text-gray-600">{t("submit.upload_from_device")}</p>
-            <p className="text-xs text-gray-400">{t("submit.image_format_limit")}</p>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              disabled={disabled || uploading}
-              className="max-w-xs mx-auto"
-            />
-            {uploading && (
-              <p className="text-sm text-blue-600">{t("submit.uploading")}</p>
-            )}
-          </div>
+        {/* File Upload - Multiple Files */}
+        <div 
+          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onClick={() => !uploading && fileInputRef.current?.click()}
+        >
+          {uploading ? (
+            <div className="space-y-3">
+              <Loader2 className="mx-auto h-12 w-12 text-primary animate-spin" />
+              <p className="text-sm text-primary font-medium">
+                Uploading {uploadCount.current} of {uploadCount.total}...
+              </p>
+              <Progress value={uploadProgress} className="max-w-xs mx-auto" />
+            </div>
+          ) : (
+            <>
+              <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">
+                  Drop images here or click to select
+                </p>
+                <p className="text-xs text-gray-500">
+                  You can select multiple images at once
+                </p>
+                <p className="text-xs text-gray-400">{t("submit.image_format_limit")}</p>
+              </div>
+            </>
+          )}
+          <Input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileUpload}
+            disabled={disabled || uploading}
+            className="hidden"
+          />
         </div>
 
         {/* URL Input */}
@@ -152,7 +226,7 @@ const ImageUpload = ({ imageLinks, onImageLinksChange, disabled }: ImageUploadPr
               onChange={(e) => setNewImageUrl(e.target.value)}
               placeholder="https://example.com/image.jpg"
               disabled={disabled}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddUrl()}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddUrl())}
             />
             <Button
               type="button"
@@ -169,7 +243,7 @@ const ImageUpload = ({ imageLinks, onImageLinksChange, disabled }: ImageUploadPr
         {imageLinks.length > 0 && (
           <div className="space-y-2">
             <Label className="text-sm text-gray-600">{t("submit.added_images")} ({imageLinks.length})</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
               {imageLinks.map((link, index) => (
                 <div key={index} className="relative group">
                   <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">

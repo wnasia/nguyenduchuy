@@ -225,6 +225,60 @@
   .btn-x {
     background-color: hsl(var(--brand-x));
   }
+
+  /* Dashboard card hover states */
+  .dashboard-card {
+    @apply bg-card border border-border rounded-xl transition-all duration-200;
+    @apply hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5;
+  }
+
+  .dashboard-card-interactive {
+    @apply dashboard-card cursor-pointer;
+    @apply hover:scale-[1.01] hover:-translate-y-0.5;
+    @apply active:scale-[0.99];
+  }
+
+  /* Dashboard row hover states */
+  .dashboard-row {
+    @apply transition-all duration-150 rounded-lg;
+    @apply hover:bg-muted/50 hover:shadow-sm;
+  }
+
+  .dashboard-row-clickable {
+    @apply dashboard-row cursor-pointer;
+    @apply hover:bg-primary/5 hover:border-l-2 hover:border-l-primary hover:pl-3;
+  }
+
+  /* Dashboard button enhancements */
+  .dashboard-btn {
+    @apply transition-all duration-200;
+    @apply hover:shadow-md hover:scale-[1.02];
+    @apply active:scale-[0.98];
+  }
+
+  .dashboard-btn-primary {
+    @apply dashboard-btn;
+    @apply bg-gradient-to-r from-primary to-primary/90;
+    @apply hover:from-primary/95 hover:to-primary/85;
+    @apply shadow-sm shadow-primary/20;
+  }
+
+  /* Stats card hover */
+  .stats-card {
+    @apply bg-card border rounded-xl p-4 transition-all duration-200;
+    @apply hover:shadow-lg hover:border-primary/20 hover:scale-[1.02];
+  }
+
+  /* Table row hover */
+  .table-row-hover {
+    @apply transition-colors duration-150;
+    @apply hover:bg-muted/70;
+  }
+
+  .table-row-interactive {
+    @apply table-row-hover cursor-pointer;
+    @apply hover:bg-primary/5;
+  }
 }
 
 /* Rich Text Editor Styles */
