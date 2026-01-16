@@ -1,11 +1,12 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AlertCircle } from "lucide-react";
 import SubmitFormHeader from "./SubmitFormHeader";
 import StoryTitleInput from "./StoryTitleInput";
 import TinyMCEEditor from "./TinyMCEEditor";
@@ -27,6 +28,9 @@ interface SubmitFormProps {
   editId?: string;
 }
 
+const DRAFT_KEY = 'story_draft';
+const DRAFT_SAVE_INTERVAL = 5000; // 5 seconds
+
 const SubmitForm = ({ editId }: SubmitFormProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -42,12 +46,103 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
   const [currentTag, setCurrentTag] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const lastSavedRef = useRef<string>("");
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch post data if editing
+  // Get draft key unique to user and edit mode
+  const getDraftKey = useCallback(() => {
+    const baseKey = editId ? `${DRAFT_KEY}_edit_${editId}` : DRAFT_KEY;
+    return user ? `${baseKey}_${user.id}` : baseKey;
+  }, [editId, user]);
+
+  // Save draft to localStorage
+  const saveDraft = useCallback(() => {
+    if (!user) return;
+    
+    const draftData = JSON.stringify(formData);
+    // Only save if content actually changed
+    if (draftData !== lastSavedRef.current && (formData.title.trim() || formData.story.trim())) {
+      localStorage.setItem(getDraftKey(), draftData);
+      lastSavedRef.current = draftData;
+      console.log('Draft saved');
+    }
+  }, [formData, getDraftKey, user]);
+
+  // Load draft from localStorage
+  const loadDraft = useCallback(() => {
+    if (!user) return null;
+    
+    try {
+      const saved = localStorage.getItem(getDraftKey());
+      if (saved) {
+        return JSON.parse(saved) as FormData;
+      }
+    } catch (e) {
+      console.error('Error loading draft:', e);
+    }
+    return null;
+  }, [getDraftKey, user]);
+
+  // Clear draft from localStorage
+  const clearDraft = useCallback(() => {
+    localStorage.removeItem(getDraftKey());
+    lastSavedRef.current = "";
+    setHasDraft(false);
+  }, [getDraftKey]);
+
+  // Auto-save effect
+  useEffect(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      saveDraft();
+    }, DRAFT_SAVE_INTERVAL);
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [formData, saveDraft]);
+
+  // Save draft before unload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (formData.title.trim() || formData.story.trim()) {
+        saveDraft();
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [formData, saveDraft]);
+
+  // Load existing post data or draft on mount
   useEffect(() => {
     const fetchPostData = async () => {
-      if (!editId || !user) return;
+      if (!user) return;
       
+      // Check for draft first (for new posts only)
+      if (!editId) {
+        const draft = loadDraft();
+        if (draft && (draft.title.trim() || draft.story.trim())) {
+          setFormData(draft);
+          setHasDraft(true);
+          toast({
+            title: "Draft Restored",
+            description: "Your unsaved draft has been restored.",
+          });
+          return;
+        }
+      }
+      
+      if (!editId) return;
+
       setLoading(true);
       try {
         const { data, error } = await supabase
@@ -69,25 +164,36 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
         }
 
         if (data) {
-          // Parse content
-          try {
-            const parsed = JSON.parse(data.content || '{}');
-            setFormData({
-              title: data.title,
-              story: parsed.story || '',
-              imageLinks: parsed.imageLinks || [],
-              videoLinks: parsed.videoLinks?.length > 0 ? parsed.videoLinks : [''],
-              tags: parsed.tags || []
+          // Check for edit draft
+          const editDraft = loadDraft();
+          if (editDraft && (editDraft.title.trim() || editDraft.story.trim())) {
+            setFormData(editDraft);
+            setHasDraft(true);
+            toast({
+              title: "Draft Restored",
+              description: "Your unsaved changes have been restored.",
             });
-          } catch (e) {
-            console.error('Error parsing content:', e);
-            setFormData({
-              title: data.title,
-              story: data.content || '',
-              imageLinks: [],
-              videoLinks: [''],
-              tags: []
-            });
+          } else {
+            // Parse content from database
+            try {
+              const parsed = JSON.parse(data.content || '{}');
+              setFormData({
+                title: data.title,
+                story: parsed.story || '',
+                imageLinks: parsed.imageLinks || [],
+                videoLinks: parsed.videoLinks?.length > 0 ? parsed.videoLinks : [''],
+                tags: parsed.tags || []
+              });
+            } catch (e) {
+              console.error('Error parsing content:', e);
+              setFormData({
+                title: data.title,
+                story: data.content || '',
+                imageLinks: [],
+                videoLinks: [''],
+                tags: []
+              });
+            }
           }
         }
       } catch (error) {
@@ -103,7 +209,7 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
     };
 
     fetchPostData();
-  }, [editId, user, navigate, toast]);
+  }, [editId, user, navigate, toast, loadDraft]);
 
   const handleImageLinksChange = (links: string[]) => {
     setFormData(prev => ({
@@ -148,6 +254,21 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
+  };
+
+  const handleDiscardDraft = () => {
+    clearDraft();
+    setFormData({
+      title: "",
+      story: "",
+      imageLinks: [],
+      videoLinks: [""],
+      tags: []
+    });
+    toast({
+      title: "Draft Discarded",
+      description: "Your draft has been deleted.",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -235,6 +356,9 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
 
       console.log('Post saved successfully:', data);
 
+      // Clear draft on successful save
+      clearDraft();
+
       toast({
         title: editId ? "Story Updated" : t("submit.success_title"),
         description: editId ? "Your story has been updated successfully" : t("submit.success_message"),
@@ -269,20 +393,44 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
     <>
       <SubmitFormHeader />
 
+      {/* Draft indicator */}
+      {hasDraft && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2 text-yellow-800">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm">Unsaved draft restored</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleDiscardDraft}
+            className="text-sm text-yellow-700 hover:text-yellow-900 underline"
+          >
+            Discard Draft
+          </button>
+        </div>
+      )}
+
       <Card className="border-0 shadow-xl">
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-8">
-          <StoryTitleInput
-            value={formData.title}
-            onChange={(value) => setFormData(prev => ({ ...prev, title: value }))}
-            disabled={isSubmitting}
-          />
+            {/* Auto-save indicator */}
+            <div className="flex items-center justify-end">
+              <Badge variant="secondary" className="text-xs">
+                Auto-save enabled
+              </Badge>
+            </div>
 
-          <TinyMCEEditor
-            value={formData.story}
-            onChange={(value) => setFormData(prev => ({ ...prev, story: value }))}
-            disabled={isSubmitting}
-          />
+            <StoryTitleInput
+              value={formData.title}
+              onChange={(value) => setFormData(prev => ({ ...prev, title: value }))}
+              disabled={isSubmitting}
+            />
+
+            <TinyMCEEditor
+              value={formData.story}
+              onChange={(value) => setFormData(prev => ({ ...prev, story: value }))}
+              disabled={isSubmitting}
+            />
 
             <ImageUpload
               imageLinks={formData.imageLinks}
