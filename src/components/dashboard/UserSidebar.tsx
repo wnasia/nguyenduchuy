@@ -26,6 +26,9 @@ import {
   LogOut,
   ChevronRight,
   PenSquare,
+  Bell,
+  User,
+  Settings,
 } from "lucide-react";
 import huyLogo from "@/assets/huy-logo.png";
 import { cn } from "@/lib/utils";
@@ -45,6 +48,12 @@ const menuSections = [
         title: "Dashboard",
         icon: LayoutDashboard,
         description: "Account overview",
+      },
+      {
+        id: "notifications",
+        title: "Thông báo",
+        icon: Bell,
+        description: "Your notifications",
       },
     ],
   },
@@ -74,6 +83,12 @@ const menuSections = [
   {
     label: "Account",
     items: [
+      {
+        id: "profile",
+        title: "Hồ sơ cá nhân",
+        icon: User,
+        description: "Your profile settings",
+      },
       {
         id: "wallet",
         title: "Wallet",

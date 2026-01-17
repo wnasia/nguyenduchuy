@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import UserSidebar from "./UserSidebar";
 import UserOverview from "./UserOverview";
@@ -7,20 +7,34 @@ import UserPosts from "./UserPosts";
 import UserWallet from "./UserWallet";
 import UserGallery from "./UserGallery";
 import UserYouTube from "./UserYouTube";
+import UserProfile from "./UserProfile";
+import UserNotifications from "./UserNotifications";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const moduleConfig: Record<string, { title: string; component: React.ComponentType }> = {
   overview: { title: "Dashboard Overview", component: UserOverview },
+  notifications: { title: "Thông báo", component: UserNotifications },
   posts: { title: "My Stories", component: UserPosts },
   gallery: { title: "Image Gallery", component: UserGallery },
   youtube: { title: "YouTube Videos", component: UserYouTube },
+  profile: { title: "Hồ sơ cá nhân", component: UserProfile },
   wallet: { title: "Wallet", component: UserWallet },
 };
 
 const UserDashboard = () => {
-  const { user } = useAuth();
   const isMobile = useIsMobile();
+  const location = useLocation();
   const [activeModule, setActiveModule] = useState("overview");
+
+  // Handle navigation state from navbar
+  useEffect(() => {
+    const state = location.state as { module?: string } | null;
+    if (state?.module && moduleConfig[state.module]) {
+      setActiveModule(state.module);
+      // Clear the state to prevent re-triggering
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const CurrentComponent = moduleConfig[activeModule]?.component || UserOverview;
   const currentTitle = moduleConfig[activeModule]?.title || "Dashboard";

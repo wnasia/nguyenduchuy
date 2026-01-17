@@ -1,10 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, Bell, User } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import LanguageSelector from "./LanguageSelector";
 import {
   DropdownMenu,
@@ -13,13 +14,57 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import huyLogo from "@/assets/huy-logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
   const { t } = useI18n();
   const { user, signOut, loading } = useAuth();
+
+  // Fetch unread notifications count
+  useEffect(() => {
+    if (user) {
+      const fetchUnreadCount = async () => {
+        const { count, error } = await supabase
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("is_read", false);
+
+        if (!error && count !== null) {
+          setUnreadCount(count);
+        }
+      };
+
+      fetchUnreadCount();
+
+      // Subscribe to realtime updates
+      const channel = supabase
+        .channel("notifications-count")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            fetchUnreadCount();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      setUnreadCount(0);
+    }
+  }, [user]);
 
   const navigation = [
     { name: t("common.stories"), href: "/stories" },
@@ -87,18 +132,32 @@ const Navbar = () => {
             {loading ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
             ) : user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
-                      <AvatarFallback>
-                        {getUserInitials(user.user_metadata?.full_name || user.email)}
-                      </AvatarFallback>
-                    </Avatar>
+              <div className="flex items-center gap-2">
+                {/* Notification Bell */}
+                <Link to="/dashboard" state={{ module: "notifications" }}>
+                  <Button variant="ghost" size="icon" className="relative h-10 w-10">
+                    <Bell className="h-5 w-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
+                </Link>
+
+                {/* User Avatar Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
+                        <AvatarFallback>
+                          {getUserInitials(user.user_metadata?.full_name || user.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-popover" align="end" forceMount>
                   <DropdownMenuItem className="flex flex-col items-start">
                     <div className="text-sm font-medium">{user.user_metadata?.full_name || 'User'}</div>
                     <div className="text-xs text-gray-500">{user.email}</div>
@@ -109,12 +168,24 @@ const Navbar = () => {
                       <span>{t("navigation.dashboard")}</span>
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="flex items-center w-full" state={{ module: "notifications" }}>
+                      <Bell className="mr-2 h-4 w-4" />
+                      <span>Thông báo</span>
+                      {unreadCount > 0 && (
+                        <Badge variant="destructive" className="ml-auto h-5 min-w-[20px] px-1.5 text-xs">
+                          {unreadCount}
+                        </Badge>
+                      )}
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>{t("common.logout")}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </div>
             ) : (
               <Link to="/login">
                 <Button className="bg-primary hover:bg-primary/90">
@@ -180,6 +251,23 @@ const Navbar = () => {
                     <Button variant="ghost" className="w-full justify-start">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       {t("navigation.dashboard")}
+                    </Button>
+                  </Link>
+                  <Link to="/dashboard" state={{ module: "notifications" }} onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <Bell className="mr-2 h-4 w-4" />
+                      Thông báo
+                      {unreadCount > 0 && (
+                        <Badge variant="destructive" className="ml-2 h-5 min-w-[20px] px-1.5 text-xs">
+                          {unreadCount}
+                        </Badge>
+                      )}
+                    </Button>
+                  </Link>
+                  <Link to="/dashboard" state={{ module: "profile" }} onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <User className="mr-2 h-4 w-4" />
+                      Hồ sơ cá nhân
                     </Button>
                   </Link>
                   <Button
