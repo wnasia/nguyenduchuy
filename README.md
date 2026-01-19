@@ -1,58 +1,58 @@
-# Welcome to your Lovable project
+# Chào mừng đến với dự án Lovable của bạn
 
-## Project info
+## Thông tin dự án
 
 **URL**: https://lovable.dev/projects/3aa74b60-3a28-44ab-a5a0-54e70f4b2746
 
-## How can I edit this code?
+## Làm thế nào để chỉnh sửa mã này?
 
-There are several ways of editing your application.
+Có một số cách để chỉnh sửa ứng dụng của bạn.
 
-**Use Lovable**
+**Sử dụng Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3aa74b60-3a28-44ab-a5a0-54e70f4b2746) and start prompting.
+Chỉ cần truy cập [Dự án Lovable](https://lovable.dev/projects/3aa74b60-3a28-44ab-a5a0-54e70f4b2746) và bắt đầu nhắc nhở.
 
-Changes made via Lovable will be committed automatically to this repo.
+Các thay đổi được thực hiện qua Lovable sẽ được commit tự động vào repo này.
 
-**Use your preferred IDE**
+**Sử dụng IDE ưa thích của bạn**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Nếu bạn muốn làm việc cục bộ bằng IDE của riêng mình, bạn có thể clone repo này và push các thay đổi. Các thay đổi được push cũng sẽ được phản ánh trong Lovable.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Yêu cầu duy nhất là có Node.js & npm được cài đặt - [cài đặt với nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
+Làm theo các bước sau:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Bước 1: Clone repository bằng Git URL của dự án.
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Bước 2: Điều hướng đến thư mục dự án.
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# Bước 3: Cài đặt các dependencies cần thiết.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Bước 4: Khởi động máy chủ phát triển với tự động tải lại và xem trước tức thì.
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+**Chỉnh sửa tệp trực tiếp trên GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- Điều hướng đến tệp(s) mong muốn.
+- Nhấp vào nút "Edit" (biểu tượng bút chì) ở trên cùng bên phải của chế độ xem tệp.
+- Thực hiện thay đổi của bạn và commit các thay đổi.
 
-**Use GitHub Codespaces**
+**Sử dụng GitHub Codespaces**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- Điều hướng đến trang chính của repository.
+- Nhấp vào nút "Code" (nút màu xanh lục) gần trên cùng bên phải.
+- Chọn tab "Codespaces".
+- Nhấp vào "New codespace" để khởi chạy môi trường Codespace mới.
+- Chỉnh sửa tệp trực tiếp trong Codespace và commit và push thay đổi của bạn khi hoàn thành.
 
-## What technologies are used for this project?
+## Công nghệ nào được sử dụng cho dự án này?
 
-This project is built with:
+Dự án này được xây dựng với:
 
 - Vite
 - TypeScript
@@ -60,14 +60,14 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
+## Làm thế nào để triển khai dự án này?
 
-Simply open [Lovable](https://lovable.dev/projects/3aa74b60-3a28-44ab-a5a0-54e70f4b2746) and click on Share -> Publish.
+Chỉ cần mở [Lovable](https://lovable.dev/projects/3aa74b60-3a28-44ab-a5a0-54e70f4b2746) và nhấp vào Share -> Publish.
 
-## Can I connect a custom domain to my Lovable project?
+## Tôi có thể kết nối tên miền tùy chỉnh với dự án Lovable của mình không?
 
-Yes, you can!
+Có, bạn có thể!
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Để kết nối tên miền, điều hướng đến Project > Settings > Domains và nhấp Connect Domain.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Đọc thêm ở đây: [Thiết lập tên miền tùy chỉnh](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
