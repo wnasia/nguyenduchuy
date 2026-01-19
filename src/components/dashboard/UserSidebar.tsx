@@ -22,13 +22,11 @@ import {
   FileText,
   Image,
   Youtube,
-  Wallet,
   LogOut,
   ChevronRight,
   PenSquare,
   Bell,
   User,
-  Settings,
 } from "lucide-react";
 import huyLogo from "@/assets/huy-logo.png";
 import { cn } from "@/lib/utils";
@@ -85,15 +83,9 @@ const menuSections = [
     items: [
       {
         id: "profile",
-        title: "Hồ sơ cá nhân",
+        title: "Hồ sơ & Ví",
         icon: User,
-        description: "Your profile settings",
-      },
-      {
-        id: "wallet",
-        title: "Wallet",
-        icon: Wallet,
-        description: "Earnings and balance",
+        description: "Profile and wallet settings",
       },
     ],
   },
