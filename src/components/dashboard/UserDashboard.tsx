@@ -4,7 +4,6 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/s
 import UserSidebar from "./UserSidebar";
 import UserOverview from "./UserOverview";
 import UserPosts from "./UserPosts";
-import UserWallet from "./UserWallet";
 import UserGallery from "./UserGallery";
 import UserYouTube from "./UserYouTube";
 import UserProfile from "./UserProfile";
@@ -17,8 +16,7 @@ const moduleConfig: Record<string, { title: string; component: React.ComponentTy
   posts: { title: "My Stories", component: UserPosts },
   gallery: { title: "Image Gallery", component: UserGallery },
   youtube: { title: "YouTube Videos", component: UserYouTube },
-  profile: { title: "Hồ sơ cá nhân", component: UserProfile },
-  wallet: { title: "Wallet", component: UserWallet },
+  profile: { title: "Hồ sơ & Ví", component: UserProfile },
 };
 
 const UserDashboard = () => {

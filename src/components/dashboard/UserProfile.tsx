@@ -6,15 +6,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
-import { User, Mail, Camera, Save, Loader2, Shield, Calendar, CheckCircle2, Upload } from "lucide-react";
+import { 
+  User, Mail, Camera, Save, Loader2, Shield, Calendar, CheckCircle2, Upload,
+  Wallet, TrendingUp, Clock, Gift, CreditCard, ArrowUpRight, Info
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProfileData {
   full_name: string | null;
   avatar_url: string | null;
   email: string | null;
+}
+
+interface WalletData {
+  balance: number;
+  total_earned: number;
+}
+
+interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  description: string;
+  status: string;
+  created_at: string;
 }
 
 const UserProfile = () => {
@@ -32,37 +48,60 @@ const UserProfile = () => {
     avatar_url: "",
     email: "",
   });
+  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
     if (user) {
-      fetchProfile();
+      fetchData();
     }
   }, [user]);
 
-  const fetchProfile = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Fetch profile
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("full_name, avatar_url, email")
         .eq("id", user?.id)
         .single();
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
-      const profileData = {
-        full_name: data?.full_name || user?.user_metadata?.full_name || "",
-        avatar_url: data?.avatar_url || user?.user_metadata?.avatar_url || "",
-        email: data?.email || user?.email || "",
+      const profileInfo = {
+        full_name: profileData?.full_name || user?.user_metadata?.full_name || "",
+        avatar_url: profileData?.avatar_url || user?.user_metadata?.avatar_url || "",
+        email: profileData?.email || user?.email || "",
       };
 
-      setProfile(profileData);
-      setOriginalProfile(profileData);
+      setProfile(profileInfo);
+      setOriginalProfile(profileInfo);
+
+      // Fetch wallet
+      const { data: walletData } = await supabase
+        .from('wallet')
+        .select('balance, total_earned')
+        .eq('user_id', user?.id)
+        .single();
+
+      setWallet(walletData);
+
+      // Fetch transactions
+      const { data: transactionsData } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      setTransactions(transactionsData || []);
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("Error fetching data:", error);
       toast({
         title: "Lỗi",
-        description: "Không thể tải thông tin hồ sơ",
+        description: "Không thể tải thông tin",
         variant: "destructive",
       });
     } finally {
@@ -179,32 +218,31 @@ const UserProfile = () => {
     }
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN').format(amount);
+  };
+
   const hasChanges = profile.full_name !== originalProfile.full_name;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[300px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 max-w-3xl mx-auto">
-      {/* Profile Hero Section */}
-      <Card className="overflow-hidden shadow-lg border-0">
-        <div className="relative h-32 sm:h-40 bg-gradient-to-br from-primary via-blue-500 to-indigo-600">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnY0em0wLTZ2LTRoLTJ2NGgyem0tNiA2di00aC0ydjRoMnptMC02di00aC0ydjRoMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30" />
-        </div>
-        
-        <CardContent className="relative pb-8">
-          {/* Avatar positioned over the gradient */}
-          <div className="absolute -top-16 left-6 sm:left-10">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-indigo-500 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-300" />
-              <Avatar className="relative h-28 w-28 sm:h-32 sm:w-32 border-4 border-background shadow-xl">
+    <div className="space-y-4">
+      {/* Compact Profile Header */}
+      <Card className="shadow-sm">
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            {/* Avatar */}
+            <div className="relative group shrink-0">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-2 border-primary/20 shadow-md">
                 <AvatarImage src={profile.avatar_url || ""} className="object-cover" />
-                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-indigo-500/20 text-primary text-3xl font-bold">
+                <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
                   {profile.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
@@ -212,18 +250,14 @@ const UserProfile = () => {
                 htmlFor="avatar-upload"
                 className={cn(
                   "absolute inset-0 flex items-center justify-center rounded-full cursor-pointer",
-                  "bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300",
-                  "backdrop-blur-sm",
+                  "bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity",
                   uploading && "opacity-100"
                 )}
               >
                 {uploading ? (
-                  <Loader2 className="h-8 w-8 text-white animate-spin" />
+                  <Loader2 className="h-5 w-5 text-white animate-spin" />
                 ) : (
-                  <div className="flex flex-col items-center gap-1">
-                    <Upload className="h-6 w-6 text-white" />
-                    <span className="text-[10px] text-white font-medium">Thay đổi</span>
-                  </div>
+                  <Camera className="h-5 w-5 text-white" />
                 )}
               </label>
               <input
@@ -235,71 +269,58 @@ const UserProfile = () => {
                 disabled={uploading}
               />
             </div>
-          </div>
 
-          {/* User Summary Info */}
-          <div className="pt-16 sm:pt-20 pl-2 sm:pl-4">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-                  {profile.full_name || "Người dùng"}
-                </h1>
-                <p className="text-muted-foreground mt-1 flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  {profile.email}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-sm font-medium">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Tài khoản đã xác thực</span>
+            {/* User Info */}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-xl font-bold text-foreground truncate">
+                {profile.full_name || "Người dùng"}
+              </h2>
+              <p className="text-sm text-muted-foreground flex items-center gap-1.5 truncate">
+                <Mail className="h-3.5 w-3.5 shrink-0" />
+                {profile.email}
+              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Đã xác thực
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Tham gia: {user?.created_at ? new Date(user.created_at).toLocaleDateString("vi-VN") : "N/A"}
+                </span>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Profile Form Section */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Form */}
-        <Card className="lg:col-span-2 shadow-md">
-          <CardHeader className="border-b bg-muted/30">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <User className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Thông tin cá nhân</CardTitle>
-                <CardDescription>Cập nhật thông tin hồ sơ của bạn</CardDescription>
-              </div>
-            </div>
+      {/* Two Column Layout */}
+      <div className="grid gap-4 lg:grid-cols-5">
+        {/* Left Column - Profile Form */}
+        <Card className="lg:col-span-3 shadow-sm">
+          <CardHeader className="p-4 pb-3 border-b bg-muted/30">
+            <CardTitle className="text-base flex items-center gap-2">
+              <User className="h-4 w-4 text-primary" />
+              Thông tin cá nhân
+            </CardTitle>
           </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            {/* Full Name Field */}
-            <div className="space-y-3">
-              <Label htmlFor="full_name" className="text-sm font-medium flex items-center gap-2">
-                <User className="h-4 w-4 text-primary" />
-                Họ và tên
-              </Label>
+          <CardContent className="p-4 space-y-4">
+            {/* Full Name */}
+            <div className="space-y-1.5">
+              <Label htmlFor="full_name" className="text-sm font-medium">Họ và tên</Label>
               <Input
                 id="full_name"
                 value={profile.full_name || ""}
                 onChange={(e) => setProfile((prev) => ({ ...prev, full_name: e.target.value }))}
-                placeholder="Nhập họ và tên của bạn"
-                className="h-12 text-base transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                placeholder="Nhập họ và tên"
+                className="h-10"
               />
-              <p className="text-xs text-muted-foreground">
-                Tên hiển thị trên các bài viết và trang cá nhân của bạn
-              </p>
             </div>
 
-            <Separator />
-
-            {/* Email Field (Read-only) */}
-            <div className="space-y-3">
+            {/* Email (Read-only) */}
+            <div className="space-y-1.5">
               <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
-                <Mail className="h-4 w-4 text-primary" />
-                Địa chỉ Email
-                <span className="text-[10px] uppercase tracking-wider bg-muted px-2 py-0.5 rounded-full text-muted-foreground font-semibold">
+                Email
+                <span className="text-[10px] uppercase tracking-wider bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
                   Chỉ đọc
                 </span>
               </Label>
@@ -307,115 +328,173 @@ const UserProfile = () => {
                 id="email"
                 value={profile.email || ""}
                 disabled
-                className="h-12 text-base bg-muted/50 cursor-not-allowed"
+                className="h-10 bg-muted/50 cursor-not-allowed"
               />
-              <p className="text-xs text-muted-foreground">
-                Email đăng nhập không thể thay đổi vì lý do bảo mật
-              </p>
             </div>
 
-            <Separator />
-
             {/* Save Button */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+            <div className="flex items-center gap-3 pt-2">
               <Button
                 onClick={handleSaveProfile}
                 disabled={saving || !hasChanges}
-                size="lg"
                 className={cn(
-                  "w-full sm:w-auto min-w-[180px] h-12 text-base font-semibold gap-3",
-                  "transition-all duration-300",
-                  hasChanges
-                    ? "bg-gradient-to-r from-primary via-blue-500 to-indigo-600 hover:shadow-lg hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
-                    : "opacity-50"
+                  "gap-2 transition-all",
+                  hasChanges && "bg-gradient-to-r from-primary to-blue-600"
                 )}
               >
-                {saving ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Save className="h-5 w-5" />
-                )}
-                {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Lưu thay đổi
               </Button>
               {hasChanges && (
-                <p className="text-sm text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                  Có thay đổi chưa lưu
-                </p>
+                <span className="text-xs text-amber-600 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  Chưa lưu
+                </span>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Account Info Sidebar */}
-        <div className="space-y-6">
-          {/* Account Status Card */}
-          <Card className="shadow-md">
-            <CardHeader className="border-b bg-muted/30 pb-4">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="h-4 w-4 text-primary" />
-                Trạng thái tài khoản
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/20">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+        {/* Right Column - Account Status & Wallet Summary */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Account Status */}
+          <Card className="shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-500/10">
+                  <Shield className="h-4 w-4 text-green-600" />
                 </div>
-                <div>
-                  <p className="font-semibold text-green-700 dark:text-green-400">Hoạt động</p>
-                  <p className="text-xs text-muted-foreground">Tài khoản của bạn đang hoạt động bình thường</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">Trạng thái</p>
+                  <p className="text-xs text-green-600">Hoạt động bình thường</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Join Date Card */}
-          <Card className="shadow-md">
-            <CardHeader className="border-b bg-muted/30 pb-4">
+          {/* Wallet Summary Card */}
+          <Card className="shadow-sm">
+            <CardHeader className="p-4 pb-3 border-b bg-muted/30">
               <CardTitle className="text-base flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-primary" />
-                Ngày tham gia
+                <Wallet className="h-4 w-4 text-primary" />
+                Ví của tôi
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                  <Calendar className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">
-                    {user?.created_at
-                      ? new Date(user.created_at).toLocaleDateString("vi-VN", {
-                          day: "2-digit",
-                          month: "long",
-                          year: "numeric",
-                        })
-                      : "N/A"}
+            <CardContent className="p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/10">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CreditCard className="h-3.5 w-3.5 text-green-600" />
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Số dư</span>
+                  </div>
+                  <p className="text-lg font-bold text-foreground">
+                    {formatCurrency(wallet?.balance || 0)}
+                    <span className="text-xs font-normal text-muted-foreground ml-1">đ</span>
                   </p>
-                  <p className="text-xs text-muted-foreground">Thành viên của cộng đồng</p>
+                </div>
+                <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp className="h-3.5 w-3.5 text-blue-600" />
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Tổng</span>
+                  </div>
+                  <p className="text-lg font-bold text-foreground">
+                    {formatCurrency(wallet?.total_earned || 0)}
+                    <span className="text-xs font-normal text-muted-foreground ml-1">đ</span>
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Avatar Tips Card */}
-          <Card className="shadow-md border-dashed">
-            <CardContent className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 shrink-0">
-                  <Camera className="h-4 w-4 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-1">Mẹo ảnh đại diện</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Sử dụng ảnh rõ nét với khuôn mặt ở trung tâm. Kích thước tối đa 2MB, định dạng JPG hoặc PNG.
-                  </p>
-                </div>
+              {/* Withdrawal Notice */}
+              <div className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/50 text-xs">
+                <Clock className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                <span className="text-muted-foreground">
+                  Rút tiền <span className="font-medium text-primary">sắp ra mắt</span> - tối thiểu 100.000đ
+                </span>
               </div>
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Wallet Details Section */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* How to Earn */}
+        <Card className="shadow-sm">
+          <CardHeader className="p-4 pb-3 border-b bg-muted/30">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Gift className="h-4 w-4 text-amber-500" />
+              Cách kiếm tiền
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="space-y-2.5">
+              {[
+                { icon: "✍️", title: "Viết bài chất lượng", desc: "Thưởng khi bài được duyệt" },
+                { icon: "👍", title: "Tương tác cao", desc: "Nhiều lượt xem và yêu thích" },
+                { icon: "🎯", title: "Hoạt động đều", desc: "Bonus hàng tháng" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                  <span className="text-lg">{item.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Transactions */}
+        <Card className="shadow-sm">
+          <CardHeader className="p-4 pb-3 border-b bg-muted/30">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-primary" />
+              Giao dịch gần đây
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {transactions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted mb-2">
+                  <Wallet className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">Chưa có giao dịch</p>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {transactions.map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between p-3 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-lg shrink-0",
+                        tx.type === 'earning' ? "bg-green-500/10" : "bg-muted"
+                      )}>
+                        <TrendingUp className={cn(
+                          "h-4 w-4",
+                          tx.type === 'earning' ? "text-green-600" : "text-muted-foreground"
+                        )} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{tx.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(tx.created_at).toLocaleDateString("vi-VN")}
+                        </p>
+                      </div>
+                    </div>
+                    <p className={cn(
+                      "text-sm font-semibold shrink-0 ml-2",
+                      tx.type === 'withdrawal' ? "text-red-600" : "text-green-600"
+                    )}>
+                      {tx.type === 'withdrawal' ? '-' : '+'}
+                      {formatCurrency(tx.amount)}đ
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
