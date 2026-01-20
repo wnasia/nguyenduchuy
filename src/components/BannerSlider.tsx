@@ -62,6 +62,8 @@ const BannerSlider = () => {
   const [latestPost, setLatestPost] = useState<LatestPost | null>(null);
   const [goldInfo, setGoldInfo] = useState<GoldInfo | null>(null);
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo | null>(null);
+  const [loadingGold, setLoadingGold] = useState(true);
+  const [loadingWeather, setLoadingWeather] = useState(true);
 
   // Fetch latest post
   const fetchLatestPost = useCallback(async () => {
