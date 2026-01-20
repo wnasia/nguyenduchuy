@@ -44,24 +44,27 @@
 
     --radius: 0.5rem;
 
-    /* Clean sidebar colors */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 15%;
-    --sidebar-primary: 221.2 83.2% 53.3%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 0 0% 15%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 221.2 83.2% 53.3%;
+    /* Premium admin sidebar - dark navy */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217.2 91.2% 59.8%;
+    --sidebar-primary-foreground: 222.2 47% 11%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-muted: 215 20.2% 65.1%;
 
     /* Clean shadows */
     --shadow-soft: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
     --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
     --shadow-float: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+    --shadow-premium: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
 
     /* Blue gradients */
     --gradient-primary: linear-gradient(90deg, hsl(221.2 83.2% 53.3%) 0%, hsl(221.2 83.2% 43.3%) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
+    --gradient-admin: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(222 47% 16%) 100%);
 
     /* Social brand tokens */
     --brand-facebook: 221 89% 61%;
@@ -278,6 +281,58 @@
   .table-row-interactive {
     @apply table-row-hover cursor-pointer;
     @apply hover:bg-primary/5;
+  }
+
+  /* Premium admin styles */
+  .admin-sidebar {
+    background: var(--gradient-admin);
+  }
+
+  .admin-stat-card {
+    @apply relative overflow-hidden bg-card border border-border/50 rounded-2xl p-6;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-primary/10 hover:border-primary/20 hover:-translate-y-1;
+  }
+
+  .admin-stat-card::before {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-primary/80 to-transparent opacity-0 transition-opacity duration-300;
+  }
+
+  .admin-stat-card:hover::before {
+    @apply opacity-100;
+  }
+
+  .admin-activity-item {
+    @apply relative flex items-center gap-4 p-4 rounded-xl transition-all duration-200;
+    @apply hover:bg-muted/60 hover:shadow-sm;
+  }
+
+  .admin-activity-item::before {
+    content: '';
+    @apply absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-primary rounded-r-full transition-all duration-200;
+  }
+
+  .admin-activity-item:hover::before {
+    @apply h-8;
+  }
+
+  .admin-section-card {
+    @apply bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden;
+  }
+
+  .admin-section-header {
+    @apply px-6 py-5 border-b border-border/50 bg-muted/30;
+  }
+
+  .admin-menu-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer;
+    @apply text-sidebar-foreground/70;
+    @apply hover:bg-white/10 hover:text-sidebar-foreground;
+  }
+
+  .admin-menu-item-active {
+    @apply bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg shadow-primary/30;
   }
 }
 
