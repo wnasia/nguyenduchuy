@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, LayoutDashboard, Bell, User } from "lucide-react";
+import { Menu, X, LogOut, Bell } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +10,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,6 +21,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useI18n();
   const { user, signOut, loading } = useAuth();
 
@@ -88,6 +89,10 @@ const Navbar = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  const handleNavigateToModule = (module: string) => {
+    navigate("/dashboard", { state: { module } });
+  };
+
   return (
     <nav className="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -134,16 +139,19 @@ const Navbar = () => {
             ) : user ? (
               <div className="flex items-center gap-2">
                 {/* Notification Bell */}
-                <Link to="/dashboard" state={{ module: "notifications" }}>
-                  <Button variant="ghost" size="icon" className="relative h-10 w-10">
-                    <Bell className="h-5 w-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                        {unreadCount > 99 ? "99+" : unreadCount}
-                      </span>
-                    )}
-                  </Button>
-                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="relative h-10 w-10"
+                  onClick={() => handleNavigateToModule("notifications")}
+                >
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </Button>
 
                 {/* User Avatar Dropdown */}
                 <DropdownMenu>
@@ -157,34 +165,37 @@ const Navbar = () => {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-popover" align="end" forceMount>
-                  <DropdownMenuItem className="flex flex-col items-start">
-                    <div className="text-sm font-medium">{user.user_metadata?.full_name || 'User'}</div>
-                    <div className="text-xs text-gray-500">{user.email}</div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="flex items-center w-full">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      <span>{t("navigation.dashboard")}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="flex items-center w-full" state={{ module: "notifications" }}>
-                      <Bell className="mr-2 h-4 w-4" />
-                      <span>Thông báo</span>
+                  <DropdownMenuContent className="w-56 bg-popover" align="end" forceMount>
+                    <div className="px-3 py-2 border-b">
+                      <div className="text-sm font-medium">{user.user_metadata?.full_name || 'User'}</div>
+                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                    </div>
+                    <DropdownMenuItem onClick={() => handleNavigateToModule("profile")}>
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleNavigateToModule("profile")}>
+                      Wallet
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleNavigateToModule("notifications")}>
+                      Notifications
                       {unreadCount > 0 && (
                         <Badge variant="destructive" className="ml-auto h-5 min-w-[20px] px-1.5 text-xs">
                           {unreadCount}
                         </Badge>
                       )}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t("common.logout")}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="w-full">
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <Link to="/login">
@@ -249,27 +260,44 @@ const Navbar = () => {
                   </div>
                   <Link to="/dashboard" onClick={() => setIsOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      {t("navigation.dashboard")}
+                      Dashboard
                     </Button>
                   </Link>
-                  <Link to="/dashboard" state={{ module: "notifications" }} onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Bell className="mr-2 h-4 w-4" />
-                      Thông báo
-                      {unreadCount > 0 && (
-                        <Badge variant="destructive" className="ml-2 h-5 min-w-[20px] px-1.5 text-xs">
-                          {unreadCount}
-                        </Badge>
-                      )}
-                    </Button>
-                  </Link>
-                  <Link to="/dashboard" state={{ module: "profile" }} onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start">
-                      <User className="mr-2 h-4 w-4" />
-                      Hồ sơ cá nhân
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => {
+                      handleNavigateToModule("profile");
+                      setIsOpen(false);
+                    }}
+                  >
+                    Profile
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => {
+                      handleNavigateToModule("profile");
+                      setIsOpen(false);
+                    }}
+                  >
+                    Wallet
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => {
+                      handleNavigateToModule("notifications");
+                      setIsOpen(false);
+                    }}
+                  >
+                    Notifications
+                    {unreadCount > 0 && (
+                      <Badge variant="destructive" className="ml-2 h-5 min-w-[20px] px-1.5 text-xs">
+                        {unreadCount}
+                      </Badge>
+                    )}
+                  </Button>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
@@ -278,8 +306,7 @@ const Navbar = () => {
                       setIsOpen(false);
                     }}
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {t("common.logout")}
+                    Logout
                   </Button>
                 </div>
               ) : (
