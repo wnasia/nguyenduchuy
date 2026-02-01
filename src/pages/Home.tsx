@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingUp, Eye, ArrowRight, Clock, Flame, Star, Tag, User } from "lucide-react";
@@ -14,7 +14,7 @@ import ExchangeRateWidget from "@/components/widgets/ExchangeRateWidget";
 import WeatherWidget from "@/components/widgets/WeatherWidget";
 import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
 import CommunityStatsWidget from "@/components/widgets/CommunityStatsWidget";
-import { parsePostContent, getExcerpt, decodeHtmlEntities, type ParsedContent } from "@/lib/htmlUtils";
+import { parsePostContent, stripHtmlAndDecode, decodeHtmlEntities, type ParsedContent } from "@/lib/htmlUtils";
 import SocialShareButtons from "@/components/SocialShareButtons";
 
 interface Post {
@@ -50,34 +50,30 @@ const Home = () => {
   const [activeBanner, setActiveBanner] = useState<{ image_url: string; link_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const contentCache = useRef(new Map<string, ParsedContent>());
+
   const parseContent = useCallback((content: string): ParsedContent => {
-    return parsePostContent(content);
+    const cached = contentCache.current.get(content);
+    if (cached) {
+      return cached;
+    }
+    const parsed = parsePostContent(content);
+    contentCache.current.set(content, parsed);
+    return parsed;
   }, []);
 
   const fetchHotPosts = useCallback(async () => {
     try {
       let { data: postsData, error } = await supabase
         .from('posts')
-        .select('*')
+        .select('*, profiles(full_name, avatar_url)')
         .eq('status', 'approved')
         .order('view_count', { ascending: false })
         .limit(10);
 
       if (error) throw error;
 
-      if (postsData && postsData.length > 0) {
-        const postsWithProfiles = await Promise.all(
-          postsData.map(async (post) => {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('full_name, avatar_url')
-              .eq('id', post.user_id)
-              .single();
-            return { ...post, profiles: profileData };
-          })
-        );
-        setHotPosts(postsWithProfiles);
-      }
+      setHotPosts(postsData || []);
     } catch (error) {
       console.error('Error fetching hot posts:', error);
     }
@@ -87,26 +83,14 @@ const Home = () => {
     try {
       let { data: postsData, error } = await supabase
         .from('posts')
-        .select('*')
+        .select('*, profiles(full_name, avatar_url)')
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
         .limit(10);
 
       if (error) throw error;
 
-      if (postsData && postsData.length > 0) {
-        const postsWithProfiles = await Promise.all(
-          postsData.map(async (post) => {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('full_name, avatar_url')
-              .eq('id', post.user_id)
-              .single();
-            return { ...post, profiles: profileData };
-          })
-        );
-        setLatestPosts(postsWithProfiles);
-      }
+      setLatestPosts(postsData || []);
     } catch (error) {
       console.error('Error fetching latest posts:', error);
     }
@@ -116,7 +100,7 @@ const Home = () => {
     try {
       let { data: postsData, error } = await supabase
         .from('posts')
-        .select('*')
+        .select('*, profiles(full_name, avatar_url)')
         .eq('status', 'approved')
         .eq('is_featured', true)
         .order('view_count', { ascending: false })
@@ -124,19 +108,7 @@ const Home = () => {
 
       if (error) throw error;
 
-      if (postsData && postsData.length > 0) {
-        const postsWithProfiles = await Promise.all(
-          postsData.map(async (post) => {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('full_name, avatar_url')
-              .eq('id', post.user_id)
-              .single();
-            return { ...post, profiles: profileData };
-          })
-        );
-        setTopPosts(postsWithProfiles);
-      }
+      setTopPosts(postsData || []);
     } catch (error) {
       console.error('Error fetching top posts:', error);
     }
@@ -272,7 +244,9 @@ const Home = () => {
   };
 
   const getPostExcerpt = (content: string, maxLength: number = 120) => {
-    return getExcerpt(content, maxLength);
+    const parsed = parseContent(content);
+    const text = stripHtmlAndDecode(parsed.story);
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
   const getPostThumbnail = (content: string): string | null => {
