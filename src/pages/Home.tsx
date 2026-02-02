@@ -1,21 +1,24 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, Eye, ArrowRight, Clock, Flame, Star, Tag, User } from "lucide-react";
+import { Eye, ArrowRight, Clock, Flame, Star, Tag, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
 import BannerSlider from "@/components/BannerSlider";
-import LunarCalendarWidget from "@/components/LunarCalendarWidget";
-import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
-import ExchangeRateWidget from "@/components/widgets/ExchangeRateWidget";
-import WeatherWidget from "@/components/widgets/WeatherWidget";
-import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
-import CommunityStatsWidget from "@/components/widgets/CommunityStatsWidget";
 import { parsePostContent, getExcerpt, decodeHtmlEntities, type ParsedContent } from "@/lib/htmlUtils";
 import SocialShareButtons from "@/components/SocialShareButtons";
+import LazyWidget from "@/components/widgets/LazyWidget";
+
+// Lazy load widgets for faster initial page load
+const LunarCalendarWidget = lazy(() => import("@/components/LunarCalendarWidget"));
+const FlightSearchWidget = lazy(() => import("@/components/flight/FlightSearchWidget"));
+const ExchangeRateWidget = lazy(() => import("@/components/widgets/ExchangeRateWidget"));
+const WeatherWidget = lazy(() => import("@/components/widgets/WeatherWidget"));
+const GoldPriceWidget = lazy(() => import("@/components/widgets/GoldPriceWidget"));
+const CommunityStatsWidget = lazy(() => import("@/components/widgets/CommunityStatsWidget"));
 
 interface Post {
   id: string;
@@ -411,19 +414,39 @@ const Home = () => {
           {/* Sidebar - STRICT ORDER - Hidden on mobile, show on lg+ */}
           <div className="hidden lg:block space-y-6">
             {/* 1. Vietnam Gold Price - FIRST */}
-            <GoldPriceWidget />
+            <LazyWidget height="280px">
+              <Suspense fallback={null}>
+                <GoldPriceWidget />
+              </Suspense>
+            </LazyWidget>
 
             {/* 2. Weather */}
-            <WeatherWidget />
+            <LazyWidget height="300px" delay={100}>
+              <Suspense fallback={null}>
+                <WeatherWidget />
+              </Suspense>
+            </LazyWidget>
 
             {/* 3. Lunar / Solar Calendar */}
-            <LunarCalendarWidget />
+            <LazyWidget height="200px" delay={200}>
+              <Suspense fallback={null}>
+                <LunarCalendarWidget />
+              </Suspense>
+            </LazyWidget>
 
             {/* 4. Flight Booking */}
-            <FlightSearchWidget />
+            <LazyWidget height="350px" delay={300}>
+              <Suspense fallback={null}>
+                <FlightSearchWidget />
+              </Suspense>
+            </LazyWidget>
 
             {/* 5. Exchange Rates */}
-            <ExchangeRateWidget />
+            <LazyWidget height="320px" delay={400}>
+              <Suspense fallback={null}>
+                <ExchangeRateWidget />
+              </Suspense>
+            </LazyWidget>
 
             {/* 6. Popular Topics */}
             <div className="bg-card rounded-lg border border-border p-5">
@@ -445,7 +468,11 @@ const Home = () => {
             </div>
 
             {/* 7. Community Stats - LAST */}
-            <CommunityStatsWidget />
+            <LazyWidget height="200px" delay={500}>
+              <Suspense fallback={null}>
+                <CommunityStatsWidget />
+              </Suspense>
+            </LazyWidget>
           </div>
         </div>
       </div>

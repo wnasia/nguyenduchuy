@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { TrendingUp, TrendingDown, Minus, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getForexRates } from "@/hooks/useCachedFetch";
 
 interface GoldPrice {
   buy: number;
@@ -15,18 +16,25 @@ interface GoldData {
   lastUpdated: Date;
 }
 
-// Fetch real gold price data using free API
+// Cache for gold data
+let goldCache: { data: GoldData; timestamp: number } | null = null;
+const CACHE_DURATION = 5 * 60 * 1000;
+
 const fetchGoldPrices = async (): Promise<GoldData | null> => {
+  // Check cache first
+  if (goldCache && Date.now() - goldCache.timestamp < CACHE_DURATION) {
+    return goldCache.data;
+  }
+
   try {
-    // Using a CORS-friendly gold price API
-    // We'll fetch international gold price and convert to VND
-    const [goldResponse, forexResponse] = await Promise.all([
+    // Use shared forex data to avoid duplicate API calls
+    const [goldResponse, forexRates] = await Promise.all([
       fetch("https://api.gold-api.com/price/XAU"),
-      fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json")
+      getForexRates()
     ]);
 
-    let goldPriceUsd = 2650; // Fallback price per troy ounce
-    let vndPerUsd = 25400;
+    let goldPriceUsd = 2650;
+    const vndPerUsd = forexRates.vnd || 25400;
 
     if (goldResponse.ok) {
       const goldData = await goldResponse.json();
@@ -35,28 +43,17 @@ const fetchGoldPrices = async (): Promise<GoldData | null> => {
       }
     }
 
-    if (forexResponse.ok) {
-      const forexData = await forexResponse.json();
-      if (forexData.usd?.vnd) {
-        vndPerUsd = forexData.usd.vnd;
-      }
-    }
-
-    // Convert to VND per tael (1 tael = 1.20565 troy ounces for Vietnam gold)
     const taelToTroyOunce = 1.20565;
     const goldPricePerTaelVnd = goldPriceUsd * taelToTroyOunce * vndPerUsd;
     
-    // SJC gold typically trades at a premium of 15-20% over international price
     const sjcPremium = 1.18;
     const pnjPremium = 1.15;
     const dojiPremium = 1.17;
+    const spreadPercent = 0.005;
     
-    const spreadPercent = 0.005; // 0.5% buy-sell spread
-    
-    // Simulate small random fluctuations for change values
     const randomChange = () => (Math.random() - 0.5) * 400000;
 
-    return {
+    const result: GoldData = {
       sjc: {
         buy: Math.round(goldPricePerTaelVnd * sjcPremium * (1 - spreadPercent)),
         sell: Math.round(goldPricePerTaelVnd * sjcPremium),
@@ -74,9 +71,12 @@ const fetchGoldPrices = async (): Promise<GoldData | null> => {
       },
       lastUpdated: new Date(),
     };
+
+    goldCache = { data: result, timestamp: Date.now() };
+    return result;
   } catch (error) {
     console.error("Error fetching gold prices:", error);
-    return null;
+    return goldCache?.data || null;
   }
 };
 
@@ -90,8 +90,13 @@ const formatChange = (change: number): string => {
 };
 
 const GoldPriceWidget = () => {
-  const [data, setData] = useState<GoldData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<GoldData | null>(() => {
+    if (goldCache && Date.now() - goldCache.timestamp < CACHE_DURATION) {
+      return goldCache.data;
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState(!data);
   const [error, setError] = useState(false);
 
   const loadData = useCallback(async () => {
@@ -107,11 +112,12 @@ const GoldPriceWidget = () => {
   }, []);
 
   useEffect(() => {
-    loadData();
-    // Refresh every 5 minutes
+    if (!data) {
+      loadData();
+    }
     const interval = setInterval(loadData, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [loadData]);
+  }, [loadData, data]);
 
   const renderChangeIcon = (change: number) => {
     if (change > 0) return <TrendingUp className="h-3 w-3 text-green-500" />;
@@ -125,7 +131,7 @@ const GoldPriceWidget = () => {
     return "text-muted-foreground";
   };
 
-  if (error) {
+  if (error && !data) {
     return (
       <div className="bg-card rounded-lg border border-border p-5">
         <div className="flex items-center gap-2 mb-4">
@@ -136,12 +142,7 @@ const GoldPriceWidget = () => {
           <AlertCircle className="h-8 w-8" />
           <span className="text-sm">Không thể tải dữ liệu</span>
         </div>
-        <Button
-          onClick={loadData}
-          variant="outline"
-          size="sm"
-          className="w-full mt-2"
-        >
+        <Button onClick={loadData} variant="outline" size="sm" className="w-full mt-2">
           <RefreshCw className="h-4 w-4 mr-2" />
           Thử lại
         </Button>
@@ -151,7 +152,6 @@ const GoldPriceWidget = () => {
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden">
-      {/* Header - Using primary blue color for consistency */}
       <div className="bg-primary px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary-foreground">
@@ -180,85 +180,32 @@ const GoldPriceWidget = () => {
           </div>
         ) : data ? (
           <div className="space-y-3">
-            {/* SJC Gold */}
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <div>
-                <p className="text-sm font-medium text-foreground">SJC</p>
-                <p className="text-xs text-muted-foreground">Vàng miếng</p>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Mua:</span>
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatPrice(data.sjc.buy)}
-                  </span>
+            {[
+              { key: 'sjc', label: 'SJC', sub: 'Vàng miếng', data: data.sjc },
+              { key: 'pnj', label: 'PNJ', sub: 'Vàng nhẫn', data: data.pnj },
+              { key: 'doji', label: 'DOJI', sub: 'Vàng miếng', data: data.doji },
+            ].map((item, idx) => (
+              <div key={item.key} className={`flex items-center justify-between py-2 ${idx < 2 ? 'border-b border-border' : ''}`}>
+                <div>
+                  <p className="text-sm font-medium text-foreground">{item.label}</p>
+                  <p className="text-xs text-muted-foreground">{item.sub}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Bán:</span>
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatPrice(data.sjc.sell)}
-                  </span>
+                <div className="text-right">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Mua:</span>
+                    <span className="text-sm font-semibold text-foreground">{formatPrice(item.data.buy)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Bán:</span>
+                    <span className="text-sm font-semibold text-foreground">{formatPrice(item.data.sell)}</span>
+                  </div>
                 </div>
-              </div>
-              <div className={`flex items-center gap-1 ${getChangeColor(data.sjc.change)}`}>
-                {renderChangeIcon(data.sjc.change)}
-                <span className="text-xs font-medium">{formatChange(data.sjc.change)}</span>
-              </div>
-            </div>
-
-            {/* PNJ Gold */}
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <div>
-                <p className="text-sm font-medium text-foreground">PNJ</p>
-                <p className="text-xs text-muted-foreground">Vàng nhẫn</p>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Mua:</span>
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatPrice(data.pnj.buy)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Bán:</span>
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatPrice(data.pnj.sell)}
-                  </span>
+                <div className={`flex items-center gap-1 ${getChangeColor(item.data.change)}`}>
+                  {renderChangeIcon(item.data.change)}
+                  <span className="text-xs font-medium">{formatChange(item.data.change)}</span>
                 </div>
               </div>
-              <div className={`flex items-center gap-1 ${getChangeColor(data.pnj.change)}`}>
-                {renderChangeIcon(data.pnj.change)}
-                <span className="text-xs font-medium">{formatChange(data.pnj.change)}</span>
-              </div>
-            </div>
-
-            {/* DOJI Gold */}
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="text-sm font-medium text-foreground">DOJI</p>
-                <p className="text-xs text-muted-foreground">Vàng miếng</p>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Mua:</span>
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatPrice(data.doji.buy)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Bán:</span>
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatPrice(data.doji.sell)}
-                  </span>
-                </div>
-              </div>
-              <div className={`flex items-center gap-1 ${getChangeColor(data.doji.change)}`}>
-                {renderChangeIcon(data.doji.change)}
-                <span className="text-xs font-medium">{formatChange(data.doji.change)}</span>
-              </div>
-            </div>
-
-            {/* Last Updated */}
+            ))}
             <p className="text-xs text-muted-foreground text-center pt-2 border-t border-border">
               Cập nhật: {data.lastUpdated.toLocaleTimeString("vi-VN")}
             </p>
