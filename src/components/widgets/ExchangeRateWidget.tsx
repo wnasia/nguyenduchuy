@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { DollarSign, RefreshCw, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { getForexRates } from "@/hooks/useCachedFetch";
 
 interface ExchangeRate {
   code: string;
@@ -10,50 +11,56 @@ interface ExchangeRate {
   flag: string;
 }
 
-const ExchangeRateWidget = () => {
-  const [rates, setRates] = useState<ExchangeRate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+// Cache for exchange rates
+let ratesCache: { data: ExchangeRate[]; timestamp: number } | null = null;
+const CACHE_DURATION = 30 * 60 * 1000;
 
-  const currencyConfig = [
-    { code: "USD", name: "Đô la Mỹ", flag: "🇺🇸" },
-    { code: "EUR", name: "Euro", flag: "🇪🇺" },
-    { code: "JPY", name: "Yên Nhật", flag: "🇯🇵" },
-    { code: "KRW", name: "Won Hàn Quốc", flag: "🇰🇷" },
-    { code: "CNY", name: "Nhân dân tệ", flag: "🇨🇳" },
-    { code: "GBP", name: "Bảng Anh", flag: "🇬🇧" },
-    { code: "AUD", name: "Đô la Úc", flag: "🇦🇺" },
-  ];
+const currencyConfig = [
+  { code: "USD", name: "Đô la Mỹ", flag: "🇺🇸" },
+  { code: "EUR", name: "Euro", flag: "🇪🇺" },
+  { code: "JPY", name: "Yên Nhật", flag: "🇯🇵" },
+  { code: "KRW", name: "Won Hàn Quốc", flag: "🇰🇷" },
+  { code: "CNY", name: "Nhân dân tệ", flag: "🇨🇳" },
+  { code: "GBP", name: "Bảng Anh", flag: "🇬🇧" },
+  { code: "AUD", name: "Đô la Úc", flag: "🇦🇺" },
+];
+
+const ExchangeRateWidget = () => {
+  const [rates, setRates] = useState<ExchangeRate[]>(() => {
+    if (ratesCache && Date.now() - ratesCache.timestamp < CACHE_DURATION) {
+      return ratesCache.data;
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(rates.length === 0);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
+    if (ratesCache && Date.now() - ratesCache.timestamp < CACHE_DURATION) {
+      return new Date(ratesCache.timestamp);
+    }
+    return null;
+  });
 
   const fetchRates = useCallback(async () => {
+    // Check cache first
+    if (ratesCache && Date.now() - ratesCache.timestamp < CACHE_DURATION) {
+      setRates(ratesCache.data);
+      setLastUpdated(new Date(ratesCache.timestamp));
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
     try {
-      // Using FreeExchangeRateApi from GitHub - supports VND
-      // Fallback: use exchangerate-api.com or similar free API
-      const response = await fetch(
-        "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
-      );
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch exchange rates");
-      }
-      
-      const data = await response.json();
-      const usdRates = data.usd;
-      
-      // Get VND rate per 1 USD
+      const usdRates = await getForexRates();
       const vndPerUsd = usdRates.vnd || 25400;
       
-      // Calculate VND per 1 unit of each foreign currency
       const formattedRates: ExchangeRate[] = currencyConfig.map((currency) => {
         const currencyCode = currency.code.toLowerCase();
         const currencyToUsd = usdRates[currencyCode];
         
-        // Calculate how much VND equals 1 unit of foreign currency
-        // If USD is 1 and EUR is 0.92, then 1 EUR = 1/0.92 USD = vndPerUsd/0.92 VND
         let vndRate = 0;
         if (currencyCode === "usd") {
           vndRate = vndPerUsd;
@@ -71,20 +78,22 @@ const ExchangeRateWidget = () => {
       
       setRates(formattedRates);
       setLastUpdated(new Date());
+      ratesCache = { data: formattedRates, timestamp: Date.now() };
     } catch (err) {
       console.error("Error fetching exchange rates:", err);
-      setError("Không thể tải tỷ giá. Vui lòng thử lại.");
+      setError("Không thể tải tỷ giá");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchRates();
-    // Refresh every 30 minutes
+    if (rates.length === 0) {
+      fetchRates();
+    }
     const interval = setInterval(fetchRates, 30 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [fetchRates]);
+  }, [fetchRates, rates.length]);
 
   const formatVND = (value: number): string => {
     if (value === 0) return "N/A";
@@ -94,7 +103,7 @@ const ExchangeRateWidget = () => {
     }).format(value);
   };
 
-  if (error) {
+  if (error && rates.length === 0) {
     return (
       <div className="bg-card rounded-lg border border-border p-5">
         <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
@@ -131,9 +140,9 @@ const ExchangeRateWidget = () => {
         </Button>
       </div>
 
-      {loading ? (
+      {loading && rates.length === 0 ? (
         <div className="space-y-3">
-          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="flex justify-between items-center">
               <Skeleton className="h-5 w-24" />
               <Skeleton className="h-5 w-20" />
