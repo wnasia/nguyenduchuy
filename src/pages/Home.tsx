@@ -9,7 +9,13 @@ import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { parsePostContent, getExcerpt, decodeHtmlEntities, type ParsedContent } from "@/lib/htmlUtils";
 import SocialShareButtons from "@/components/SocialShareButtons";
-
+import BannerSlider from "@/components/BannerSlider";
+import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
+import WeatherWidget from "@/components/widgets/WeatherWidget";
+import LunarCalendarWidget from "@/components/LunarCalendarWidget";
+import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
+import ExchangeRateWidget from "@/components/widgets/ExchangeRateWidget";
+import CommunityStatsWidget from "@/components/widgets/CommunityStatsWidget";
 interface Post {
   id: string;
   title: string;
@@ -285,40 +291,8 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Simple Hero Banner - No external API calls */}
-      <section className="relative w-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5">
-        {activeBanner ? (
-          activeBanner.link_url ? (
-            <a href={activeBanner.link_url} target="_blank" rel="noopener noreferrer" className="block">
-              <img 
-                src={activeBanner.image_url} 
-                alt="Homepage Banner" 
-                className="w-full h-auto max-h-[200px] sm:max-h-[280px] lg:max-h-[320px] object-cover"
-                loading="eager"
-              />
-            </a>
-          ) : (
-            <img 
-              src={activeBanner.image_url} 
-              alt="Homepage Banner" 
-              className="w-full h-auto max-h-[200px] sm:max-h-[280px] lg:max-h-[320px] object-cover"
-              loading="eager"
-            />
-          )
-        ) : (
-          /* Simple static banner - no API calls */
-          <div className="h-[180px] sm:h-[220px] lg:h-[280px] flex items-center justify-center px-4">
-            <div className="text-center max-w-2xl">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">
-                Chia sẻ câu chuyện của bạn
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Nơi kết nối những trải nghiệm và khoảnh khắc đáng nhớ
-              </p>
-            </div>
-          </div>
-        )}
-      </section>
+      {/* Banner Slider */}
+      <BannerSlider />
 
       {/* Main Content Area with Sidebar */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -412,42 +386,24 @@ const Home = () => {
             </Tabs>
           </div>
 
-          {/* Sidebar - Simplified: Only top stories and popular tags */}
+          {/* Sidebar - Full widgets restored */}
           <div className="hidden lg:block space-y-6">
-            {/* Top Stories */}
-            <div className="bg-card rounded-lg border border-border p-5">
-              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Bài viết nổi bật
-              </h3>
-              <div className="space-y-3">
-                {hotPosts.slice(0, 5).map((post, index) => {
-                  const thumbnail = getPostThumbnail(post.content);
-                  return (
-                    <div
-                      key={post.id}
-                      onClick={() => handleReadStory(post.slug, post.id)}
-                      className="flex gap-3 cursor-pointer group"
-                    >
-                      <span className="text-2xl font-bold text-muted-foreground/30 flex-shrink-0">
-                        {(index + 1).toString().padStart(2, "0")}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                          {decodeHtmlEntities(post.title)}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                          <Eye className="h-3 w-3" />
-                          <span>{post.view_count}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {/* 1. Vietnam Gold Price */}
+            <GoldPriceWidget />
 
-            {/* Popular Topics */}
+            {/* 2. Weather */}
+            <WeatherWidget />
+
+            {/* 3. Lunar / Solar Calendar */}
+            <LunarCalendarWidget />
+
+            {/* 4. Flight Booking */}
+            <FlightSearchWidget />
+
+            {/* 5. Exchange Rates */}
+            <ExchangeRateWidget />
+
+            {/* 6. Popular Topics */}
             <div className="bg-card rounded-lg border border-border p-5">
               <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Tag className="h-5 w-5 text-primary" />
@@ -466,46 +422,37 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="bg-card rounded-lg border border-border p-5">
-              <h3 className="text-lg font-semibold text-foreground mb-4">
-                Thống kê cộng đồng
-              </h3>
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-primary">{stats.stories}</div>
-                  <div className="text-xs text-muted-foreground">Bài viết</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-primary">{stats.members}</div>
-                  <div className="text-xs text-muted-foreground">Thành viên</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-primary">{stats.images}</div>
-                  <div className="text-xs text-muted-foreground">Hình ảnh</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-primary">{stats.views.toLocaleString()}</div>
-                  <div className="text-xs text-muted-foreground">Lượt xem</div>
-                </div>
-              </div>
-            </div>
+            {/* 7. Community Stats */}
+            <CommunityStatsWidget />
 
-            {/* Utilities Link */}
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-border p-5">
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Tiện ích
+            {/* Top Stories */}
+            <div className="bg-card rounded-lg border border-border p-5">
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Bài viết nổi bật
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Giá vàng, thời tiết, tỷ giá, lịch âm và nhiều hơn nữa
-              </p>
-              <Button 
-                onClick={() => navigate('/utilities')} 
-                variant="default" 
-                className="w-full"
-              >
-                Xem tiện ích
-              </Button>
+              <div className="space-y-3">
+                {hotPosts.slice(0, 5).map((post, index) => (
+                  <div
+                    key={post.id}
+                    onClick={() => handleReadStory(post.slug, post.id)}
+                    className="flex gap-3 cursor-pointer group"
+                  >
+                    <span className="text-2xl font-bold text-muted-foreground/30 flex-shrink-0">
+                      {(index + 1).toString().padStart(2, "0")}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                        {decodeHtmlEntities(post.title)}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <Eye className="h-3 w-3" />
+                        <span>{post.view_count}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
