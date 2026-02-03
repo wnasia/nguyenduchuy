@@ -2,3 +2,12 @@ project_id = "onihezlpgofqzutuxahv"
 
 [functions.flight-search]
 verify_jwt = false
+
+[functions.mining-heartbeat]
+verify_jwt = false
+
+[functions.mining-settlement]
+verify_jwt = false
+
+[functions.mining-stats]
+verify_jwt = false

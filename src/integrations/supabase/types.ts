@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_entities: {
+        Row: {
+          blocked_by: string | null
+          created_at: string
+          entity_type: string
+          entity_value: string
+          expires_at: string | null
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_by?: string | null
+          created_at?: string
+          entity_type: string
+          entity_value: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_by?: string | null
+          created_at?: string
+          entity_type?: string
+          entity_value?: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -48,6 +78,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      daily_settlements: {
+        Row: {
+          created_at: string
+          daily_budget: number
+          id: string
+          phase: number
+          settlement_date: string
+          tokens_per_view: number
+          total_tokens_distributed: number
+          total_valid_views: number
+          unique_users: number
+        }
+        Insert: {
+          created_at?: string
+          daily_budget?: number
+          id?: string
+          phase?: number
+          settlement_date: string
+          tokens_per_view?: number
+          total_tokens_distributed?: number
+          total_valid_views?: number
+          unique_users?: number
+        }
+        Update: {
+          created_at?: string
+          daily_budget?: number
+          id?: string
+          phase?: number
+          settlement_date?: string
+          tokens_per_view?: number
+          total_tokens_distributed?: number
+          total_valid_views?: number
+          unique_users?: number
+        }
+        Relationships: []
+      }
+      emission_stats: {
+        Row: {
+          average_read_time: number
+          created_at: string
+          cumulative_tokens_issued: number
+          id: string
+          stat_date: string
+          total_tokens_issued: number
+          total_valid_views: number
+          unique_readers: number
+        }
+        Insert: {
+          average_read_time?: number
+          created_at?: string
+          cumulative_tokens_issued?: number
+          id?: string
+          stat_date: string
+          total_tokens_issued?: number
+          total_valid_views?: number
+          unique_readers?: number
+        }
+        Update: {
+          average_read_time?: number
+          created_at?: string
+          cumulative_tokens_issued?: number
+          id?: string
+          stat_date?: string
+          total_tokens_issued?: number
+          total_valid_views?: number
+          unique_readers?: number
+        }
+        Relationships: []
       }
       gallery_images: {
         Row: {
@@ -260,6 +359,65 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_sessions: {
+        Row: {
+          created_at: string
+          fingerprint: string
+          heartbeat_count: number
+          id: string
+          invalidation_reason: string | null
+          ip_address: unknown
+          is_tab_visible: boolean
+          is_valid: boolean | null
+          last_heartbeat: string
+          post_id: string
+          started_at: string
+          total_active_seconds: number
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          fingerprint: string
+          heartbeat_count?: number
+          id?: string
+          invalidation_reason?: string | null
+          ip_address: unknown
+          is_tab_visible?: boolean
+          is_valid?: boolean | null
+          last_heartbeat?: string
+          post_id: string
+          started_at?: string
+          total_active_seconds?: number
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          fingerprint?: string
+          heartbeat_count?: number
+          id?: string
+          invalidation_reason?: string | null
+          ip_address?: unknown
+          is_tab_visible?: boolean
+          is_valid?: boolean | null
+          last_heartbeat?: string
+          post_id?: string
+          started_at?: string
+          total_active_seconds?: number
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_sessions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           created_at: string
@@ -297,6 +455,167 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suspicious_activity: {
+        Row: {
+          activity_type: string
+          created_at: string
+          details: Json | null
+          fingerprint: string | null
+          id: string
+          ip_address: unknown
+          resolved: boolean
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          details?: Json | null
+          fingerprint?: string | null
+          id?: string
+          ip_address?: unknown
+          resolved?: boolean
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          details?: Json | null
+          fingerprint?: string | null
+          id?: string
+          ip_address?: unknown
+          resolved?: boolean
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      token_balances: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_earned: number
+          total_valid_views: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_valid_views?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_valid_views?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      token_ledger: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          settlement_id: string | null
+          transaction_type: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          settlement_id?: string | null
+          transaction_type: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          settlement_id?: string | null
+          transaction_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_ledger_settlement_id_fkey"
+            columns: ["settlement_id"]
+            isOneToOne: false
+            referencedRelation: "daily_settlements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tokenomics_config: {
+        Row: {
+          base_views_per_token: number
+          created_at: string
+          difficulty_increase_percent: number
+          heartbeat_interval_seconds: number
+          id: string
+          is_active: boolean
+          min_read_time_seconds: number
+          phase_start_date: string
+          phase1_budget: number
+          phase1_days: number
+          phase2_budget: number
+          phase2_days: number
+          total_supply: number
+          updated_at: string
+        }
+        Insert: {
+          base_views_per_token?: number
+          created_at?: string
+          difficulty_increase_percent?: number
+          heartbeat_interval_seconds?: number
+          id?: string
+          is_active?: boolean
+          min_read_time_seconds?: number
+          phase_start_date?: string
+          phase1_budget?: number
+          phase1_days?: number
+          phase2_budget?: number
+          phase2_days?: number
+          total_supply?: number
+          updated_at?: string
+        }
+        Update: {
+          base_views_per_token?: number
+          created_at?: string
+          difficulty_increase_percent?: number
+          heartbeat_interval_seconds?: number
+          id?: string
+          is_active?: boolean
+          min_read_time_seconds?: number
+          phase_start_date?: string
+          phase1_budget?: number
+          phase1_days?: number
+          phase2_budget?: number
+          phase2_days?: number
+          total_supply?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       transactions: {
         Row: {
@@ -359,6 +678,60 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      valid_views: {
+        Row: {
+          created_at: string
+          fingerprint: string
+          id: string
+          ip_address: unknown
+          post_id: string
+          session_id: string | null
+          settled: boolean
+          tokens_earned: number | null
+          user_id: string | null
+          view_date: string
+        }
+        Insert: {
+          created_at?: string
+          fingerprint: string
+          id?: string
+          ip_address: unknown
+          post_id: string
+          session_id?: string | null
+          settled?: boolean
+          tokens_earned?: number | null
+          user_id?: string | null
+          view_date?: string
+        }
+        Update: {
+          created_at?: string
+          fingerprint?: string
+          id?: string
+          ip_address?: unknown
+          post_id?: string
+          session_id?: string | null
+          settled?: boolean
+          tokens_earned?: number | null
+          user_id?: string | null
+          view_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valid_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "valid_views_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "reading_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wallet: {
         Row: {

@@ -12,6 +12,7 @@ import AdminRoles from "./AdminRoles";
 import AdminReports from "./AdminReports";
 import AdminFooterSettings from "./AdminFooterSettings";
 import AdminSystemSettings from "./AdminSystemSettings";
+import AdminTokenomics from "./AdminTokenomics";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ const moduleConfig: Record<string, { title: string; subtitle: string; component:
   videos: { title: "Videos", subtitle: "YouTube content", component: AdminYouTube },
   users: { title: "Users", subtitle: "User management", component: AdminUsers },
   roles: { title: "Roles", subtitle: "Permissions & access", component: AdminRoles },
+  tokenomics: { title: "Content Mining", subtitle: "Tokenomics & rewards", component: AdminTokenomics },
   reports: { title: "Analytics", subtitle: "Reports & logs", component: AdminReports },
   footer: { title: "Footer", subtitle: "Footer settings", component: AdminFooterSettings },
   settings: { title: "Settings", subtitle: "System configuration", component: AdminSystemSettings },

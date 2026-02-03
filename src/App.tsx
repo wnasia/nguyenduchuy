@@ -19,6 +19,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import CryptoTracker from "./pages/CryptoTracker";
 import Utilities from "./pages/Utilities";
+import Explorer from "./pages/Explorer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
                   <Route path="/videos" element={<Videos />} />
                   <Route path="/crypto" element={<CryptoTracker />} />
                   <Route path="/utilities" element={<Utilities />} />
+                  <Route path="/explorer" element={<Explorer />} />
                   <Route path="/submit" element={<Submit />} />
                   <Route path="/login" element={<Login />} />
                   <Route 
