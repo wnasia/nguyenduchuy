@@ -12,6 +12,7 @@ import EngagementSection from "@/components/EngagementSection";
 import { useI18n } from "@/hooks/useI18n";
 import { parsePostContent, decodeHtmlEntities } from "@/lib/htmlUtils";
 import ArticleSidebar from "@/components/article/ArticleSidebar";
+import MiningTimer from "@/components/mining/MiningTimer";
 
 interface Post {
   id: string;
@@ -221,6 +222,9 @@ const StoryDetail = () => {
               </CardHeader>
               
               <CardContent className="p-4 sm:p-6">
+                {/* Mining Timer */}
+                <MiningTimer postId={story.id} className="mb-6" />
+                
                 {/* Render HTML content properly */}
                 {parsedContent.story && (
                   <div 

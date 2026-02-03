@@ -7,10 +7,12 @@ import UserGallery from "./UserGallery";
 import UserYouTube from "./UserYouTube";
 import UserProfile from "./UserProfile";
 import UserNotifications from "./UserNotifications";
+import UserMiningDashboard from "@/components/mining/UserMiningDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const moduleConfig: Record<string, { title: string; component: React.ComponentType }> = {
   posts: { title: "My Stories", component: UserPosts },
+  mining: { title: "Content Mining", component: UserMiningDashboard },
   gallery: { title: "Image Gallery", component: UserGallery },
   youtube: { title: "YouTube Videos", component: UserYouTube },
   profile: { title: "Profile", component: UserProfile },

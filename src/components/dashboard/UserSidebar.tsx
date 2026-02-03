@@ -23,6 +23,7 @@ interface UserSidebarProps {
 
 const menuItems = [
   { id: "posts", title: "My Stories" },
+  { id: "mining", title: "Content Mining" },
   { id: "gallery", title: "Image Gallery" },
   { id: "youtube", title: "YouTube Videos" },
 ];

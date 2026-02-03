@@ -28,6 +28,7 @@ import {
   LogOut,
   ImageIcon,
   FileCode,
+  Coins,
 } from "lucide-react";
 import huyLogo from "@/assets/huy-logo.png";
 import { cn } from "@/lib/utils";
@@ -91,6 +92,11 @@ const menuSections = [
   {
     label: "System",
     items: [
+      {
+        id: "tokenomics",
+        title: "Content Mining",
+        icon: Coins,
+      },
       {
         id: "reports",
         title: "Analytics",
