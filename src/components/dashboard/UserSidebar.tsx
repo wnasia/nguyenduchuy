@@ -10,7 +10,6 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import huyLogo from "@/assets/huy-logo.png";
@@ -42,7 +41,7 @@ const UserSidebar = ({ activeModule, onModuleChange }: UserSidebarProps) => {
       <SidebarHeader className="border-b border-sidebar-border bg-sidebar">
         <div className="flex items-center justify-between p-4">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 transition-all duration-200 group-hover:bg-primary/15">
               <img
                 src={huyLogo}
                 alt="Logo"
@@ -51,7 +50,7 @@ const UserSidebar = ({ activeModule, onModuleChange }: UserSidebarProps) => {
             </div>
             {!isCollapsed && (
               <div className="flex flex-col">
-                <span className="font-bold text-base text-sidebar-foreground tracking-tight group-hover:text-primary transition-colors">
+                <span className="font-bold text-base text-sidebar-foreground tracking-tight transition-colors duration-200 group-hover:text-primary">
                   Dashboard
                 </span>
               </div>
@@ -63,7 +62,7 @@ const UserSidebar = ({ activeModule, onModuleChange }: UserSidebarProps) => {
         </div>
       </SidebarHeader>
 
-      {/* Navigation Content */}
+      {/* Navigation Content - Text only, no icons */}
       <SidebarContent className="bg-sidebar px-3 py-4">
         <SidebarMenu className="space-y-1">
           {menuItems.map((item) => {
@@ -76,19 +75,18 @@ const UserSidebar = ({ activeModule, onModuleChange }: UserSidebarProps) => {
                   tooltip={isCollapsed ? item.title : undefined}
                   className={cn(
                     "w-full h-11 px-4 rounded-lg transition-all duration-200",
-                    "text-sidebar-foreground/80 text-sm",
-                    !isActive && "hover:bg-primary/10 hover:text-primary",
+                    "text-sm",
+                    // Default state
+                    !isActive && "text-sidebar-foreground/70 hover:bg-muted hover:text-foreground hover:translate-x-0.5",
+                    // Active state - left border indicator + subtle bg
                     isActive && [
-                      "bg-primary text-primary-foreground font-medium",
-                      "shadow-sm",
+                      "bg-primary/10 text-primary font-medium",
+                      "border-l-2 border-primary",
                     ]
                   )}
                 >
                   {!isCollapsed && (
-                    <span className={cn(
-                      "text-sm transition-all duration-200",
-                      isActive ? "text-primary-foreground font-medium" : "text-sidebar-foreground/80"
-                    )}>
+                    <span className="text-sm">
                       {item.title}
                     </span>
                   )}
@@ -103,7 +101,7 @@ const UserSidebar = ({ activeModule, onModuleChange }: UserSidebarProps) => {
       <SidebarFooter className="border-t border-sidebar-border bg-sidebar p-4">
         <div className={cn(
           "flex items-center gap-3 rounded-lg p-2 transition-all duration-200",
-          "hover:bg-primary/5"
+          "hover:bg-muted"
         )}>
           <Avatar className="h-9 w-9 shrink-0 ring-2 ring-sidebar-border">
             <AvatarImage src={user?.user_metadata?.avatar_url} />
