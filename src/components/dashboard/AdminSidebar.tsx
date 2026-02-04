@@ -16,20 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  LayoutDashboard,
-  FileText,
-  Image,
-  Video,
-  Users,
-  Shield,
-  BarChart3,
-  Settings,
-  LogOut,
-  ImageIcon,
-  FileCode,
-  Coins,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import huyLogo from "@/assets/huy-logo.png";
 import { cn } from "@/lib/utils";
 
@@ -38,80 +25,37 @@ interface AdminSidebarProps {
   onModuleChange: (module: string) => void;
 }
 
+// Text-only menu - no decorative icons
 const menuSections = [
   {
     label: "Overview",
     items: [
-      {
-        id: "dashboard",
-        title: "Dashboard",
-        icon: LayoutDashboard,
-      },
+      { id: "dashboard", title: "Dashboard" },
     ],
   },
   {
     label: "Content",
     items: [
-      {
-        id: "posts",
-        title: "Posts",
-        icon: FileText,
-      },
-      {
-        id: "media",
-        title: "Media",
-        icon: Image,
-      },
-      {
-        id: "banners",
-        title: "Banners",
-        icon: ImageIcon,
-      },
-      {
-        id: "videos",
-        title: "Videos",
-        icon: Video,
-      },
+      { id: "posts", title: "Posts" },
+      { id: "media", title: "Media" },
+      { id: "banners", title: "Banners" },
+      { id: "videos", title: "Videos" },
     ],
   },
   {
     label: "Users",
     items: [
-      {
-        id: "users",
-        title: "Users",
-        icon: Users,
-      },
-      {
-        id: "roles",
-        title: "Roles",
-        icon: Shield,
-      },
+      { id: "users", title: "Users" },
+      { id: "roles", title: "Roles" },
     ],
   },
   {
     label: "System",
     items: [
-      {
-        id: "tokenomics",
-        title: "Content Mining",
-        icon: Coins,
-      },
-      {
-        id: "reports",
-        title: "Analytics",
-        icon: BarChart3,
-      },
-      {
-        id: "footer",
-        title: "Footer",
-        icon: FileCode,
-      },
-      {
-        id: "settings",
-        title: "Settings",
-        icon: Settings,
-      },
+      { id: "tokenomics", title: "Content Mining" },
+      { id: "reports", title: "Analytics" },
+      { id: "footer", title: "Footer" },
+      { id: "settings", title: "Settings" },
     ],
   },
 ];
@@ -134,7 +78,7 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
       <SidebarHeader className="border-b border-white/10 p-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm group-hover:bg-white/15 transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-primary/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm transition-all duration-200 group-hover:bg-white/15">
               <img
                 src={huyLogo}
                 alt="Logo"
@@ -158,9 +102,9 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
         </div>
       </SidebarHeader>
 
-      {/* Navigation Content */}
+      {/* Navigation Content - Text only, no decorative icons */}
       <SidebarContent className="px-3 py-4">
-        {menuSections.map((section, sectionIndex) => (
+        {menuSections.map((section) => (
           <SidebarGroup key={section.label} className="py-2">
             {!isCollapsed && (
               <SidebarGroupLabel className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-widest text-white/40">
@@ -178,35 +122,19 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
                         onClick={() => onModuleChange(item.id)}
                         tooltip={isCollapsed ? item.title : undefined}
                         className={cn(
-                          "w-full h-11 px-3 rounded-xl transition-all duration-300 group/menu-item",
+                          "w-full h-11 px-4 rounded-lg transition-all duration-200",
+                          "text-sm",
                           // Default state
-                          "text-white/60",
-                          // Hover state
-                          !isActive && [
-                            "hover:bg-white/10 hover:text-white",
-                            "hover:shadow-sm hover:shadow-white/5",
-                          ],
-                          // Active state - premium gradient
+                          !isActive && "text-white/60 hover:bg-white/10 hover:text-white hover:translate-x-0.5",
+                          // Active state - left border indicator + subtle bg
                           isActive && [
-                            "bg-gradient-to-r from-primary to-blue-500",
-                            "text-white font-medium",
-                            "shadow-lg shadow-primary/30",
+                            "bg-white/10 text-white font-medium",
+                            "border-l-2 border-primary",
                           ]
                         )}
                       >
-                        <item.icon className={cn(
-                          "h-[18px] w-[18px] shrink-0 transition-all duration-300",
-                          isActive 
-                            ? "text-white" 
-                            : "text-white/50 group-hover/menu-item:text-white"
-                        )} />
                         {!isCollapsed && (
-                          <span className={cn(
-                            "flex-1 truncate text-[13px] transition-all duration-200",
-                            isActive 
-                              ? "text-white font-medium" 
-                              : "text-white/70 group-hover/menu-item:text-white"
-                          )}>
+                          <span className="text-sm">
                             {item.title}
                           </span>
                         )}
@@ -223,10 +151,10 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
       {/* Footer with User Info */}
       <SidebarFooter className="border-t border-white/10 p-3">
         <div className={cn(
-          "flex items-center gap-3 rounded-xl p-3 transition-all duration-300",
+          "flex items-center gap-3 rounded-xl p-3 transition-all duration-200",
           "bg-white/5 hover:bg-white/10"
         )}>
-          <Avatar className="h-9 w-9 shrink-0 ring-2 ring-white/20 transition-all duration-300 hover:ring-primary/50">
+          <Avatar className="h-9 w-9 shrink-0 ring-2 ring-white/20">
             <AvatarImage src={user?.user_metadata?.avatar_url} />
             <AvatarFallback className="bg-primary/20 text-primary-foreground text-sm font-semibold">
               {user?.email?.charAt(0).toUpperCase() || "A"}
@@ -249,7 +177,7 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
           size={isCollapsed ? "icon" : "sm"}
           onClick={handleLogout}
           className={cn(
-            "w-full mt-2 transition-all duration-300",
+            "w-full mt-2 transition-all duration-200",
             "text-white/50 hover:text-red-400",
             "hover:bg-red-500/10",
             "rounded-xl",

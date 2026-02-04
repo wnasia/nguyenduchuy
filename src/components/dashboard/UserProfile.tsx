@@ -16,6 +16,12 @@ interface ProfileData {
   email: string | null;
 }
 
+interface TokenBalance {
+  balance: number;
+  total_earned: number;
+  total_valid_views: number;
+}
+
 const UserProfile = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -31,6 +37,11 @@ const UserProfile = () => {
     avatar_url: "",
     email: "",
   });
+  const [tokenBalance, setTokenBalance] = useState<TokenBalance>({
+    balance: 0,
+    total_earned: 0,
+    total_valid_views: 0,
+  });
 
   useEffect(() => {
     if (user) {
@@ -42,6 +53,7 @@ const UserProfile = () => {
     try {
       setLoading(true);
       
+      // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("full_name, avatar_url, email")
@@ -58,6 +70,17 @@ const UserProfile = () => {
 
       setProfile(profileInfo);
       setOriginalProfile(profileInfo);
+
+      // Fetch token balance
+      const { data: balanceData } = await supabase
+        .from("token_balances")
+        .select("balance, total_earned, total_valid_views")
+        .eq("user_id", user?.id)
+        .maybeSingle();
+
+      if (balanceData) {
+        setTokenBalance(balanceData);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
@@ -179,8 +202,8 @@ const UserProfile = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN').format(amount);
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('vi-VN').format(num);
   };
 
   const hasChanges = profile.full_name !== originalProfile.full_name;
@@ -195,11 +218,13 @@ const UserProfile = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Two Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column - Profile Form */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Profile Info Card */}
+      {/* Page Title */}
+      <h1 className="text-xl font-bold mb-6 border-b border-border pb-3">Hồ sơ cá nhân</h1>
+
+      {/* Two Column Layout - Compact, no scroll on desktop */}
+      <div className="grid gap-6 lg:grid-cols-5">
+        {/* Left Column - Profile Form (3/5) */}
+        <div className="lg:col-span-3">
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base font-semibold">Thông tin cá nhân</CardTitle>
@@ -218,7 +243,7 @@ const UserProfile = () => {
                     htmlFor="avatar-upload"
                     className={cn(
                       "absolute inset-0 flex items-center justify-center rounded-full cursor-pointer",
-                      "bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity",
+                      "bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200",
                       uploading && "opacity-100"
                     )}
                   >
@@ -279,7 +304,7 @@ const UserProfile = () => {
                 <Button
                   onClick={handleSaveProfile}
                   disabled={saving || !hasChanges}
-                  className="px-6"
+                  className="px-6 transition-all duration-200 hover:translate-x-0.5"
                 >
                   {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Lưu thay đổi
@@ -292,52 +317,54 @@ const UserProfile = () => {
           </Card>
         </div>
 
-        {/* Right Column - Status & Wallet */}
-        <div className="space-y-6">
+        {/* Right Column - Status & Wallet (2/5) */}
+        <div className="lg:col-span-2 space-y-4">
           {/* Account Status */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Trạng thái tài khoản</CardTitle>
+              <CardTitle className="text-sm font-medium">Trạng thái</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Trạng thái</span>
-                <span className="text-sm font-medium text-green-600">Hoạt động</span>
+            <CardContent className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Tài khoản</span>
+                <span className="font-medium text-green-600">Hoạt động</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Xác thực</span>
-                <span className="text-sm font-medium text-green-600">Đã xác thực</span>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Xác thực</span>
+                <span className="font-medium text-green-600">Đã xác thực</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Tham gia</span>
-                <span className="text-sm">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Tham gia</span>
+                <span>
                   {user?.created_at ? new Date(user.created_at).toLocaleDateString("vi-VN") : "N/A"}
                 </span>
               </div>
             </CardContent>
           </Card>
 
-          {/* Wallet Summary */}
+          {/* Wallet Summary - Merged into Profile */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Ví của tôi</CardTitle>
+              <CardTitle className="text-sm font-medium">Ví Token</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Số dư</span>
-                  <span className="text-sm font-semibold">0 đ</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Tổng đã kiếm</span>
-                  <span className="text-sm font-semibold">0 đ</span>
-                </div>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Số dư</span>
+                <span className="font-bold text-primary">{formatNumber(tokenBalance.balance)} Token</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Tổng đã kiếm</span>
+                <span className="font-semibold">{formatNumber(tokenBalance.total_earned)} Token</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Lượt đọc hợp lệ</span>
+                <span>{formatNumber(tokenBalance.total_valid_views)}</span>
               </div>
 
               {/* Coming Soon Notice */}
-              <div className="p-3 rounded-lg bg-muted/50 border border-dashed">
+              <div className="p-3 rounded-lg bg-muted/50 border border-dashed mt-3">
                 <p className="text-xs text-center text-muted-foreground">
-                  Tính năng rút tiền <span className="font-medium text-primary">sắp ra mắt</span>
+                  Rút tiền <span className="font-medium text-primary">sắp ra mắt</span>
                 </p>
               </div>
             </CardContent>

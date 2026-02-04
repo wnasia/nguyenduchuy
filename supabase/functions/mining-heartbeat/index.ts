@@ -73,21 +73,14 @@ Deno.serve(async (req) => {
 
     // Check if session exists
     if (sessionId) {
-      // Update existing session
-      const { data: session, error: sessionError } = await supabase
+      // Get existing session
+      const { data: existingSession, error: fetchError } = await supabase
         .from("reading_sessions")
-        .update({
-          last_heartbeat: new Date().toISOString(),
-          heartbeat_count: supabase.rpc ? undefined : 1, // Increment handled below
-          total_active_seconds: activeSeconds,
-          is_tab_visible: isVisible,
-          user_id: userId,
-        })
+        .select("*")
         .eq("id", sessionId)
-        .select()
         .single();
 
-      if (sessionError || !session) {
+      if (fetchError || !existingSession) {
         // Session might have expired, create new one
         return await createNewSession(supabase, {
           userId,
@@ -100,21 +93,30 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Increment heartbeat count
-      await supabase.rpc("increment_heartbeat", { session_id: sessionId }).catch(() => {
-        // Fallback if RPC doesn't exist
-        supabase
-          .from("reading_sessions")
-          .update({ heartbeat_count: session.heartbeat_count + 1 })
-          .eq("id", sessionId);
-      });
+      // Update existing session
+      const newHeartbeatCount = existingSession.heartbeat_count + 1;
+      
+      const { error: updateError } = await supabase
+        .from("reading_sessions")
+        .update({
+          last_heartbeat: new Date().toISOString(),
+          heartbeat_count: newHeartbeatCount,
+          total_active_seconds: activeSeconds,
+          is_tab_visible: isVisible,
+          user_id: userId,
+        })
+        .eq("id", sessionId);
+
+      if (updateError) {
+        console.error("Update session error:", updateError);
+      }
 
       // Check if view is now valid (>= min read time and enough heartbeats)
       const isValidView = 
         activeSeconds >= config.min_read_time_seconds &&
-        session.heartbeat_count >= Math.floor(config.min_read_time_seconds / config.heartbeat_interval_seconds) - 1;
+        newHeartbeatCount >= Math.floor(config.min_read_time_seconds / config.heartbeat_interval_seconds) - 1;
 
-      if (isValidView && session.is_valid !== true) {
+      if (isValidView && existingSession.is_valid !== true) {
         // Mark session as valid
         await supabase
           .from("reading_sessions")

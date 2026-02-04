@@ -8,18 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Save, Play, AlertTriangle, Ban, RefreshCw } from 'lucide-react';
 import {
-  Settings,
-  Save,
-  Play,
-  AlertTriangle,
-  Coins,
-  Eye,
-  Users,
-  Shield,
-  Ban,
-  RefreshCw,
-} from 'lucide-react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface TokenomicsConfig {
   id: string;
@@ -48,6 +45,18 @@ interface SuspiciousActivity {
   created_at: string;
 }
 
+interface DailySettlement {
+  id: string;
+  settlement_date: string;
+  total_valid_views: number;
+  daily_budget: number;
+  tokens_per_view: number;
+  total_tokens_distributed: number;
+  unique_users: number;
+  phase: number;
+  created_at: string;
+}
+
 const AdminTokenomics = () => {
   const { session } = useAuth();
   const { toast } = useToast();
@@ -57,11 +66,13 @@ const AdminTokenomics = () => {
   const [settling, setSettling] = useState(false);
   const [suspiciousActivity, setSuspiciousActivity] = useState<SuspiciousActivity[]>([]);
   const [blockedEntities, setBlockedEntities] = useState<any[]>([]);
+  const [settlements, setSettlements] = useState<DailySettlement[]>([]);
 
   useEffect(() => {
     fetchConfig();
     fetchSuspiciousActivity();
     fetchBlockedEntities();
+    fetchSettlements();
   }, []);
 
   const fetchConfig = async () => {
@@ -111,6 +122,20 @@ const AdminTokenomics = () => {
       setBlockedEntities(data || []);
     } catch (error) {
       console.error('Error fetching blocked entities:', error);
+    }
+  };
+
+  const fetchSettlements = async () => {
+    try {
+      const { data } = await supabase
+        .from('daily_settlements')
+        .select('*')
+        .order('settlement_date', { ascending: false })
+        .limit(30);
+
+      setSettlements(data || []);
+    } catch (error) {
+      console.error('Error fetching settlements:', error);
     }
   };
 
@@ -171,6 +196,7 @@ const AdminTokenomics = () => {
           title: 'Settlement hoàn tất',
           description: `Đã phân phối ${data.tokensDistributed.toFixed(4)} tokens cho ${data.uniqueUsers} users`,
         });
+        fetchSettlements(); // Refresh settlements
       } else if (data.error === 'already_settled') {
         toast({
           title: 'Đã settle',
@@ -241,21 +267,35 @@ const AdminTokenomics = () => {
     );
   }
 
+  // Get yesterday's settlement for proof
+  const yesterdaySettlement = settlements.find(s => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return s.settlement_date === yesterday.toISOString().split('T')[0];
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Content Mining - Tokenomics</h2>
-        <Button onClick={handleRunSettlement} disabled={settling}>
-          <Play className="h-4 w-4 mr-2" />
-          {settling ? 'Đang chạy...' : 'Chạy Settlement'}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => { fetchSettlements(); fetchSuspiciousActivity(); }}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button onClick={handleRunSettlement} disabled={settling}>
+            <Play className="h-4 w-4 mr-2" />
+            {settling ? 'Đang chạy...' : 'Chạy Settlement'}
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="config" className="w-full">
         <TabsList>
-          <TabsTrigger value="config">Cấu hình</TabsTrigger>
-          <TabsTrigger value="security">Bảo mật</TabsTrigger>
-          <TabsTrigger value="blocked">Danh sách chặn</TabsTrigger>
+          <TabsTrigger value="config" className="transition-all duration-200">Cấu hình</TabsTrigger>
+          <TabsTrigger value="settlements" className="transition-all duration-200">Settlement Proof</TabsTrigger>
+          <TabsTrigger value="security" className="transition-all duration-200">Bảo mật</TabsTrigger>
+          <TabsTrigger value="blocked" className="transition-all duration-200">Danh sách chặn</TabsTrigger>
         </TabsList>
 
         <TabsContent value="config">
@@ -263,10 +303,7 @@ const AdminTokenomics = () => {
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="h-5 w-5" />
-                    Cấu hình Mining
-                  </CardTitle>
+                  <CardTitle className="text-lg">Cấu hình Mining</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -320,7 +357,7 @@ const AdminTokenomics = () => {
                     </p>
                   </div>
 
-                  <Button onClick={handleSaveConfig} disabled={saving} className="w-full">
+                  <Button onClick={handleSaveConfig} disabled={saving} className="w-full transition-all duration-200 hover:translate-x-0.5">
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? 'Đang lưu...' : 'Lưu cấu hình'}
                   </Button>
@@ -329,10 +366,7 @@ const AdminTokenomics = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Coins className="h-5 w-5" />
-                    Thông tin Tokenomics
-                  </CardTitle>
+                  <CardTitle className="text-lg">Thông tin Tokenomics</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -363,7 +397,6 @@ const AdminTokenomics = () => {
                     </div>
                     <p className="text-xs text-amber-600 mt-1">
                       Thay đổi cấu hình sẽ ảnh hưởng đến tất cả các lượt đọc từ thời điểm này.
-                      Các lượt đọc đã được tính vẫn giữ nguyên.
                     </p>
                   </div>
                 </CardContent>
@@ -372,13 +405,88 @@ const AdminTokenomics = () => {
           )}
         </TabsContent>
 
+        {/* Settlement Proof Tab */}
+        <TabsContent value="settlements">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Settlement History (Proof of Fairness)</CardTitle>
+              <CardDescription>
+                Lịch sử phân phối token hàng ngày - chứng minh hệ thống tuân thủ emission cap
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Yesterday's Summary */}
+              {yesterdaySettlement && (
+                <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <h4 className="font-semibold text-emerald-800 mb-3">Settlement hôm qua ({yesterdaySettlement.settlement_date})</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Total Valid Views</p>
+                      <p className="font-bold text-lg">{yesterdaySettlement.total_valid_views.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Daily Budget</p>
+                      <p className="font-bold text-lg">{yesterdaySettlement.daily_budget.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Token/View</p>
+                      <p className="font-bold text-lg text-emerald-600">{yesterdaySettlement.tokens_per_view.toFixed(6)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Tokens Distributed</p>
+                      <p className="font-bold text-lg">{yesterdaySettlement.total_tokens_distributed.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Settlement History Table */}
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ngày</TableHead>
+                    <TableHead className="text-right">Valid Views</TableHead>
+                    <TableHead className="text-right">Daily Budget</TableHead>
+                    <TableHead className="text-right">Token/View</TableHead>
+                    <TableHead className="text-right">Tokens Emitted</TableHead>
+                    <TableHead className="text-right">Users</TableHead>
+                    <TableHead>Phase</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {settlements.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                        Chưa có settlement nào
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    settlements.map((s) => (
+                      <TableRow key={s.id} className="transition-colors duration-200 hover:bg-muted/50">
+                        <TableCell className="font-mono text-sm">{s.settlement_date}</TableCell>
+                        <TableCell className="text-right">{s.total_valid_views.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{s.daily_budget.toLocaleString()}</TableCell>
+                        <TableCell className="text-right font-mono">{s.tokens_per_view.toFixed(6)}</TableCell>
+                        <TableCell className="text-right font-semibold">{s.total_tokens_distributed.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{s.unique_users}</TableCell>
+                        <TableCell>
+                          <Badge variant={s.phase === 1 ? 'default' : 'secondary'}>
+                            Phase {s.phase}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="security">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Hoạt động đáng ngờ
-              </CardTitle>
+              <CardTitle className="text-lg">Hoạt động đáng ngờ</CardTitle>
               <CardDescription>
                 Các hoạt động được phát hiện có thể là gian lận
               </CardDescription>
@@ -393,7 +501,7 @@ const AdminTokenomics = () => {
                   {suspiciousActivity.map((activity) => (
                     <div
                       key={activity.id}
-                      className="flex items-center justify-between p-4 bg-muted rounded-lg"
+                      className="flex items-center justify-between p-4 bg-muted rounded-lg transition-all duration-200 hover:bg-muted/80"
                     >
                       <div>
                         <div className="flex items-center gap-2">
@@ -422,6 +530,7 @@ const AdminTokenomics = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => handleBlockEntity('ip', String(activity.ip_address))}
+                          className="transition-all duration-200 hover:translate-x-0.5"
                         >
                           <Ban className="h-4 w-4 mr-1" />
                           Chặn IP
@@ -438,10 +547,7 @@ const AdminTokenomics = () => {
         <TabsContent value="blocked">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Ban className="h-5 w-5" />
-                Danh sách chặn
-              </CardTitle>
+              <CardTitle className="text-lg">Danh sách chặn</CardTitle>
             </CardHeader>
             <CardContent>
               {blockedEntities.length === 0 ? (
@@ -453,7 +559,7 @@ const AdminTokenomics = () => {
                   {blockedEntities.map((entity) => (
                     <div
                       key={entity.id}
-                      className="flex items-center justify-between p-4 bg-muted rounded-lg"
+                      className="flex items-center justify-between p-4 bg-muted rounded-lg transition-all duration-200 hover:bg-muted/80"
                     >
                       <div>
                         <Badge>{entity.entity_type.toUpperCase()}</Badge>
@@ -464,6 +570,7 @@ const AdminTokenomics = () => {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleUnblock(entity.id)}
+                        className="transition-all duration-200 hover:text-red-500"
                       >
                         Bỏ chặn
                       </Button>
