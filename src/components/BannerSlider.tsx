@@ -6,10 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { decodeHtmlEntities } from "@/lib/htmlUtils";
 
 interface Banner {
-  image: string;
-  title: string;
-  subtitle: string;
-  link?: string;
+   id: string;
+   image_url: string;
+   link_url: string | null;
+   is_active: boolean;
 }
 
 interface LatestPost {
@@ -30,16 +30,18 @@ interface WeatherInfo {
   city: string;
 }
 
-const defaultBanners: Banner[] = [
+const fallbackBanners = [
   {
-    image: "/banners/sample-banner-1.jpg",
-    title: "Share Your Stories",
-    subtitle: "A warm place to share precious moments, unique stories, and life experiences.",
+     id: "fallback-1",
+     image_url: "/banners/sample-banner-1.jpg",
+     title: "Chia sẻ câu chuyện của bạn",
+     subtitle: "Nơi ấm áp để chia sẻ những khoảnh khắc quý giá và câu chuyện cuộc sống.",
   },
   {
-    image: "/banners/sample-banner-2.jpg",
-    title: "Connect Through Experiences",
-    subtitle: "Join the community — express, inspire, and connect with authentic stories.",
+     id: "fallback-2",
+     image_url: "/banners/sample-banner-2.jpg",
+     title: "Kết nối qua trải nghiệm",
+     subtitle: "Tham gia cộng đồng — thể hiện, truyền cảm hứng và kết nối với những câu chuyện chân thực.",
   },
 ];
 
@@ -59,12 +61,35 @@ const BannerSlider = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+   const [banners, setBanners] = useState<(Banner | typeof fallbackBanners[0])[]>(fallbackBanners);
   const [latestPost, setLatestPost] = useState<LatestPost | null>(null);
   const [goldInfo, setGoldInfo] = useState<GoldInfo | null>(null);
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo | null>(null);
   const [loadingGold, setLoadingGold] = useState(true);
   const [loadingWeather, setLoadingWeather] = useState(true);
 
+   // Fetch banners from database
+   const fetchBanners = useCallback(async () => {
+     try {
+       const { data, error } = await supabase
+         .from('homepage_banners')
+         .select('id, image_url, link_url, is_active')
+         .eq('is_active', true)
+         .order('created_at', { ascending: false });
+ 
+       if (error) throw error;
+       
+       if (data && data.length > 0) {
+         setBanners(data);
+       } else {
+         setBanners(fallbackBanners);
+       }
+     } catch (error) {
+       console.error('Error fetching banners:', error);
+       setBanners(fallbackBanners);
+     }
+   }, []);
+ 
   // Fetch latest post
   const fetchLatestPost = useCallback(async () => {
     try {
@@ -137,6 +162,7 @@ const BannerSlider = () => {
   }, []);
 
   useEffect(() => {
+     fetchBanners();
     fetchLatestPost();
     fetchGoldPrice();
     fetchWeather();
@@ -149,7 +175,7 @@ const BannerSlider = () => {
     }, 5 * 60 * 1000);
 
     return () => clearInterval(dataInterval);
-  }, [fetchLatestPost, fetchGoldPrice, fetchWeather]);
+   }, [fetchBanners, fetchLatestPost, fetchGoldPrice, fetchWeather]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -157,19 +183,19 @@ const BannerSlider = () => {
     }, 6000);
 
     return () => clearInterval(interval);
-  }, [currentIndex]);
+   }, [currentIndex, banners.length]);
 
   const handleNext = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setCurrentIndex((prev) => (prev + 1) % defaultBanners.length);
+     setCurrentIndex((prev) => (prev + 1) % banners.length);
     setTimeout(() => setIsAnimating(false), 500);
   };
 
   const handlePrev = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setCurrentIndex((prev) => (prev - 1 + defaultBanners.length) % defaultBanners.length);
+     setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
     setTimeout(() => setIsAnimating(false), 500);
   };
 
@@ -197,7 +223,12 @@ const BannerSlider = () => {
     return `${diffDays} ngày trước`;
   };
 
-  const currentBanner = defaultBanners[currentIndex];
+   const currentBanner = banners[currentIndex];
+   const isFallback = 'title' in currentBanner;
+   const bannerImage = currentBanner.image_url;
+   const bannerLink = 'link_url' in currentBanner ? currentBanner.link_url : null;
+   const bannerTitle = isFallback ? (currentBanner as typeof fallbackBanners[0]).title : null;
+   const bannerSubtitle = isFallback ? (currentBanner as typeof fallbackBanners[0]).subtitle : null;
 
   return (
     <div className="relative w-full h-[220px] sm:h-[280px] md:h-[350px] lg:h-[400px] overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -208,14 +239,21 @@ const BannerSlider = () => {
           opacity: isAnimating ? 0.7 : 1,
         }}
       >
-        <img 
-          src={currentBanner.image} 
-          alt={currentBanner.title}
-          className="w-full h-full object-cover animate-pulse-slow"
-          style={{
-            animation: "pulse-slow 8s ease-in-out infinite"
-          }}
-        />
+         {bannerLink ? (
+           <a href={bannerLink} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+             <img 
+               src={bannerImage} 
+               alt="Banner"
+               className="w-full h-full object-cover"
+             />
+           </a>
+         ) : (
+           <img 
+             src={bannerImage} 
+             alt="Banner"
+             className="w-full h-full object-cover"
+           />
+         )}
         {/* Subtle gradient overlay for better text visibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/30" />
       </div>
@@ -282,7 +320,8 @@ const BannerSlider = () => {
       </div>
 
       {/* Content Overlay - White/transparent text */}
-      <div className="relative h-full flex items-center justify-center px-3 sm:px-6 lg:px-8 pt-10 sm:pt-12">
+       {isFallback && (
+         <div className="relative h-full flex items-center justify-center px-3 sm:px-6 lg:px-8 pt-10 sm:pt-12">
         <div className="max-w-4xl mx-auto text-center space-y-2 sm:space-y-4 animate-fade-in">
           <h1 
             className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg transition-all duration-500 px-2"
@@ -292,7 +331,7 @@ const BannerSlider = () => {
               textShadow: "2px 2px 8px rgba(0,0,0,0.5)"
             }}
           >
-            {currentBanner.title}
+             {bannerTitle}
           </h1>
           <p 
             className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md transition-all duration-500 px-4"
@@ -302,10 +341,11 @@ const BannerSlider = () => {
               textShadow: "1px 1px 4px rgba(0,0,0,0.4)"
             }}
           >
-            {currentBanner.subtitle}
+             {bannerSubtitle}
           </p>
         </div>
       </div>
+       )}
 
       {/* Navigation Arrows */}
       <Button
@@ -327,7 +367,7 @@ const BannerSlider = () => {
 
       {/* Dots Indicator */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-        {defaultBanners.map((_, index) => (
+         {banners.map((_, index) => (
           <button
             key={index}
             onClick={() => {
@@ -346,18 +386,8 @@ const BannerSlider = () => {
         ))}
       </div>
 
-      {/* CSS for custom animations */}
-      <style>{`
-        @keyframes pulse-slow {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-        }
-        
-        @keyframes marquee {
+       <style>{`
+         @keyframes marquee {
           0% {
             transform: translateX(100%);
           }
