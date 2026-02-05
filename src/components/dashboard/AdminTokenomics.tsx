@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Save, Play, AlertTriangle, Ban, RefreshCw } from 'lucide-react';
+import { Save, Play, AlertTriangle, Ban, RefreshCw, Activity } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -57,6 +57,20 @@ interface DailySettlement {
   created_at: string;
 }
 
+interface AdminMetrics {
+  totalValidViews: number;
+  todayValidViews: number;
+  pendingViews: number;
+  totalTokensDistributed: number;
+  totalUsersRewarded: number;
+  usersWithBalance: number;
+  activeSessions: number;
+  currentPhase: number;
+  dailyBudget: number;
+  tokensPerView: number;
+  lastSettlement: DailySettlement | null;
+}
+
 const AdminTokenomics = () => {
   const { session } = useAuth();
   const { toast } = useToast();
@@ -67,12 +81,15 @@ const AdminTokenomics = () => {
   const [suspiciousActivity, setSuspiciousActivity] = useState<SuspiciousActivity[]>([]);
   const [blockedEntities, setBlockedEntities] = useState<any[]>([]);
   const [settlements, setSettlements] = useState<DailySettlement[]>([]);
+  const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(true);
 
   useEffect(() => {
     fetchConfig();
     fetchSuspiciousActivity();
     fetchBlockedEntities();
     fetchSettlements();
+    fetchMetrics();
   }, []);
 
   const fetchConfig = async () => {
@@ -137,6 +154,37 @@ const AdminTokenomics = () => {
     } catch (error) {
       console.error('Error fetching settlements:', error);
     }
+  };
+
+  const fetchMetrics = async () => {
+    if (!session?.access_token) return;
+    
+    setMetricsLoading(true);
+    try {
+      const response = await fetch(
+        'https://onihezlpgofqzutuxahv.supabase.co/functions/v1/mining-stats?type=admin',
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        }
+      );
+      
+      const data = await response.json();
+      if (data.success) {
+        setMetrics(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
+    } finally {
+      setMetricsLoading(false);
+    }
+  };
+
+  const refreshAll = () => {
+    fetchSettlements();
+    fetchSuspiciousActivity();
+    fetchMetrics();
   };
 
   const handleSaveConfig = async () => {
@@ -279,7 +327,7 @@ const AdminTokenomics = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Content Mining - Tokenomics</h2>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => { fetchSettlements(); fetchSuspiciousActivity(); }}>
+          <Button variant="outline" onClick={refreshAll}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -289,6 +337,56 @@ const AdminTokenomics = () => {
           </Button>
         </div>
       </div>
+
+      {/* Real-time Metrics Dashboard */}
+      {metricsLoading ? (
+        <Card>
+          <CardContent className="p-6 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          </CardContent>
+        </Card>
+      ) : metrics && (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Total Valid Views</p>
+              <p className="text-2xl font-bold">{metrics.totalValidViews.toLocaleString()}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Today Views</p>
+              <p className="text-2xl font-bold text-primary">{metrics.todayValidViews.toLocaleString()}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Pending Settlement</p>
+              <p className="text-2xl font-bold text-amber-600">{metrics.pendingViews.toLocaleString()}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Tokens Distributed</p>
+              <p className="text-2xl font-bold">{metrics.totalTokensDistributed.toFixed(4)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Users Rewarded</p>
+              <p className="text-2xl font-bold">{metrics.totalUsersRewarded}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Activity className="h-3 w-3" /> Active Now
+              </p>
+              <p className="text-2xl font-bold text-primary">{metrics.activeSessions}</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Tabs defaultValue="config" className="w-full">
         <TabsList>

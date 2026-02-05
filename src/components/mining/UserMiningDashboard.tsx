@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Coins, Eye, TrendingUp, History, BookOpen } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 
 interface UserMiningStats {
@@ -14,48 +14,53 @@ interface UserMiningStats {
   todayViews: number;
   transactions: any[];
   readingHistory: any[];
+  pendingViews: number;
 }
 
 const UserMiningDashboard = () => {
   const { session } = useAuth();
   const [stats, setStats] = useState<UserMiningStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchStats = async (showRefresh = false) => {
+    if (!session?.access_token) {
+      setLoading(false);
+      return;
+    }
+
+    if (showRefresh) setRefreshing(true);
+
+    try {
+      const response = await fetch(
+        'https://onihezlpgofqzutuxahv.supabase.co/functions/v1/mining-stats?type=user',
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        }
+      );
+      
+      const data = await response.json();
+      if (data.success) {
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching mining stats:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      if (!session?.access_token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          'https://onihezlpgofqzutuxahv.supabase.co/functions/v1/mining-stats?type=user',
-          {
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-          }
-        );
-        
-        const data = await response.json();
-        if (data.success) {
-          setStats(data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching mining stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStats();
   }, [session?.access_token]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -72,60 +77,78 @@ const UserMiningDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header with refresh */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Content Mining</h2>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => fetchStats(true)}
+          disabled={refreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          Làm mới
+        </Button>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+        <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-emerald-100 text-sm">Số dư Token</p>
-                <p className="text-3xl font-bold mt-1">
-                  {parseFloat(String(stats.balance)).toFixed(4)}
+            <div>
+              <p className="text-primary-foreground/70 text-sm">Số dư Token</p>
+              <p className="text-3xl font-bold mt-1">
+                {parseFloat(String(stats.balance)).toFixed(4)}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div>
+              <p className="text-muted-foreground text-sm">Tổng đã kiếm</p>
+              <p className="text-2xl font-bold text-primary mt-1">
+                {parseFloat(String(stats.totalEarned)).toFixed(4)}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div>
+              <p className="text-muted-foreground text-sm">Lượt đọc hợp lệ</p>
+              <p className="text-2xl font-bold mt-1">{stats.totalValidViews}</p>
+              {stats.pendingViews > 0 && (
+                <p className="text-xs text-amber-600 mt-1">
+                  {stats.pendingViews} chờ quyết toán
                 </p>
-              </div>
-              <Coins className="h-10 w-10 text-emerald-200" />
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">Tổng đã kiếm</p>
-                <p className="text-2xl font-bold text-emerald-600 mt-1">
-                  {parseFloat(String(stats.totalEarned)).toFixed(4)}
-                </p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-emerald-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">Lượt đọc hợp lệ</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalValidViews}</p>
-              </div>
-              <Eye className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">Hôm nay</p>
-                <p className="text-2xl font-bold mt-1">{stats.todayViews} lượt</p>
-              </div>
-              <BookOpen className="h-8 w-8 text-amber-500" />
+            <div>
+              <p className="text-muted-foreground text-sm">Hôm nay</p>
+              <p className="text-2xl font-bold mt-1">{stats.todayViews} lượt</p>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Info banner */}
+      <Card className="bg-muted/50 border-dashed">
+        <CardContent className="p-4">
+          <p className="text-sm text-muted-foreground">
+            💡 <strong>Lưu ý:</strong> Token được tính vào cuối mỗi ngày (00:00 UTC). 
+            Lượt đọc hợp lệ cần ít nhất 30 giây đọc thực sự (timer dừng khi chuyển tab).
+            Mỗi IP chỉ tính 1 lượt/bài/ngày.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Tabs */}
       <Tabs defaultValue="history" className="w-full">
@@ -137,10 +160,7 @@ const UserMiningDashboard = () => {
         <TabsContent value="history">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Lịch sử đọc bài
-              </CardTitle>
+              <CardTitle className="text-lg">Lịch sử đọc bài</CardTitle>
             </CardHeader>
             <CardContent>
               {stats.readingHistory.length === 0 ? (
@@ -152,7 +172,7 @@ const UserMiningDashboard = () => {
                   {stats.readingHistory.map((item: any) => (
                     <div 
                       key={item.id}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
                     >
                       <div className="flex-1 min-w-0">
                         <Link 
@@ -165,9 +185,17 @@ const UserMiningDashboard = () => {
                           {new Date(item.created_at).toLocaleDateString('vi-VN')}
                         </p>
                       </div>
-                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 ml-2">
-                        +{parseFloat(item.tokens_earned || 0).toFixed(6)}
-                      </Badge>
+                      <div className="flex items-center gap-2 ml-2">
+                        {item.settled ? (
+                          <Badge variant="secondary" className="bg-primary/10 text-primary">
+                            +{parseFloat(item.tokens_earned || 0).toFixed(6)}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-amber-600 border-amber-300">
+                            Chờ quyết toán
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -179,26 +207,23 @@ const UserMiningDashboard = () => {
         <TabsContent value="transactions">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <History className="h-5 w-5" />
-                Lịch sử giao dịch
-              </CardTitle>
+              <CardTitle className="text-lg">Lịch sử giao dịch</CardTitle>
             </CardHeader>
             <CardContent>
               {stats.transactions.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">
-                  Chưa có giao dịch nào
+                  Chưa có giao dịch nào. Token sẽ được ghi nhận sau khi quyết toán hàng ngày.
                 </p>
               ) : (
                 <div className="space-y-3">
                   {stats.transactions.map((tx: any) => (
                     <div 
                       key={tx.id}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
                     >
                       <div className="flex-1">
                         <p className="font-medium text-sm">
-                          {tx.transaction_type === 'mining_reward' ? 'Phần thưởng Mining' : tx.transaction_type}
+                          {tx.transaction_type === 'mining_reward' ? 'Phần thưởng đọc bài' : tx.transaction_type}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(tx.created_at).toLocaleDateString('vi-VN', {
@@ -206,15 +231,20 @@ const UserMiningDashboard = () => {
                             minute: '2-digit'
                           })}
                         </p>
+                        {tx.description && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {tx.description}
+                          </p>
+                        )}
                       </div>
                       <div className="text-right">
                         <Badge 
-                          className={tx.amount > 0 
-                            ? 'bg-emerald-100 text-emerald-700' 
-                            : 'bg-red-100 text-red-700'
+                          className={parseFloat(tx.amount) > 0 
+                            ? 'bg-primary/10 text-primary' 
+                            : 'bg-destructive/10 text-destructive'
                           }
                         >
-                          {tx.amount > 0 ? '+' : ''}{parseFloat(tx.amount).toFixed(6)}
+                          {parseFloat(tx.amount) > 0 ? '+' : ''}{parseFloat(tx.amount).toFixed(6)}
                         </Badge>
                         <p className="text-xs text-muted-foreground mt-1">
                           Số dư: {parseFloat(tx.balance_after).toFixed(4)}
