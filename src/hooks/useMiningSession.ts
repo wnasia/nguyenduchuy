@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface MiningSessionState {
@@ -9,6 +8,7 @@ interface MiningSessionState {
   isActive: boolean;
   minRequired: number;
   alreadyCounted: boolean;
+  heartbeatCount: number;
 }
 
 // Generate browser fingerprint
@@ -52,12 +52,12 @@ export const useMiningSession = (postId: string | undefined) => {
     isActive: true,
     minRequired: 30,
     alreadyCounted: false,
+    heartbeatCount: 0,
   });
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
   const fingerprintRef = useRef<string>('');
-  const lastHeartbeatRef = useRef<number>(Date.now());
   const activeTimeRef = useRef<number>(0);
   
   // Track tab visibility
@@ -94,8 +94,8 @@ export const useMiningSession = (postId: string | undefined) => {
           isValid: data.isValid || prev.isValid,
           minRequired: data.minRequired || prev.minRequired,
           alreadyCounted: data.alreadyCounted || prev.alreadyCounted,
+          heartbeatCount: data.heartbeatCount || prev.heartbeatCount,
         }));
-        lastHeartbeatRef.current = Date.now();
       }
     } catch (error) {
       console.error('Heartbeat error:', error);
@@ -118,7 +118,7 @@ export const useMiningSession = (postId: string | undefined) => {
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (heartbeatRef.current) clearInterval(heartbeatRef.current);
     };
-  }, [postId]);
+  }, [postId, sendHeartbeat]);
 
   // Track active time
   useEffect(() => {

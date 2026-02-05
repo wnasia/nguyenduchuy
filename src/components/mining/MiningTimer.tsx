@@ -22,6 +22,7 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
     minRequired, 
     progress, 
     alreadyCounted,
+    heartbeatCount,
   } = useMiningSession(postId);
 
   // Check if user is admin (for debug toggle)
@@ -54,10 +55,10 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
   if (!user) {
     return (
       <div className={cn(
-        "bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4",
+        "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4",
         className
       )}>
-        <div className="flex items-center gap-2 text-amber-700">
+        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
           <span className="text-sm font-medium">Đăng nhập để kiếm token khi đọc bài</span>
         </div>
       </div>
@@ -67,11 +68,11 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
   if (alreadyCounted) {
     return (
       <div className={cn(
-        "bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4",
+        "bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4",
         className
       )}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-blue-700">
+          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
             <span className="text-sm font-medium">✓ Bạn đã đọc bài này hôm nay</span>
           </div>
           {isAdmin && (
@@ -79,7 +80,7 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
               variant="ghost" 
               size="sm" 
               onClick={() => setShowDebug(!showDebug)}
-              className="text-xs text-blue-600 hover:text-blue-800"
+              className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
             >
               {showDebug ? 'Ẩn Debug' : 'Debug'}
             </Button>
@@ -89,7 +90,7 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
           <DebugPanel 
             sessionId={sessionId}
             activeSeconds={activeSeconds}
-            heartbeatCount={Math.floor(activeSeconds / 10)}
+            heartbeatCount={heartbeatCount}
             status={status}
           />
         )}
@@ -99,25 +100,25 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
 
   return (
     <div className={cn(
-      "bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4 space-y-3",
+      "bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3",
       className
     )}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-emerald-800">Content Mining</span>
+          <span className="font-semibold text-foreground">Content Mining</span>
         </div>
         
         <div className="flex items-center gap-2">
           {isValid ? (
-            <Badge className="bg-emerald-500 hover:bg-emerald-600">
+            <Badge className="bg-primary hover:bg-primary/90">
               Hợp lệ
             </Badge>
           ) : !isActive ? (
-            <Badge variant="secondary" className="bg-amber-100 text-amber-700">
+            <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
               Tạm dừng
             </Badge>
           ) : (
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
               Đang đọc
             </Badge>
           )}
@@ -126,7 +127,7 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
               variant="ghost" 
               size="sm" 
               onClick={() => setShowDebug(!showDebug)}
-              className="text-xs text-emerald-600 hover:text-emerald-800 px-2 h-6"
+              className="text-xs text-primary hover:text-primary/80 px-2 h-6"
             >
               {showDebug ? 'Ẩn' : 'Debug'}
             </Button>
@@ -137,24 +138,24 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Tiến độ</span>
-          <span className="font-mono text-emerald-700">
+          <span className="font-mono text-primary">
             {formatTime(activeSeconds)} / {formatTime(minRequired)}
           </span>
         </div>
         <Progress 
           value={progress} 
-          className="h-2 bg-emerald-100"
+          className="h-2"
         />
       </div>
 
       {!isActive && (
-        <p className="text-xs text-amber-600">
+        <p className="text-xs text-amber-600 dark:text-amber-400">
           ⚠️ Timer đã tạm dừng vì bạn chuyển tab. Quay lại để tiếp tục.
         </p>
       )}
 
       {isValid && (
-        <p className="text-xs text-emerald-600">
+        <p className="text-xs text-primary">
           ✓ Lượt đọc hợp lệ! Token sẽ được tính vào cuối ngày.
         </p>
       )}
@@ -170,7 +171,7 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
         <DebugPanel 
           sessionId={sessionId}
           activeSeconds={activeSeconds}
-          heartbeatCount={Math.floor(activeSeconds / 10)}
+          heartbeatCount={heartbeatCount}
           status={status}
         />
       )}
@@ -191,25 +192,25 @@ const DebugPanel = ({
   status: { label: string; reason: string };
 }) => {
   return (
-    <div className="mt-3 p-3 bg-slate-800 text-slate-100 rounded-lg text-xs font-mono space-y-1">
-      <p className="text-slate-400 uppercase tracking-wider text-[10px] mb-2">Debug Info (Admin Only)</p>
+    <div className="mt-3 p-3 bg-muted text-foreground rounded-lg text-xs font-mono space-y-1 border">
+      <p className="text-muted-foreground uppercase tracking-wider text-[10px] mb-2">Debug Info (Admin Only)</p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-        <span className="text-slate-400">session_id:</span>
+        <span className="text-muted-foreground">session_id:</span>
         <span className="truncate">{sessionId || 'null'}</span>
-        <span className="text-slate-400">active_seconds:</span>
+        <span className="text-muted-foreground">active_seconds:</span>
         <span>{activeSeconds}</span>
-        <span className="text-slate-400">heartbeat_count:</span>
+        <span className="text-muted-foreground">heartbeat_count:</span>
         <span>{heartbeatCount}</span>
-        <span className="text-slate-400">last_heartbeat:</span>
+        <span className="text-muted-foreground">last_heartbeat:</span>
         <span>{new Date().toISOString()}</span>
-        <span className="text-slate-400">status:</span>
+        <span className="text-muted-foreground">status:</span>
         <span className={
-          status.label === 'Hợp lệ' ? 'text-emerald-400' :
-          status.label === 'Tạm dừng' ? 'text-amber-400' :
-          status.label === 'Đã tính' ? 'text-blue-400' : 'text-slate-100'
+          status.label === 'Hợp lệ' ? 'text-primary' :
+          status.label === 'Tạm dừng' ? 'text-amber-500' :
+          status.label === 'Đã tính' ? 'text-blue-500' : ''
         }>{status.label}</span>
-        <span className="text-slate-400">reason:</span>
-        <span className="col-span-1 text-slate-300">{status.reason}</span>
+        <span className="text-muted-foreground">reason:</span>
+        <span className="col-span-1">{status.reason}</span>
       </div>
     </div>
   );
