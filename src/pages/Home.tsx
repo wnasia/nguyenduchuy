@@ -16,6 +16,8 @@ import LunarCalendarWidget from "@/components/LunarCalendarWidget";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 import ExchangeRateWidget from "@/components/widgets/ExchangeRateWidget";
 import CommunityStatsWidget from "@/components/widgets/CommunityStatsWidget";
+import LoginPromptModal from "@/components/LoginPromptModal";
+
 interface Post {
   id: string;
   title: string;
@@ -33,7 +35,7 @@ interface Post {
 const Home = () => {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("hot");
   const [hotPosts, setHotPosts] = useState<Post[]>([]);
   const [latestPosts, setLatestPosts] = useState<Post[]>([]);
@@ -48,6 +50,29 @@ const Home = () => {
   });
   const [activeBanner, setActiveBanner] = useState<{ image_url: string; link_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  // Show login prompt after a delay for non-logged-in users
+  useEffect(() => {
+    if (!authLoading && !user) {
+      // Check if user has dismissed the prompt in this session
+      const dismissed = sessionStorage.getItem('loginPromptDismissed');
+      if (!dismissed) {
+        const timer = setTimeout(() => {
+          setShowLoginPrompt(true);
+        }, 2000); // Show after 2 seconds
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [authLoading, user]);
+
+  const handleLoginPromptClose = (open: boolean) => {
+    setShowLoginPrompt(open);
+    if (!open) {
+      // Remember that user dismissed the prompt
+      sessionStorage.setItem('loginPromptDismissed', 'true');
+    }
+  };
 
   const parseContent = useCallback((content: string): ParsedContent => {
     return parsePostContent(content);
@@ -143,9 +168,11 @@ const Home = () => {
 
   const fetchGalleryImages = useCallback(async () => {
     try {
+      // Only fetch APPROVED gallery images for homepage
       const { data: galleryData, error } = await supabase
         .from('gallery_images')
         .select('image_url')
+        .eq('status', 'approved')
         .order('created_at', { ascending: false })
         .limit(4);
 
@@ -547,6 +574,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Login Prompt Modal for non-logged-in users */}
+      <LoginPromptModal open={showLoginPrompt} onOpenChange={handleLoginPromptClose} />
     </div>
   );
 };

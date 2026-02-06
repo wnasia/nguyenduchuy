@@ -231,8 +231,8 @@ const BannerSlider = () => {
    const bannerSubtitle = isFallback ? (currentBanner as typeof fallbackBanners[0]).subtitle : null;
 
   return (
-    <div className="relative w-full h-[220px] sm:h-[280px] md:h-[350px] lg:h-[400px] overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      {/* Background Image with Animation */}
+    <div className="relative w-full h-[280px] sm:h-[350px] md:h-[450px] lg:h-[500px] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Background Image with Animation - Full Width */}
       <div 
         className="absolute inset-0 transition-opacity duration-500 ease-in-out"
         style={{ 
@@ -254,8 +254,8 @@ const BannerSlider = () => {
              className="w-full h-full object-cover"
            />
          )}
-        {/* Subtle gradient overlay for better text visibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/30" />
+        {/* Premium overlay - subtle blur + gradient for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/40 backdrop-blur-[1px]" />
       </div>
 
       {/* Realtime Info Bar - Top with transparent/white styling */}

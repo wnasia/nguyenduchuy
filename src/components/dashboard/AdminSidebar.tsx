@@ -38,6 +38,7 @@ const menuSections = [
     items: [
       { id: "posts", title: "Posts" },
       { id: "media", title: "Media" },
+      { id: "moderation", title: "Image Moderation" },
       { id: "banners", title: "Banners" },
       { id: "videos", title: "Videos" },
     ],

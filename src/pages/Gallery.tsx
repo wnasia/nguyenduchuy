@@ -36,9 +36,11 @@ const Gallery = () => {
 
   const fetchGalleryImages = async () => {
     try {
+      // Only fetch APPROVED images for public gallery
       const { data: galleryData, error } = await supabase
         .from('gallery_images')
         .select('*')
+        .eq('status', 'approved')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -136,63 +138,66 @@ const Gallery = () => {
   }
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-6">
+    <div className="min-h-screen bg-background py-6 sm:py-8 lg:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-semibold mb-2 sm:mb-4">{t("gallery.title")}</h1>
-          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-2">
+        {/* Header Section - Clean and Centered */}
+        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-foreground mb-3 sm:mb-4">
+            {t("gallery.title")}
+          </h1>
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
             {t("gallery.subtitle")}
           </p>
-          <p className="text-xs sm:text-sm text-gray-500 mt-2">
-            {images.length > 0 && (
-              <span>{images.length} {t("gallery.image_count")} • {t("gallery.click_to_view")}</span>
-            )}
-          </p>
-          <div className="mt-4 sm:mt-6">
-            <Button onClick={handleUploadClick} size="lg" className="gap-2 text-sm sm:text-base">
-              <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
-              {t("gallery.upload_button")}
-            </Button>
-          </div>
+          {images.length > 0 && (
+            <p className="text-sm text-muted-foreground mb-6">
+              {images.length} {t("gallery.image_count")} • {t("gallery.click_to_view")}
+            </p>
+          )}
+          <Button onClick={handleUploadClick} size="lg" className="gap-2">
+            <Upload className="h-5 w-5" />
+            {t("gallery.upload_button")}
+          </Button>
         </div>
 
-        <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-3 xl:columns-4 gap-3 sm:gap-4 lg:gap-6 space-y-3 sm:space-y-4 lg:space-y-6">
+        {/* Gallery Grid - Clean Masonry Layout */}
         {images.length === 0 ? (
-          <div className="col-span-full text-center py-16">
-            <div className="text-gray-500">
-              <div className="text-6xl mb-4">📷</div>
-              <h3 className="text-xl font-semibold mb-2">{t("gallery.no_images_title")}</h3>
-              <p className="text-gray-400">{t("gallery.no_images_subtitle")}</p>
-            </div>
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="text-8xl mb-6">📷</div>
+            <h3 className="text-2xl font-semibold text-foreground mb-2">{t("gallery.no_images_title")}</h3>
+            <p className="text-muted-foreground text-center max-w-md">{t("gallery.no_images_subtitle")}</p>
           </div>
         ) : (
-          images.map((image, index) => (
-            <div
-              key={image.id}
-              className="break-inside-avoid group cursor-pointer animate-fade-in"
-              style={{ animationDelay: `${index * 0.05}s` }}
-              onClick={() => openImage(index)}
-            >
-              <div className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
-                <img
-                  src={image.image_url}
-                  alt={image.title}
-                  className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/placeholder.svg';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <h3 className="font-semibold text-lg mb-1">{image.title}</h3>
-                    <p className="text-sm opacity-90">{image.description}</p>
+          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 sm:gap-5 lg:gap-6">
+            {images.map((image, index) => (
+              <div
+                key={image.id}
+                className="break-inside-avoid mb-4 sm:mb-5 lg:mb-6 group cursor-pointer"
+                style={{ animationDelay: `${index * 0.03}s` }}
+                onClick={() => openImage(index)}
+              >
+                <div className="relative overflow-hidden rounded-xl bg-muted shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <img
+                    src={image.image_url}
+                    alt={image.title}
+                    className="w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/placeholder.svg';
+                    }}
+                  />
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                      <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-1">{image.title}</h3>
+                      {image.description && (
+                        <p className="text-sm opacity-90 line-clamp-2">{image.description}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
-        </div>
 
         {images.length > 12 && (
           <div className="text-center mt-12">
