@@ -13,6 +13,7 @@ import AdminReports from "./AdminReports";
 import AdminFooterSettings from "./AdminFooterSettings";
 import AdminSystemSettings from "./AdminSystemSettings";
 import AdminTokenomics from "./AdminTokenomics";
+import AdminImageModeration from "./AdminImageModeration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ const moduleConfig: Record<string, { title: string; subtitle: string; component:
   dashboard: { title: "Dashboard", subtitle: "Overview & metrics", component: AdminOverview },
   posts: { title: "Posts", subtitle: "Manage all content", component: AdminPosts },
   media: { title: "Media", subtitle: "Images & assets", component: AdminGallery },
+  moderation: { title: "Image Moderation", subtitle: "Approve/reject images", component: AdminImageModeration },
   banners: { title: "Banners", subtitle: "Homepage banners", component: AdminBanners },
   videos: { title: "Videos", subtitle: "YouTube content", component: AdminYouTube },
   users: { title: "Users", subtitle: "User management", component: AdminUsers },
@@ -39,24 +41,24 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex w-full bg-slate-50">
+      <div className="min-h-screen flex w-full bg-muted/30">
         <AdminSidebar activeModule={activeModule} onModuleChange={setActiveModule} />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 flex flex-col">
           {/* Premium Header */}
           <header className={cn(
             "sticky top-0 z-10 flex h-16 shrink-0 items-center gap-4",
-            "bg-white/80 backdrop-blur-xl border-b border-slate-200/60",
+            "bg-background/80 backdrop-blur-xl border-b border-border",
             "px-6"
           )}>
-            <SidebarTrigger className="-ml-1 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" />
-            <Separator orientation="vertical" className="h-6 bg-slate-200" />
+            <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors" />
+            <Separator orientation="vertical" className="h-6 bg-border" />
             
             <div className="flex items-center gap-3">
               <div>
-                <h1 className="text-lg font-semibold text-slate-900 leading-none">
+                <h1 className="text-lg font-semibold text-foreground leading-none">
                   {currentModule.title}
                 </h1>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {currentModule.subtitle}
                 </p>
               </div>
@@ -64,15 +66,15 @@ const AdminDashboard = () => {
 
             {/* Right side - can add notifications, search, etc. */}
             <div className="ml-auto flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium">
-                <span className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full text-xs font-medium">
+                <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
                 System Online
               </div>
             </div>
           </header>
 
-          {/* Main Content */}
-          <main className="flex-1 p-6 lg:p-8">
+          {/* Main Content - with proper padding to avoid footer overlap */}
+          <main className="flex-1 p-6 lg:p-8 pb-20">
             <div className="max-w-7xl mx-auto">
               <CurrentComponent />
             </div>

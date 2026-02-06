@@ -25,47 +25,53 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  return (
+    <BrowserRouter>
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/stories" element={<Stories />} />
+            <Route path="/story/:id" element={<StoryDetail />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/videos" element={<Videos />} />
+            <Route path="/crypto" element={<CryptoTracker />} />
+            <Route path="/utilities" element={<Utilities />} />
+            <Route path="/explorer" element={<Explorer />} />
+            <Route path="/submit" element={<Submit />} />
+            <Route path="/login" element={<Login />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </BrowserRouter>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-     <ThemeProvider>
-       <I18nProvider>
-         <AuthProvider>
-           <TooltipProvider>
-             <Toaster />
-             <Sonner />
-             <BrowserRouter>
-               <div className="min-h-screen flex flex-col bg-background">
-                 <Navbar />
-                 <main className="flex-1">
-                   <Routes>
-                     <Route path="/" element={<Home />} />
-                     <Route path="/stories" element={<Stories />} />
-                     <Route path="/story/:id" element={<StoryDetail />} />
-                     <Route path="/gallery" element={<Gallery />} />
-                     <Route path="/videos" element={<Videos />} />
-                     <Route path="/crypto" element={<CryptoTracker />} />
-                     <Route path="/utilities" element={<Utilities />} />
-                     <Route path="/explorer" element={<Explorer />} />
-                     <Route path="/submit" element={<Submit />} />
-                     <Route path="/login" element={<Login />} />
-                     <Route 
-                       path="/dashboard" 
-                       element={
-                         <ProtectedRoute>
-                           <Dashboard />
-                         </ProtectedRoute>
-                       } 
-                     />
-                     <Route path="*" element={<NotFound />} />
-                   </Routes>
-                 </main>
-                 <Footer />
-               </div>
-             </BrowserRouter>
-           </TooltipProvider>
-         </AuthProvider>
-       </I18nProvider>
-     </ThemeProvider>
+    <ThemeProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <AppContent />
+          </TooltipProvider>
+        </AuthProvider>
+      </I18nProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

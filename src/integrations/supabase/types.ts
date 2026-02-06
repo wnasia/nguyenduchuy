@@ -154,6 +154,10 @@ export type Database = {
           description: string | null
           id: string
           image_url: string
+          moderated_at: string | null
+          moderated_by: string | null
+          rejection_reason: string | null
+          status: string
           title: string
           updated_at: string
           uploaded_by: string
@@ -163,6 +167,10 @@ export type Database = {
           description?: string | null
           id?: string
           image_url: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          rejection_reason?: string | null
+          status?: string
           title: string
           updated_at?: string
           uploaded_by: string
@@ -172,6 +180,10 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          rejection_reason?: string | null
+          status?: string
           title?: string
           updated_at?: string
           uploaded_by?: string
