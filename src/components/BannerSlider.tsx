@@ -231,8 +231,8 @@ const BannerSlider = () => {
    const bannerSubtitle = isFallback ? (currentBanner as typeof fallbackBanners[0]).subtitle : null;
 
   return (
-    <div className="relative w-full h-[280px] sm:h-[350px] md:h-[450px] lg:h-[500px] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Background Image with Animation - Full Width */}
+    <section className="relative w-full h-[280px] sm:h-[350px] md:h-[450px] lg:h-[500px] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" style={{ marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', width: '100vw' }}>
+      {/* Background Image with Animation - Full Viewport Width */}
       <div 
         className="absolute inset-0 transition-opacity duration-500 ease-in-out"
         style={{ 
@@ -254,9 +254,10 @@ const BannerSlider = () => {
              className="w-full h-full object-cover"
            />
          )}
-        {/* Premium overlay - subtle blur + gradient for readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/40 backdrop-blur-[1px]" />
       </div>
+
+      {/* Premium overlay - subtle dark gradient for readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/25 to-black/35 z-[1]" />
 
       {/* Realtime Info Bar - Top with transparent/white styling */}
       <div className="absolute top-0 left-0 right-0 bg-black/50 backdrop-blur-sm px-2 sm:px-4 py-1.5 sm:py-2 z-10">
@@ -400,7 +401,7 @@ const BannerSlider = () => {
           animation: marquee 15s linear infinite;
         }
       `}</style>
-    </div>
+    </section>
   );
 };
 

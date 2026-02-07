@@ -1,7 +1,7 @@
  import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, Bell } from "lucide-react";
+import { Menu, X, LogOut, Bell, Sun, Moon } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -137,13 +137,14 @@ const Navbar = () => {
             ))}
             <LanguageSelector />
              
-             {/* Dark Mode Toggle */}
+             {/* Dark Mode Toggle - Icon only */}
              <button
-               onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-               className="px-3 py-2 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-             >
-               {resolvedTheme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
-             </button>
+                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                className="p-2 rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </button>
             
             {loading ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
@@ -206,11 +207,12 @@ const Navbar = () => {
           <div className="md:hidden flex items-center space-x-2">
             <LanguageSelector />
              <button
-               onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-               className="p-2 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-             >
-               {resolvedTheme === "dark" ? "☀️" : "🌙"}
-             </button>
+                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                className="p-2 rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </button>
             <Button
               variant="ghost"
               size="icon"
