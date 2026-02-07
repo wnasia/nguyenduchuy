@@ -231,7 +231,7 @@ const BannerSlider = () => {
    const bannerSubtitle = isFallback ? (currentBanner as typeof fallbackBanners[0]).subtitle : null;
 
   return (
-    <section className="relative w-full h-[280px] sm:h-[350px] md:h-[450px] lg:h-[500px] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" style={{ marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', width: '100vw' }}>
+    <section className="relative w-[500px] max-w-full mx-auto h-[280px] sm:h-[350px] md:h-[450px] lg:h-[500px] overflow-hidden rounded-lg">
       {/* Background Image with Animation - Full Viewport Width */}
       <div 
         className="absolute inset-0 transition-opacity duration-500 ease-in-out"
@@ -256,8 +256,7 @@ const BannerSlider = () => {
          )}
       </div>
 
-      {/* Premium overlay - subtle dark gradient for readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/25 to-black/35 z-[1]" />
+      {/* No overlay - banner image displays clearly as-is */}
 
       {/* Realtime Info Bar - Top with transparent/white styling */}
       <div className="absolute top-0 left-0 right-0 bg-black/50 backdrop-blur-sm px-2 sm:px-4 py-1.5 sm:py-2 z-10">
