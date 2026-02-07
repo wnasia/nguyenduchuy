@@ -9,6 +9,7 @@ import UserProfile from "./UserProfile";
 import UserNotifications from "./UserNotifications";
 import UserMiningDashboard from "@/components/mining/UserMiningDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
+import Footer from "@/components/Footer";
 
 const moduleConfig: Record<string, { title: string; component: React.ComponentType }> = {
   posts: { title: "My Stories", component: UserPosts },
@@ -58,10 +59,13 @@ const UserDashboard = () => {
             </div>
           </header>
 
-          {/* Main Content - flex-1 ensures it takes remaining space */}
-          <main className="flex-1 p-4 md:p-6 pb-20">
+          {/* Main Content */}
+          <main className="flex-1 p-4 md:p-6">
             <CurrentComponent />
           </main>
+
+          {/* Footer inside SidebarInset so it respects sidebar width */}
+          <Footer />
         </SidebarInset>
       </div>
     </SidebarProvider>
