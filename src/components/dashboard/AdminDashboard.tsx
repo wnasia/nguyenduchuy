@@ -16,6 +16,7 @@ import AdminTokenomics from "./AdminTokenomics";
 import AdminImageModeration from "./AdminImageModeration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import Footer from "@/components/Footer";
 
 const moduleConfig: Record<string, { title: string; subtitle: string; component: React.ComponentType }> = {
   dashboard: { title: "Dashboard", subtitle: "Overview & metrics", component: AdminOverview },
@@ -73,12 +74,15 @@ const AdminDashboard = () => {
             </div>
           </header>
 
-          {/* Main Content - with proper padding to avoid footer overlap */}
-          <main className="flex-1 p-6 lg:p-8 pb-20">
+          {/* Main Content */}
+          <main className="flex-1 p-6 lg:p-8">
             <div className="max-w-7xl mx-auto">
               <CurrentComponent />
             </div>
           </main>
+
+          {/* Footer inside SidebarInset so it respects sidebar width */}
+          <Footer />
         </SidebarInset>
       </div>
     </SidebarProvider>
