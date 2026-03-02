@@ -14,6 +14,7 @@ import AdminFooterSettings from "./AdminFooterSettings";
 import AdminSystemSettings from "./AdminSystemSettings";
 import AdminTokenomics from "./AdminTokenomics";
 import AdminImageModeration from "./AdminImageModeration";
+import AdminTopics from "./AdminTopics";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import Footer from "@/components/Footer";
@@ -21,6 +22,7 @@ import Footer from "@/components/Footer";
 const moduleConfig: Record<string, { title: string; subtitle: string; component: React.ComponentType }> = {
   dashboard: { title: "Dashboard", subtitle: "Overview & metrics", component: AdminOverview },
   posts: { title: "Posts", subtitle: "Manage all content", component: AdminPosts },
+  topics: { title: "Topics", subtitle: "Manage article topics", component: AdminTopics },
   media: { title: "Media", subtitle: "Images & assets", component: AdminGallery },
   moderation: { title: "Image Moderation", subtitle: "Approve/reject images", component: AdminImageModeration },
   banners: { title: "Banners", subtitle: "Homepage banners", component: AdminBanners },
