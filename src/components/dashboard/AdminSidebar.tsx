@@ -37,6 +37,7 @@ const menuSections = [
     label: "Content",
     items: [
       { id: "posts", title: "Posts" },
+      { id: "topics", title: "Topics" },
       { id: "media", title: "Media" },
       { id: "moderation", title: "Image Moderation" },
       { id: "banners", title: "Banners" },

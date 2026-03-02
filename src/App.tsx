@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { I18nProvider } from "@/hooks/useI18n";
 import Navbar from "./components/Navbar";
+import InfoBar from "./components/home/InfoBar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Stories from "./pages/Stories";
@@ -31,6 +32,7 @@ const AppLayout = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
+      <InfoBar />
       <Navbar />
       <main className="flex-1">
         <Routes>
