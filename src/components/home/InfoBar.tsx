@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { TrendingUp, TrendingDown, Newspaper } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { decodeHtmlEntities } from "@/lib/htmlUtils";
 
 interface GoldInfo {
   price: number;
@@ -10,6 +13,13 @@ interface WeatherInfo {
   temp: number;
   condition: string;
   city: string;
+}
+
+interface LatestPost {
+  id: string;
+  title: string;
+  slug?: string;
+  created_at: string;
 }
 
 const getWeatherIcon = (code: number): string => {
@@ -24,9 +34,24 @@ const getWeatherIcon = (code: number): string => {
   return "🌤️";
 };
 
+const formatTimeAgo = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffMins < 1) return "Vừa xong";
+  if (diffMins < 60) return `${diffMins} phút trước`;
+  if (diffHours < 24) return `${diffHours} giờ trước`;
+  return `${diffDays} ngày trước`;
+};
+
 const InfoBar = () => {
+  const navigate = useNavigate();
   const [goldInfo, setGoldInfo] = useState<GoldInfo | null>(null);
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo | null>(null);
+  const [latestPost, setLatestPost] = useState<LatestPost | null>(null);
 
   const fetchGoldPrice = useCallback(async () => {
     try {
@@ -53,19 +78,38 @@ const InfoBar = () => {
     } catch (e) { console.error("Error fetching weather:", e); }
   }, []);
 
+  const fetchLatestPost = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('id, title, slug, created_at')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!error) setLatestPost(data);
+    } catch (e) { console.error("Error fetching latest post:", e); }
+  }, []);
+
   useEffect(() => {
     fetchGoldPrice();
     fetchWeather();
-    const interval = setInterval(() => { fetchGoldPrice(); fetchWeather(); }, 5 * 60 * 1000);
+    fetchLatestPost();
+    const interval = setInterval(() => { fetchGoldPrice(); fetchWeather(); fetchLatestPost(); }, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [fetchGoldPrice, fetchWeather]);
+  }, [fetchGoldPrice, fetchWeather, fetchLatestPost]);
 
   const formatGoldPrice = (price: number) => new Intl.NumberFormat("vi-VN").format(Math.round(price / 1000000)) + "tr";
 
+  const handlePostClick = () => {
+    if (latestPost) navigate(`/story/${latestPost.slug || latestPost.id}`);
+  };
+
   return (
     <div className="w-full bg-muted/80 border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-4 text-xs sm:text-sm flex-wrap">
-        <div className="flex items-center gap-2">
+      <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center gap-4 text-xs sm:text-sm flex-wrap">
+        {/* Gold price */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-yellow-500">🥇</span>
           <span className="font-medium text-muted-foreground">SJC:</span>
           {goldInfo ? (
@@ -78,7 +122,9 @@ const InfoBar = () => {
             </>
           ) : <span className="text-muted-foreground">--</span>}
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Weather */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           {weatherInfo ? (
             <>
               <span>{weatherInfo.condition}</span>
@@ -87,10 +133,35 @@ const InfoBar = () => {
             </>
           ) : <span className="text-muted-foreground">--</span>}
         </div>
-        <div className="text-muted-foreground hidden sm:block">
+
+        {/* Date */}
+        <div className="text-muted-foreground hidden sm:block flex-shrink-0">
           {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric' })}
         </div>
+
+        {/* News ticker */}
+        {latestPost && (
+          <div className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer" onClick={handlePostClick}>
+            <Newspaper className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+            <div className="overflow-hidden flex-1">
+              <div className="animate-marquee whitespace-nowrap">
+                <span className="text-xs font-medium text-foreground">{decodeHtmlEntities(latestPost.title)}</span>
+                <span className="text-xs text-muted-foreground ml-2">{formatTimeAgo(latestPost.created_at)}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+          animation: marquee 15s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
