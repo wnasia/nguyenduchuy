@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/hooks/useI18n";
 import BannerSlider from "@/components/BannerSlider";
 import TopicSection from "@/components/home/TopicSection";
+import LatestPosts from "@/components/home/LatestPosts";
+import FeaturedPosts from "@/components/home/FeaturedPosts";
 
 interface Post {
   id: string;
@@ -13,6 +15,8 @@ interface Post {
   view_count: number;
   created_at: string;
   slug?: string;
+  is_featured?: boolean;
+  thumbnail_url?: string;
   profiles?: { full_name: string | null; avatar_url: string | null } | null;
 }
 
@@ -24,18 +28,17 @@ interface Topic {
 }
 
 const Home = () => {
-  const navigate = useNavigate();
   const { t } = useI18n();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [postsByTopic, setPostsByTopic] = useState<Record<string, Post[]>>({});
-  const [allPosts, setAllPosts] = useState<Post[]>([]);
-  const [hasTopicAssignments, setHasTopicAssignments] = useState(false);
+  const [latestPosts, setLatestPosts] = useState<Post[]>([]);
+  const [featuredPosts, setFeaturedPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch all approved posts with profiles
+      // Fetch all approved posts
       const { data: postsData } = await supabase
         .from('posts')
         .select('*')
@@ -62,7 +65,14 @@ const Home = () => {
         profiles: profilesMap.get(p.user_id) || null,
       }));
 
-      // Fetch topics and assignments
+      // Latest posts (newest 6)
+      setLatestPosts(enrichedPosts.slice(0, 6));
+
+      // Featured posts
+      const featured = enrichedPosts.filter(p => p.is_featured);
+      setFeaturedPosts(featured.length > 0 ? featured.slice(0, 4) : enrichedPosts.sort((a, b) => b.view_count - a.view_count).slice(0, 4));
+
+      // Topics
       const { data: topicsData } = await supabase
         .from('topics')
         .select('id, name, slug, sort_order')
@@ -72,29 +82,25 @@ const Home = () => {
       const activeTopics = topicsData || [];
       setTopics(activeTopics);
 
-      const topicIds = activeTopics.map(t => t.id);
-      const { data: postTopicsData } = topicIds.length > 0
-        ? await supabase.from('post_topics').select('post_id, topic_id').in('topic_id', topicIds)
-        : { data: [] };
+      if (activeTopics.length > 0) {
+        const topicIds = activeTopics.map(t => t.id);
+        const { data: postTopicsData } = await supabase
+          .from('post_topics')
+          .select('post_id, topic_id')
+          .in('topic_id', topicIds);
 
-      if (postTopicsData && postTopicsData.length > 0) {
-        setHasTopicAssignments(true);
-
-        const topicPostMap: Record<string, Post[]> = {};
-        for (const topic of activeTopics) {
-          const topicPostIds = postTopicsData
-            .filter(pt => pt.topic_id === topic.id)
-            .map(pt => pt.post_id);
-
-          topicPostMap[topic.id] = enrichedPosts
-            .filter(p => topicPostIds.includes(p.id))
-            .slice(0, 5);
+        if (postTopicsData && postTopicsData.length > 0) {
+          const topicPostMap: Record<string, Post[]> = {};
+          for (const topic of activeTopics) {
+            const topicPostIds = postTopicsData
+              .filter(pt => pt.topic_id === topic.id)
+              .map(pt => pt.post_id);
+            topicPostMap[topic.id] = enrichedPosts
+              .filter(p => topicPostIds.includes(p.id))
+              .slice(0, 5);
+          }
+          setPostsByTopic(topicPostMap);
         }
-        setPostsByTopic(topicPostMap);
-      } else {
-        // No topic assignments yet — show all posts in a single feed
-        setHasTopicAssignments(false);
-        setAllPosts(enrichedPosts);
       }
     } catch (error) {
       console.error('Error fetching homepage data:', error);
@@ -120,28 +126,24 @@ const Home = () => {
       <BannerSlider />
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        {hasTopicAssignments ? (
-          // Show posts grouped by topic
-          topics.map(topic => (
+        {/* Latest Posts */}
+        <LatestPosts posts={latestPosts} />
+
+        {/* Featured Posts */}
+        <FeaturedPosts posts={featuredPosts} />
+
+        {/* Topic Sections */}
+        {topics.map(topic => {
+          const topicPosts = postsByTopic[topic.id] || [];
+          if (topicPosts.length === 0) return null;
+          return (
             <TopicSection
               key={topic.id}
               topicName={topic.name}
-              posts={postsByTopic[topic.id] || []}
+              posts={topicPosts}
             />
-          ))
-        ) : (
-          // No topic assignments — show all posts as a single section
-          <TopicSection
-            topicName="Bài viết mới nhất"
-            posts={allPosts.slice(0, 20)}
-          />
-        )}
-
-        {!hasTopicAssignments && allPosts.length === 0 && topics.length === 0 && (
-          <div className="text-center py-20 text-muted-foreground">
-            Chưa có bài viết nào.
-          </div>
-        )}
+          );
+        })}
       </div>
     </div>
   );
