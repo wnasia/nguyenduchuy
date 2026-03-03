@@ -2,11 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/hooks/useI18n";
-import { useAuth } from "@/contexts/AuthContext";
-import InfoBar from "@/components/home/InfoBar";
 import BannerSlider from "@/components/BannerSlider";
 import TopicSection from "@/components/home/TopicSection";
-import LoginPromptModal from "@/components/LoginPromptModal";
 
 interface Post {
   id: string;
@@ -29,31 +26,13 @@ interface Topic {
 const Home = () => {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const { user, loading: authLoading } = useAuth();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [postsByTopic, setPostsByTopic] = useState<Record<string, Post[]>>({});
   const [loading, setLoading] = useState(true);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      const dismissed = sessionStorage.getItem('loginPromptDismissed');
-      if (!dismissed) {
-        const timer = setTimeout(() => setShowLoginPrompt(true), 2000);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [authLoading, user]);
-
-  const handleLoginPromptClose = (open: boolean) => {
-    setShowLoginPrompt(open);
-    if (!open) sessionStorage.setItem('loginPromptDismissed', 'true');
-  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch active topics
       const { data: topicsData } = await supabase
         .from('topics')
         .select('id, name, slug, sort_order')
@@ -65,7 +44,6 @@ const Home = () => {
 
       if (activeTopics.length === 0) { setLoading(false); return; }
 
-      // Fetch all post_topics mappings for these topics
       const topicIds = activeTopics.map(t => t.id);
       const { data: postTopicsData } = await supabase
         .from('post_topics')
@@ -74,10 +52,8 @@ const Home = () => {
 
       if (!postTopicsData || postTopicsData.length === 0) { setLoading(false); return; }
 
-      // Get unique post IDs
       const postIds = [...new Set(postTopicsData.map(pt => pt.post_id))];
 
-      // Fetch posts
       const { data: postsData } = await supabase
         .from('posts')
         .select('*')
@@ -87,7 +63,6 @@ const Home = () => {
 
       if (!postsData) { setLoading(false); return; }
 
-      // Fetch profiles for all posts
       const userIds = [...new Set(postsData.map(p => p.user_id))];
       const { data: profilesData } = await supabase
         .from('profiles')
@@ -96,7 +71,6 @@ const Home = () => {
 
       const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
 
-      // Build topic -> posts mapping
       const topicPostMap: Record<string, Post[]> = {};
       for (const topic of activeTopics) {
         const topicPostIds = postTopicsData
@@ -135,10 +109,8 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Full-width Banner */}
       <BannerSlider />
 
-      {/* Topic Sections */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {topics.map(topic => (
           <TopicSection
@@ -154,8 +126,6 @@ const Home = () => {
           </div>
         )}
       </div>
-
-      <LoginPromptModal open={showLoginPrompt} onOpenChange={handleLoginPromptClose} />
     </div>
   );
 };
