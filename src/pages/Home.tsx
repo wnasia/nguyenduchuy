@@ -28,11 +28,41 @@ const Home = () => {
   const { t } = useI18n();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [postsByTopic, setPostsByTopic] = useState<Record<string, Post[]>>({});
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [hasTopicAssignments, setHasTopicAssignments] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
+      // Fetch all approved posts with profiles
+      const { data: postsData } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (!postsData || postsData.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      // Fetch profiles
+      const userIds = [...new Set(postsData.map(p => p.user_id))];
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url')
+        .in('id', userIds);
+
+      const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+
+      const enrichedPosts: Post[] = postsData.map(p => ({
+        ...p,
+        content: p.content || '',
+        profiles: profilesMap.get(p.user_id) || null,
+      }));
+
+      // Fetch topics and assignments
       const { data: topicsData } = await supabase
         .from('topics')
         .select('id, name, slug, sort_order')
@@ -42,52 +72,30 @@ const Home = () => {
       const activeTopics = topicsData || [];
       setTopics(activeTopics);
 
-      if (activeTopics.length === 0) { setLoading(false); return; }
-
       const topicIds = activeTopics.map(t => t.id);
-      const { data: postTopicsData } = await supabase
-        .from('post_topics')
-        .select('post_id, topic_id')
-        .in('topic_id', topicIds);
+      const { data: postTopicsData } = topicIds.length > 0
+        ? await supabase.from('post_topics').select('post_id, topic_id').in('topic_id', topicIds)
+        : { data: [] };
 
-      if (!postTopicsData || postTopicsData.length === 0) { setLoading(false); return; }
+      if (postTopicsData && postTopicsData.length > 0) {
+        setHasTopicAssignments(true);
 
-      const postIds = [...new Set(postTopicsData.map(pt => pt.post_id))];
+        const topicPostMap: Record<string, Post[]> = {};
+        for (const topic of activeTopics) {
+          const topicPostIds = postTopicsData
+            .filter(pt => pt.topic_id === topic.id)
+            .map(pt => pt.post_id);
 
-      const { data: postsData } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('status', 'approved')
-        .in('id', postIds)
-        .order('created_at', { ascending: false });
-
-      if (!postsData) { setLoading(false); return; }
-
-      const userIds = [...new Set(postsData.map(p => p.user_id))];
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url')
-        .in('id', userIds);
-
-      const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
-
-      const topicPostMap: Record<string, Post[]> = {};
-      for (const topic of activeTopics) {
-        const topicPostIds = postTopicsData
-          .filter(pt => pt.topic_id === topic.id)
-          .map(pt => pt.post_id);
-
-        topicPostMap[topic.id] = postsData
-          .filter(p => topicPostIds.includes(p.id))
-          .slice(0, 5)
-          .map(p => ({
-            ...p,
-            content: p.content || '',
-            profiles: profilesMap.get(p.user_id) || null,
-          }));
+          topicPostMap[topic.id] = enrichedPosts
+            .filter(p => topicPostIds.includes(p.id))
+            .slice(0, 5);
+        }
+        setPostsByTopic(topicPostMap);
+      } else {
+        // No topic assignments yet — show all posts in a single feed
+        setHasTopicAssignments(false);
+        setAllPosts(enrichedPosts);
       }
-
-      setPostsByTopic(topicPostMap);
     } catch (error) {
       console.error('Error fetching homepage data:', error);
     }
@@ -112,17 +120,26 @@ const Home = () => {
       <BannerSlider />
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        {topics.map(topic => (
+        {hasTopicAssignments ? (
+          // Show posts grouped by topic
+          topics.map(topic => (
+            <TopicSection
+              key={topic.id}
+              topicName={topic.name}
+              posts={postsByTopic[topic.id] || []}
+            />
+          ))
+        ) : (
+          // No topic assignments — show all posts as a single section
           <TopicSection
-            key={topic.id}
-            topicName={topic.name}
-            posts={postsByTopic[topic.id] || []}
+            topicName="Bài viết mới nhất"
+            posts={allPosts.slice(0, 20)}
           />
-        ))}
+        )}
 
-        {topics.length === 0 && (
+        {!hasTopicAssignments && allPosts.length === 0 && topics.length === 0 && (
           <div className="text-center py-20 text-muted-foreground">
-            Chưa có chủ đề nào. Admin hãy tạo chủ đề và gán bài viết.
+            Chưa có bài viết nào.
           </div>
         )}
       </div>
