@@ -20,8 +20,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'sans': ['Inter', 'system-ui', 'sans-serif'],
-				'serif': ['Crimson Text', 'Georgia', 'serif'],
+				'sans': ['Be Vietnam Pro', 'system-ui', 'sans-serif'],
+				'serif': ['Playfair Display', 'Georgia', 'serif'],
 				'script': ['Dancing Script', 'cursive'],
 			},
 			colors: {

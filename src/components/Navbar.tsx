@@ -97,9 +97,9 @@ const Navbar = () => {
   };
 
   return (
-     <nav className="bg-background/80 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-border">
+     <nav className="bg-background/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 sm:h-18 lg:h-20">
+        <div className="flex justify-between items-center h-14">
           {/* Logo - Responsive sizing */}
           <div className="flex items-center flex-shrink-0">
             <a 
@@ -115,7 +115,7 @@ const Navbar = () => {
               <img 
                 src={huyLogo} 
                 alt="HUY" 
-                className="h-12 sm:h-14 lg:h-16 w-auto object-contain group-hover:scale-105 transition-transform duration-200" 
+                className="h-9 sm:h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-200" 
               />
             </a>
           </div>
