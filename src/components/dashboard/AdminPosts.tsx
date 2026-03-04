@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Calendar, CheckCircle, XCircle, Clock, Image, Video, Tag, Search, Filter, Edit, Trash2, ArrowUp, ArrowDown, Star } from "lucide-react";
+import { Eye, Calendar, CheckCircle, XCircle, Clock, Image, Video, Tag, Search, Filter, Edit, Trash2, ArrowUp, ArrowDown, Star, FolderOpen } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import PostEditDialog from "./PostEditDialog";
 import { parsePostContent, stripHtmlAndDecode, decodeHtmlEntities } from "@/lib/htmlUtils";
 
@@ -25,6 +27,7 @@ interface Post {
     full_name: string | null;
     email: string | null;
   } | null;
+  topicIds?: string[];
 }
 
 interface ParsedContent {
@@ -32,6 +35,13 @@ interface ParsedContent {
   imageLinks?: string[];
   videoLinks?: string[];
   tags?: string[];
+}
+
+interface Topic {
+  id: string;
+  name: string;
+  slug: string;
+  is_active: boolean;
 }
 
 const AdminPosts = () => {
@@ -48,14 +58,53 @@ const AdminPosts = () => {
   const [itemsPerPage] = useState(10);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [postTopicsMap, setPostTopicsMap] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     fetchPosts();
+    fetchTopics();
   }, []);
 
   useEffect(() => {
     filterAndSortPosts();
   }, [posts, searchTerm, statusFilter, typeFilter, sortBy, sortOrder]);
+
+  const fetchTopics = async () => {
+    const { data } = await supabase.from('topics').select('id, name, slug, is_active').eq('is_active', true).order('sort_order');
+    setTopics(data || []);
+  };
+
+  const fetchPostTopics = async (postIds: string[]) => {
+    if (postIds.length === 0) return;
+    const { data } = await supabase.from('post_topics').select('post_id, topic_id').in('post_id', postIds);
+    const map: Record<string, string[]> = {};
+    (data || []).forEach(pt => {
+      if (!map[pt.post_id]) map[pt.post_id] = [];
+      map[pt.post_id].push(pt.topic_id);
+    });
+    setPostTopicsMap(map);
+  };
+
+  const togglePostTopic = async (postId: string, topicId: string) => {
+    const currentTopics = postTopicsMap[postId] || [];
+    const hasTopic = currentTopics.includes(topicId);
+
+    if (hasTopic) {
+      await supabase.from('post_topics').delete().eq('post_id', postId).eq('topic_id', topicId);
+      setPostTopicsMap(prev => ({
+        ...prev,
+        [postId]: (prev[postId] || []).filter(t => t !== topicId)
+      }));
+    } else {
+      await supabase.from('post_topics').insert({ post_id: postId, topic_id: topicId });
+      setPostTopicsMap(prev => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), topicId]
+      }));
+    }
+    toast({ title: "Success", description: hasTopic ? "Topic removed" : "Topic assigned" });
+  };
 
   const fetchPosts = async () => {
     try {
@@ -92,6 +141,9 @@ const AdminPosts = () => {
       );
 
       setPosts(postsWithProfiles);
+      
+      // Fetch topic assignments for all posts
+      await fetchPostTopics(postsWithProfiles.map(p => p.id));
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -429,8 +481,43 @@ const AdminPosts = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Topic Assignment */}
+                  <div className="mb-3 flex items-center gap-2 flex-wrap">
+                    <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground font-medium">Chủ đề:</span>
+                    {(postTopicsMap[post.id] || []).map(tid => {
+                      const topic = topics.find(t => t.id === tid);
+                      return topic ? (
+                        <Badge key={tid} variant="outline" className="text-xs">
+                          {topic.name}
+                        </Badge>
+                      ) : null;
+                    })}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-6 text-xs px-2">
+                          + Gán chủ đề
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-56 p-3" align="start">
+                        <p className="text-sm font-medium mb-2">Chọn chủ đề</p>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {topics.map(topic => (
+                            <label key={topic.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-1 rounded text-sm">
+                              <Checkbox
+                                checked={(postTopicsMap[post.id] || []).includes(topic.id)}
+                                onCheckedChange={() => togglePostTopic(post.id, topic.id)}
+                              />
+                              {topic.name}
+                            </label>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                   
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between pt-3 border-t border-border">
                     <div className="flex items-center space-x-4 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <Eye className="h-4 w-4" />
