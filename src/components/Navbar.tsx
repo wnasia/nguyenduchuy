@@ -74,7 +74,7 @@ const Navbar = () => {
     { name: t("common.gallery"), href: "/gallery" },
     { name: t("common.videos"), href: "/videos" },
     { name: t("common.utilities") || "Tiện ích", href: "/utilities" },
-    { name: "Mining Explorer", href: "/explorer" },
+    
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -135,8 +135,6 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            <LanguageSelector />
-             
              {/* Dark Mode Toggle - Icon only */}
              <button
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
@@ -205,7 +203,6 @@ const Navbar = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
-            <LanguageSelector />
              <button
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
                 className="p-2 rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
