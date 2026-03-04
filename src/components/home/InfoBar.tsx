@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { TrendingUp, TrendingDown, Newspaper } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { decodeHtmlEntities } from "@/lib/htmlUtils";
+import LanguageSelector from "@/components/LanguageSelector";
 
 interface GoldInfo {
   price: number;
@@ -137,6 +138,11 @@ const InfoBar = () => {
         {/* Date */}
         <div className="text-muted-foreground hidden sm:block flex-shrink-0">
           {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric' })}
+        </div>
+
+        {/* Language selector */}
+        <div className="flex-shrink-0">
+          <LanguageSelector />
         </div>
 
         {/* News ticker */}

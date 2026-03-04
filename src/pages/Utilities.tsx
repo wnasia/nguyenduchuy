@@ -10,7 +10,8 @@ import {
   Plane,
   ArrowRight,
   Globe,
-  Bitcoin
+  Bitcoin,
+  Pickaxe
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -88,12 +89,24 @@ const Utilities = () => {
       color: "from-amber-500 to-orange-500",
       bgColor: "bg-amber-50",
       iconColor: "text-amber-600"
+    },
+    {
+      id: "mining-explorer",
+      icon: Pickaxe,
+      title: "Mining Explorer",
+      description: "Khám phá hệ thống mining token, theo dõi phiên đọc và phần thưởng token của bạn",
+      action: "Khám phá",
+      color: "from-indigo-500 to-violet-500",
+      bgColor: "bg-indigo-50",
+      iconColor: "text-indigo-600"
     }
   ];
 
   const handleCardClick = (id: string) => {
     if (id === "crypto") {
       navigate("/crypto");
+    } else if (id === "mining-explorer") {
+      navigate("/explorer");
     } else {
       setOpenModal(id);
     }
