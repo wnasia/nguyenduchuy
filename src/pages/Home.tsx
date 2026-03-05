@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/hooks/useI18n";
 import BannerSlider from "@/components/BannerSlider";
 import TopicSection from "@/components/home/TopicSection";
 import LatestPosts from "@/components/home/LatestPosts";
 import FeaturedPosts from "@/components/home/FeaturedPosts";
+import TopicNav from "@/components/home/TopicNav";
 
 interface Post {
   id: string;
@@ -34,11 +34,12 @@ const Home = () => {
   const [latestPosts, setLatestPosts] = useState<Post[]>([]);
   const [featuredPosts, setFeaturedPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+  const [allEnrichedPosts, setAllEnrichedPosts] = useState<Post[]>([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch all approved posts
       const { data: postsData } = await supabase
         .from('posts')
         .select('*')
@@ -50,7 +51,6 @@ const Home = () => {
         return;
       }
 
-      // Fetch profiles
       const userIds = [...new Set(postsData.map(p => p.user_id))];
       const { data: profilesData } = await supabase
         .from('profiles')
@@ -65,14 +65,12 @@ const Home = () => {
         profiles: profilesMap.get(p.user_id) || null,
       }));
 
-      // Latest posts (newest 6)
+      setAllEnrichedPosts(enrichedPosts);
       setLatestPosts(enrichedPosts.slice(0, 6));
 
-      // Featured posts
       const featured = enrichedPosts.filter(p => p.is_featured);
       setFeaturedPosts(featured.length > 0 ? featured.slice(0, 4) : enrichedPosts.sort((a, b) => b.view_count - a.view_count).slice(0, 4));
 
-      // Topics
       const { data: topicsData } = await supabase
         .from('topics')
         .select('id, name, slug, sort_order')
@@ -113,6 +111,12 @@ const Home = () => {
     document.title = t("meta.home_title");
   }, [fetchData, t]);
 
+  // Get filtered posts for selected topic
+  const getSelectedTopicPosts = () => {
+    if (!selectedTopicId) return null;
+    return postsByTopic[selectedTopicId] || [];
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -121,29 +125,49 @@ const Home = () => {
     );
   }
 
+  const selectedTopicPosts = getSelectedTopicPosts();
+  const selectedTopic = topics.find(t => t.id === selectedTopicId);
+
   return (
     <div className="min-h-screen bg-background">
       <BannerSlider />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Latest Posts */}
-        <LatestPosts posts={latestPosts} />
+        {!selectedTopicId && <LatestPosts posts={latestPosts} />}
 
         {/* Featured Posts */}
-        <FeaturedPosts posts={featuredPosts} />
+        {!selectedTopicId && <FeaturedPosts posts={featuredPosts} />}
 
-        {/* Topic Sections */}
-        {topics.map(topic => {
-          const topicPosts = postsByTopic[topic.id] || [];
-          if (topicPosts.length === 0) return null;
-          return (
-            <TopicSection
-              key={topic.id}
-              topicName={topic.name}
-              posts={topicPosts}
-            />
-          );
-        })}
+        {/* Topic Navigation */}
+        {topics.length > 0 && (
+          <TopicNav
+            topics={topics}
+            selectedTopicId={selectedTopicId}
+            onSelectTopic={setSelectedTopicId}
+          />
+        )}
+
+        {/* Show filtered topic posts or all topic sections */}
+        {selectedTopicId && selectedTopicPosts ? (
+          <TopicSection
+            topicName={selectedTopic?.name || ''}
+            posts={selectedTopicPosts}
+            showAll
+          />
+        ) : (
+          !selectedTopicId && topics.map(topic => {
+            const topicPosts = postsByTopic[topic.id] || [];
+            if (topicPosts.length === 0) return null;
+            return (
+              <TopicSection
+                key={topic.id}
+                topicName={topic.name}
+                posts={topicPosts}
+              />
+            );
+          })
+        )}
       </div>
     </div>
   );
