@@ -17,9 +17,10 @@ interface Post {
 interface TopicSectionProps {
   topicName: string;
   posts: Post[];
+  showAll?: boolean;
 }
 
-const TopicSection = ({ topicName, posts }: TopicSectionProps) => {
+const TopicSection = ({ topicName, posts, showAll }: TopicSectionProps) => {
   const navigate = useNavigate();
 
   if (posts.length === 0) return null;
@@ -33,16 +34,18 @@ const TopicSection = ({ topicName, posts }: TopicSectionProps) => {
   const handleClick = (post: Post) => navigate(`/story/${post.slug || post.id}`);
 
   const featured = posts[0];
-  const rest = posts.slice(1, 5);
+  const rest = showAll ? posts.slice(1) : posts.slice(1, 5);
   const featuredThumb = getPostThumbnail(featured);
 
   return (
     <section className="py-8 sm:py-10 border-t border-border">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground border-l-4 border-primary pl-4">{topicName}</h2>
-        <Button variant="ghost" className="text-primary font-medium gap-1.5 hover:gap-2.5 transition-all" onClick={() => navigate(`/stories?topic=${encodeURIComponent(topicName)}`)}>
-          Xem thêm <ArrowRight className="h-4 w-4" />
-        </Button>
+        {!showAll && (
+          <Button variant="ghost" className="text-primary font-medium gap-1.5 hover:gap-2.5 transition-all" onClick={() => navigate(`/stories?topic=${encodeURIComponent(topicName)}`)}>
+            Xem thêm <ArrowRight className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
