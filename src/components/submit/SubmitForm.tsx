@@ -15,6 +15,7 @@ import VideoLinksManager from "./VideoLinksManager";
 import TagsManager from "./TagsManager";
 import SubmitButton from "./SubmitButton";
 import LoginPrompt from "./LoginPrompt";
+import TopicSelector from "./TopicSelector";
 
 export interface FormData {
   title: string;
@@ -46,6 +47,7 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
   const [currentTag, setCurrentTag] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
   const [hasDraft, setHasDraft] = useState(false);
   const lastSavedRef = useRef<string>("");
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -195,6 +197,13 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
               });
             }
           }
+
+          // Load existing topic assignments
+          const { data: topicData } = await supabase
+            .from('post_topics')
+            .select('topic_id')
+            .eq('post_id', editId);
+          setSelectedTopicIds((topicData || []).map(d => d.topic_id));
         }
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -356,6 +365,17 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
 
       console.log('Post saved successfully:', data);
 
+      // Sync topic assignments
+      const postId = data.id;
+      if (editId) {
+        await supabase.from('post_topics').delete().eq('post_id', postId);
+      }
+      if (selectedTopicIds.length > 0) {
+        await supabase.from('post_topics').insert(
+          selectedTopicIds.map(tid => ({ post_id: postId, topic_id: tid }))
+        );
+      }
+
       // Clear draft on successful save
       clearDraft();
 
@@ -443,6 +463,12 @@ const SubmitForm = ({ editId }: SubmitFormProps) => {
               onAdd={handleAddVideoLink}
               onRemove={handleRemoveVideoLink}
               onChange={handleVideoLinkChange}
+              disabled={isSubmitting}
+            />
+
+            <TopicSelector
+              selectedTopicIds={selectedTopicIds}
+              onTopicIdsChange={setSelectedTopicIds}
               disabled={isSubmitting}
             />
 
