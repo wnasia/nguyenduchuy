@@ -167,12 +167,17 @@ Deno.serve(async (req) => {
           });
 
         if (viewError) {
-          // Might be duplicate, check if it's a unique constraint violation
+          // 23505 = unique constraint violation (duplicate view) - expected and safe to ignore
           if (viewError.code !== '23505') {
             console.error("Error creating valid view:", viewError);
+          } else {
+            console.log(`Duplicate view prevented by unique constraint for post: ${postId}`);
           }
         } else {
           console.log(`Valid view created for user: ${viewUserId || 'anonymous'}, post: ${postId}`);
+          
+          // Increment post view_count for the valid view
+          await supabase.rpc("increment_post_views", { post_id: postId });
         }
       }
 

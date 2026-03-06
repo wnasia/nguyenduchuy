@@ -9,17 +9,18 @@ interface RecentPost {
   id: string;
   title: string;
   status: string;
-  view_count: number;
   created_at: string;
 }
 
 const UserOverview = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const [postsCount, setPostsCount] = useState(0);
   const [imagesCount, setImagesCount] = useState(0);
   const [videosCount, setVideosCount] = useState(0);
-  const [totalViews, setTotalViews] = useState(0);
+  const [tokenBalance, setTokenBalance] = useState(0);
+  const [totalValidViews, setTotalValidViews] = useState(0);
+  const [pendingViews, setPendingViews] = useState(0);
   const [recentPosts, setRecentPosts] = useState<RecentPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,43 +29,55 @@ const UserOverview = () => {
       if (!user) return;
 
       try {
-        // Fetch posts with stats
-        const { data: postsData, error: postsError } = await supabase
+        // Fetch posts
+        const { data: postsData } = await supabase
           .from('posts')
-          .select('id, title, status, view_count, created_at')
+          .select('id, title, status, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        if (!postsError && postsData) {
+        if (postsData) {
           setPostsCount(postsData.length);
-          setTotalViews(postsData.reduce((sum, p) => sum + (p.view_count || 0), 0));
           setRecentPosts(postsData.slice(0, 5));
         }
 
         // Fetch images count
-        const { count: imagesCountData, error: imagesError } = await supabase
+        const { count: imgCount } = await supabase
           .from('gallery_images')
           .select('*', { count: 'exact', head: true })
           .eq('uploaded_by', user.id);
-
-        if (!imagesError) {
-          setImagesCount(imagesCountData || 0);
-        }
+        setImagesCount(imgCount || 0);
 
         // Fetch videos count
-        const { count: videosCountData, error: videosError } = await supabase
+        const { count: vidCount } = await supabase
           .from('youtube_videos')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
+        setVideosCount(vidCount || 0);
 
-        if (!videosError) {
-          setVideosCount(videosCountData || 0);
-        }
+        // Fetch token balance (mining system - source of truth)
+        const { data: balanceData } = await supabase
+          .from('token_balances')
+          .select('balance, total_valid_views')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        setTokenBalance(balanceData?.balance || 0);
+        setTotalValidViews(balanceData?.total_valid_views || 0);
+
+        // Fetch pending views
+        const { count: pending } = await supabase
+          .from('valid_views')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('settled', false);
+        setPendingViews(pending || 0);
+
       } catch (error) {
         console.error('Error:', error);
         toast({
-          title: "Error",
-          description: "An unexpected error occurred",
+          title: "Lỗi",
+          description: "Không thể tải dữ liệu",
           variant: "destructive",
         });
       } finally {
@@ -84,10 +97,11 @@ const UserOverview = () => {
   }
 
   const stats = [
-    { title: "Total Views", value: totalViews.toLocaleString() },
-    { title: "My Stories", value: postsCount.toString() },
-    { title: "My Images", value: imagesCount.toString() },
-    { title: "My Videos", value: videosCount.toString() },
+    { title: "Token Balance", value: parseFloat(String(tokenBalance)).toFixed(4) },
+    { title: "Lượt đọc hợp lệ", value: totalValidViews.toString(), sub: pendingViews > 0 ? `${pendingViews} chờ quyết toán` : undefined },
+    { title: "Bài viết", value: postsCount.toString() },
+    { title: "Hình ảnh", value: imagesCount.toString() },
+    { title: "Video", value: videosCount.toString() },
   ];
 
   const getStatusColor = (status: string) => {
@@ -102,12 +116,15 @@ const UserOverview = () => {
   return (
     <div className="space-y-6">
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {stats.map((stat) => (
           <Card key={stat.title} className="border">
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
               <p className="text-2xl font-bold">{stat.value}</p>
+              {stat.sub && (
+                <p className="text-xs text-amber-600 mt-1">{stat.sub}</p>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -116,12 +133,12 @@ const UserOverview = () => {
       {/* Recent Activity */}
       <Card className="border">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">Recent Stories</CardTitle>
+          <CardTitle className="text-base font-semibold">Bài viết gần đây</CardTitle>
         </CardHeader>
         <CardContent>
           {recentPosts.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
-              You haven't created any stories yet.
+              Bạn chưa tạo bài viết nào.
             </p>
           ) : (
             <div className="space-y-2">
@@ -133,20 +150,15 @@ const UserOverview = () => {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{post.title}</p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(post.created_at).toLocaleDateString()}
+                      {new Date(post.created_at).toLocaleDateString('vi-VN')}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">
-                      {post.view_count} views
-                    </span>
-                    <span className={cn(
-                      "text-xs px-2 py-1 rounded-full font-medium",
-                      getStatusColor(post.status)
-                    )}>
-                      {post.status}
-                    </span>
-                  </div>
+                  <span className={cn(
+                    "text-xs px-2 py-1 rounded-full font-medium",
+                    getStatusColor(post.status)
+                  )}>
+                    {post.status === 'approved' ? 'Đã duyệt' : post.status === 'pending' ? 'Chờ duyệt' : post.status}
+                  </span>
                 </div>
               ))}
             </div>
