@@ -97,8 +97,8 @@ const StoryDetail = () => {
         return;
       }
 
-      // Increment views
-      await supabase.rpc('increment_post_views', { post_id: postData.id });
+      // View counting is handled by the mining heartbeat system (valid_views)
+      // No need to call increment_post_views separately
 
       const { data: profileData } = await supabase
         .from('profiles')
