@@ -11,6 +11,7 @@ import { I18nProvider } from "@/hooks/useI18n";
 import Navbar from "./components/Navbar";
 import InfoBar from "./components/home/InfoBar";
 import Footer from "./components/Footer";
+import GoogleOneTap from "./components/GoogleOneTap";
 import Home from "./pages/Home";
 import Stories from "./pages/Stories";
 import StoryDetail from "./pages/StoryDetail";
