@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
  const signInWithProvider = async (provider: 'google' | 'facebook') => {
-  const redirectUrl = `${window.location.origin}/`;
+  const redirectUrl = `${window.location.origin}/dashboard`;
 
   const { error } = await supabase.auth.signInWithOAuth({
     provider,
