@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { I18nProvider } from "@/hooks/useI18n";
 import Navbar from "./components/Navbar";
+import GoogleOneTap from "./components/GoogleOneTap";
 import InfoBar from "./components/home/InfoBar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
