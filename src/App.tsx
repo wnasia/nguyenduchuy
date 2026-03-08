@@ -79,6 +79,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <GoogleOneTap />
             <AppContent />
           </TooltipProvider>
         </AuthProvider>
