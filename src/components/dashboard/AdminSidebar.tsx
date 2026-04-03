@@ -52,6 +52,12 @@ const menuSections = [
     ],
   },
   {
+    label: "CRM",
+    items: [
+      { id: "customers", title: "Customers" },
+    ],
+  },
+  {
     label: "System",
     items: [
       { id: "tokenomics", title: "Content Mining" },
