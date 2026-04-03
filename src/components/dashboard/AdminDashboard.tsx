@@ -15,6 +15,7 @@ import AdminSystemSettings from "./AdminSystemSettings";
 import AdminTokenomics from "./AdminTokenomics";
 import AdminImageModeration from "./AdminImageModeration";
 import AdminTopics from "./AdminTopics";
+import AdminCustomers from "./AdminCustomers";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import Footer from "@/components/Footer";
