@@ -79,6 +79,38 @@ export type Database = {
           },
         ]
       }
+      customer_notes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          note_content: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          note_content: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          note_content?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -522,6 +554,50 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      renewal_history: {
+        Row: {
+          amount: number | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          new_expiry_date: string
+          note: string | null
+          old_expiry_date: string | null
+          renewal_type: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          new_expiry_date: string
+          note?: string | null
+          old_expiry_date?: string | null
+          renewal_type: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          new_expiry_date?: string
+          note?: string | null
+          old_expiry_date?: string | null
+          renewal_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renewal_history_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]
