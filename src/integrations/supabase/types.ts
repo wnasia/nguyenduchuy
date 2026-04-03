@@ -79,6 +79,66 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          address: string | null
+          contact_name: string | null
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          domain_expiry_date: string | null
+          domain_provider_info: string | null
+          email: string | null
+          hosting_expiry_date: string | null
+          hosting_provider: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          phone: string | null
+          services: string[] | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name: string
+          domain_expiry_date?: string | null
+          domain_provider_info?: string | null
+          email?: string | null
+          hosting_expiry_date?: string | null
+          hosting_provider?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          services?: string[] | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          domain_expiry_date?: string | null
+          domain_provider_info?: string | null
+          email?: string | null
+          hosting_expiry_date?: string | null
+          hosting_provider?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          services?: string[] | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       daily_settlements: {
         Row: {
           created_at: string
