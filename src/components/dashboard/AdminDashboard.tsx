@@ -15,6 +15,7 @@ import AdminSystemSettings from "./AdminSystemSettings";
 import AdminTokenomics from "./AdminTokenomics";
 import AdminImageModeration from "./AdminImageModeration";
 import AdminTopics from "./AdminTopics";
+import AdminCustomers from "./AdminCustomers";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import Footer from "@/components/Footer";
@@ -33,6 +34,7 @@ const moduleConfig: Record<string, { title: string; subtitle: string; component:
   reports: { title: "Analytics", subtitle: "Reports & logs", component: AdminReports },
   footer: { title: "Footer", subtitle: "Footer settings", component: AdminFooterSettings },
   settings: { title: "Settings", subtitle: "System configuration", component: AdminSystemSettings },
+  customers: { title: "Customers", subtitle: "Customer management & renewals", component: AdminCustomers },
 };
 
 const AdminDashboard = () => {
