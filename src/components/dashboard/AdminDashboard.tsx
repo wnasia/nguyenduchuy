@@ -36,6 +36,7 @@ const moduleConfig: Record<string, { title: string; subtitle: string; component:
   footer: { title: "Footer", subtitle: "Footer settings", component: AdminFooterSettings },
   settings: { title: "Settings", subtitle: "System configuration", component: AdminSystemSettings },
   customers: { title: "Customers", subtitle: "Customer management & renewals", component: AdminCustomers },
+  reminders: { title: "Reminders", subtitle: "Renewal reminder settings", component: AdminReminderSettings },
 };
 
 const AdminDashboard = () => {

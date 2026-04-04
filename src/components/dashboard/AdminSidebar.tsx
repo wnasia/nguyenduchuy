@@ -55,6 +55,7 @@ const menuSections = [
     label: "CRM",
     items: [
       { id: "customers", title: "Customers" },
+      { id: "reminders", title: "Reminders" },
     ],
   },
   {
