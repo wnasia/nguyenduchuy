@@ -8,6 +8,7 @@ import UserYouTube from "./UserYouTube";
 import UserProfile from "./UserProfile";
 import UserNotifications from "./UserNotifications";
 import UserMiningDashboard from "@/components/mining/UserMiningDashboard";
+import UserServices from "./UserServices";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Footer from "@/components/Footer";
 
