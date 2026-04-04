@@ -19,6 +19,7 @@ const moduleConfig: Record<string, { title: string; component: React.ComponentTy
   youtube: { title: "YouTube Videos", component: UserYouTube },
   profile: { title: "Profile", component: UserProfile },
   notifications: { title: "Notifications", component: UserNotifications },
+  services: { title: "My Services", component: UserServices },
 };
 
 const UserDashboard = () => {
