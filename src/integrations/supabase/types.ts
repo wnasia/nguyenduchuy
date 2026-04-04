@@ -114,6 +114,7 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          auth_user_id: string | null
           contact_name: string | null
           created_at: string
           created_by: string | null
@@ -133,6 +134,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          auth_user_id?: string | null
           contact_name?: string | null
           created_at?: string
           created_by?: string | null
@@ -152,6 +154,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          auth_user_id?: string | null
           contact_name?: string | null
           created_at?: string
           created_by?: string | null
@@ -337,6 +340,69 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_deliveries: {
+        Row: {
+          channel: string
+          created_at: string
+          customer_id: string
+          error_message: string | null
+          id: string
+          message: string | null
+          notification_type: string
+          related_expiry_date: string | null
+          related_expiry_type: string
+          reminder_rule_id: string | null
+          send_status: string
+          sent_at: string | null
+          title: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          customer_id: string
+          error_message?: string | null
+          id?: string
+          message?: string | null
+          notification_type?: string
+          related_expiry_date?: string | null
+          related_expiry_type: string
+          reminder_rule_id?: string | null
+          send_status?: string
+          sent_at?: string | null
+          title?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          customer_id?: string
+          error_message?: string | null
+          id?: string
+          message?: string | null
+          notification_type?: string
+          related_expiry_date?: string | null
+          related_expiry_type?: string
+          reminder_rule_id?: string | null
+          send_status?: string
+          sent_at?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_deliveries_reminder_rule_id_fkey"
+            columns: ["reminder_rule_id"]
+            isOneToOne: false
+            referencedRelation: "reminder_rules"
             referencedColumns: ["id"]
           },
         ]
@@ -557,6 +623,86 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      reminder_rules: {
+        Row: {
+          applies_to_all: boolean
+          channel: string
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          days_before_expiry: number
+          id: string
+          is_default: boolean
+          is_enabled: boolean
+          name: string
+          reminder_type: string
+          updated_at: string
+        }
+        Insert: {
+          applies_to_all?: boolean
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          days_before_expiry: number
+          id?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          name: string
+          reminder_type?: string
+          updated_at?: string
+        }
+        Update: {
+          applies_to_all?: boolean
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          days_before_expiry?: number
+          id?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          name?: string
+          reminder_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_rules_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reminder_templates: {
+        Row: {
+          body_template: string
+          created_at: string
+          id: string
+          subject: string
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          body_template: string
+          created_at?: string
+          id?: string
+          subject: string
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          body_template?: string
+          created_at?: string
+          id?: string
+          subject?: string
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       renewal_history: {
         Row: {
