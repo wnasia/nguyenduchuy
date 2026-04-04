@@ -16,6 +16,7 @@ import AdminTokenomics from "./AdminTokenomics";
 import AdminImageModeration from "./AdminImageModeration";
 import AdminTopics from "./AdminTopics";
 import AdminCustomers from "./AdminCustomers";
+import AdminReminderSettings from "./AdminReminderSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import Footer from "@/components/Footer";
@@ -35,6 +36,7 @@ const moduleConfig: Record<string, { title: string; subtitle: string; component:
   footer: { title: "Footer", subtitle: "Footer settings", component: AdminFooterSettings },
   settings: { title: "Settings", subtitle: "System configuration", component: AdminSystemSettings },
   customers: { title: "Customers", subtitle: "Customer management & renewals", component: AdminCustomers },
+  reminders: { title: "Reminders", subtitle: "Renewal reminder settings", component: AdminReminderSettings },
 };
 
 const AdminDashboard = () => {
