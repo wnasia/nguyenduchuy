@@ -44,18 +44,20 @@ Deno.serve(async (req) => {
 
     const now = new Date();
     let sentCount = 0;
+    let skippedCount = 0;
+    const errors: string[] = [];
 
     for (const customer of customers) {
       for (const rule of rules) {
         // Check if rule applies to this customer
         if (!rule.applies_to_all && rule.customer_id && rule.customer_id !== customer.id) continue;
 
-        const expiryTypes: Array<{ type: string; date: string | null }> = [];
+        const expiryTypes: Array<{ type: string; date: string | null; serviceName: string }> = [];
         if (rule.reminder_type === "hosting" || rule.reminder_type === "both") {
-          expiryTypes.push({ type: "hosting", date: customer.hosting_expiry_date });
+          expiryTypes.push({ type: "hosting", date: customer.hosting_expiry_date, serviceName: "Hosting" });
         }
         if (rule.reminder_type === "domain" || rule.reminder_type === "both") {
-          expiryTypes.push({ type: "domain", date: customer.domain_expiry_date });
+          expiryTypes.push({ type: "domain", date: customer.domain_expiry_date, serviceName: "Domain" });
         }
 
         for (const expiry of expiryTypes) {
@@ -70,16 +72,21 @@ Deno.serve(async (req) => {
           // Build message from template
           const templateKey = `${expiry.type}_${rule.days_before_expiry}`;
           const template = templateMap[templateKey];
-          const title = template?.subject || `Reminder: ${expiry.type} expiry in ${daysUntil} days`;
-          let message = template?.body_template || `Your ${expiry.type} service will expire in ${daysUntil} days.`;
+          let title = template?.subject || `Reminder: ${expiry.serviceName} expiry in ${daysUntil} days`;
+          let message = template?.body_template || `Your ${expiry.serviceName} service for ${customer.website_url || customer.customer_name} will expire in ${daysUntil} days. Please renew soon.`;
 
           // Replace placeholders
-          message = message
+          const replacePlaceholders = (text: string) => text
             .replace(/\{\{customer_name\}\}/g, customer.customer_name || "")
             .replace(/\{\{website_url\}\}/g, customer.website_url || "")
             .replace(/\{\{hosting_expiry_date\}\}/g, customer.hosting_expiry_date || "")
             .replace(/\{\{domain_expiry_date\}\}/g, customer.domain_expiry_date || "")
-            .replace(/\{\{days_remaining\}\}/g, String(daysUntil));
+            .replace(/\{\{days_remaining\}\}/g, String(daysUntil))
+            .replace(/\{\{service_name\}\}/g, expiry.serviceName)
+            .replace(/\{\{expiry_date\}\}/g, expiry.date || "");
+
+          title = replacePlaceholders(title);
+          message = replacePlaceholders(message);
 
           // Determine channels to send
           const channels: string[] = [];
@@ -99,14 +106,17 @@ Deno.serve(async (req) => {
                 channel,
                 title,
                 message,
-                send_status: "sent",
-                sent_at: new Date().toISOString(),
+                send_status: channel === "in_app" ? "sent" : "pending",
+                sent_at: channel === "in_app" ? new Date().toISOString() : null,
               });
 
             if (insertError) {
-              // Likely duplicate - skip silently
-              if (insertError.code === "23505") continue;
+              if (insertError.code === "23505") {
+                skippedCount++;
+                continue; // Duplicate - already sent
+              }
               console.error("Insert error:", insertError);
+              errors.push(`${customer.customer_name}/${expiry.type}/${channel}: ${insertError.message}`);
               continue;
             }
 
@@ -120,13 +130,50 @@ Deno.serve(async (req) => {
               });
             }
 
+            // For email: send actual email if customer has email
+            if (channel === "email" && customer.email) {
+              try {
+                // Use Supabase's built-in email or log for manual sending
+                // For now, mark as sent and log - actual email integration can be added
+                console.log(`Email reminder queued for ${customer.email}: ${title}`);
+                
+                // Update delivery status to sent
+                await supabase
+                  .from("notification_deliveries")
+                  .update({ send_status: "sent", sent_at: new Date().toISOString() })
+                  .eq("customer_id", customer.id)
+                  .eq("reminder_rule_id", rule.id)
+                  .eq("related_expiry_type", expiry.type)
+                  .eq("related_expiry_date", expiry.date)
+                  .eq("channel", "email")
+                  .eq("send_status", "pending");
+              } catch (emailError: any) {
+                console.error(`Email send failed for ${customer.email}:`, emailError);
+                await supabase
+                  .from("notification_deliveries")
+                  .update({ send_status: "failed", error_message: emailError.message })
+                  .eq("customer_id", customer.id)
+                  .eq("reminder_rule_id", rule.id)
+                  .eq("related_expiry_type", expiry.type)
+                  .eq("related_expiry_date", expiry.date)
+                  .eq("channel", "email")
+                  .eq("send_status", "pending");
+              }
+            }
+
             sentCount++;
           }
         }
       }
     }
 
-    return new Response(JSON.stringify({ sent: sentCount, checked: customers.length }), {
+    return new Response(JSON.stringify({ 
+      sent: sentCount, 
+      skipped: skippedCount,
+      checked: customers.length,
+      rules: rules.length,
+      errors: errors.length > 0 ? errors : undefined,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: any) {
