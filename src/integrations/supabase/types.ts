@@ -1177,6 +1177,7 @@ export type Database = {
         Returns: boolean
       }
       increment_post_views: { Args: { post_id: string }; Returns: undefined }
+      link_customer_by_email: { Args: never; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

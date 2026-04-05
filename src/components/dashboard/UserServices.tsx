@@ -63,9 +63,20 @@ const UserServices = () => {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      // Fetch customer record linked to this auth user
-      const { data: custData } = await supabase
+      // First try to find customer by auth_user_id
+      let { data: custData } = await supabase
         .from("customers" as any).select("*").eq("auth_user_id", user.id).maybeSingle();
+
+      // If not found, try auto-linking by email
+      if (!custData) {
+        const { data: linkedId } = await supabase.rpc("link_customer_by_email" as any);
+        if (linkedId) {
+          // Re-fetch the now-linked customer
+          const { data: linked } = await supabase
+            .from("customers" as any).select("*").eq("id", linkedId).maybeSingle();
+          custData = linked;
+        }
+      }
 
       if (custData) {
         setCustomer(custData as any);
