@@ -1,5 +1,71 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
+async function sendEmailViaResend(
+  to: string,
+  subject: string,
+  htmlBody: string
+): Promise<{ success: boolean; error?: string }> {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendApiKey) {
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from: "WebNhanh <hello@webnhanh.asia>",
+        to: [to],
+        subject,
+        html: htmlBody,
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      return { success: false, error: `Resend API ${res.status}: ${errBody}` };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+function buildEmailHtml(title: string, message: string): string {
+  return `<!DOCTYPE html>
+<html lang="vi">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f4f7;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f7;padding:40px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <tr><td style="background:#2563eb;padding:24px 32px;">
+          <h1 style="margin:0;color:#ffffff;font-size:20px;">🔔 WebNhanh - Thông báo</h1>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <h2 style="margin:0 0 16px;color:#1e293b;font-size:18px;">${title}</h2>
+          <div style="color:#475569;font-size:15px;line-height:1.6;">${message.replace(/\n/g, "<br>")}</div>
+        </td></tr>
+        <tr><td style="padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;">
+          <p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">© ${new Date().getFullYear()} WebNhanh.asia — Hệ thống nhắc nhở tự động</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -49,7 +115,6 @@ Deno.serve(async (req) => {
 
     for (const customer of customers) {
       for (const rule of rules) {
-        // Check if rule applies to this customer
         if (!rule.applies_to_all && rule.customer_id && rule.customer_id !== customer.id) continue;
 
         const expiryTypes: Array<{ type: string; date: string | null; serviceName: string }> = [];
@@ -66,16 +131,14 @@ Deno.serve(async (req) => {
           const expiryDate = new Date(expiry.date);
           const daysUntil = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-          // Check if this rule matches (within 1 day tolerance)
           if (daysUntil < 0 || Math.abs(daysUntil - rule.days_before_expiry) > 1) continue;
 
           // Build message from template
           const templateKey = `${expiry.type}_${rule.days_before_expiry}`;
           const template = templateMap[templateKey];
-          let title = template?.subject || `Reminder: ${expiry.serviceName} expiry in ${daysUntil} days`;
-          let message = template?.body_template || `Your ${expiry.serviceName} service for ${customer.website_url || customer.customer_name} will expire in ${daysUntil} days. Please renew soon.`;
+          let title = template?.subject || `Nhắc nhở: ${expiry.serviceName} sẽ hết hạn trong ${daysUntil} ngày`;
+          let message = template?.body_template || `Dịch vụ ${expiry.serviceName} của ${customer.website_url || customer.customer_name} sẽ hết hạn trong ${daysUntil} ngày (${expiry.date}). Vui lòng gia hạn sớm.`;
 
-          // Replace placeholders
           const replacePlaceholders = (text: string) => text
             .replace(/\{\{customer_name\}\}/g, customer.customer_name || "")
             .replace(/\{\{website_url\}\}/g, customer.website_url || "")
@@ -88,7 +151,6 @@ Deno.serve(async (req) => {
           title = replacePlaceholders(title);
           message = replacePlaceholders(message);
 
-          // Determine channels to send
           const channels: string[] = [];
           if (rule.channel === "both") { channels.push("email", "in_app"); }
           else { channels.push(rule.channel); }
@@ -106,21 +168,20 @@ Deno.serve(async (req) => {
                 channel,
                 title,
                 message,
-                send_status: channel === "in_app" ? "sent" : "pending",
-                sent_at: channel === "in_app" ? new Date().toISOString() : null,
+                send_status: "pending",
               });
 
             if (insertError) {
               if (insertError.code === "23505") {
                 skippedCount++;
-                continue; // Duplicate - already sent
+                continue;
               }
               console.error("Insert error:", insertError);
               errors.push(`${customer.customer_name}/${expiry.type}/${channel}: ${insertError.message}`);
               continue;
             }
 
-            // For in_app: create notification in the notifications table if customer has auth_user_id
+            // For in_app: create notification
             if (channel === "in_app" && customer.auth_user_id) {
               await supabase.from("notifications").insert({
                 user_id: customer.auth_user_id,
@@ -128,16 +189,24 @@ Deno.serve(async (req) => {
                 title,
                 message,
               });
+              // Mark as sent
+              await supabase
+                .from("notification_deliveries")
+                .update({ send_status: "sent", sent_at: new Date().toISOString() })
+                .eq("customer_id", customer.id)
+                .eq("reminder_rule_id", rule.id)
+                .eq("related_expiry_type", expiry.type)
+                .eq("related_expiry_date", expiry.date)
+                .eq("channel", "in_app")
+                .eq("send_status", "pending");
             }
 
-            // For email: send actual email if customer has email
+            // For email: send via Resend
             if (channel === "email" && customer.email) {
-              try {
-                // Use Supabase's built-in email or log for manual sending
-                // For now, mark as sent and log - actual email integration can be added
-                console.log(`Email reminder queued for ${customer.email}: ${title}`);
-                
-                // Update delivery status to sent
+              const htmlBody = buildEmailHtml(title, message);
+              const result = await sendEmailViaResend(customer.email, title, htmlBody);
+
+              if (result.success) {
                 await supabase
                   .from("notification_deliveries")
                   .update({ send_status: "sent", sent_at: new Date().toISOString() })
@@ -147,17 +216,19 @@ Deno.serve(async (req) => {
                   .eq("related_expiry_date", expiry.date)
                   .eq("channel", "email")
                   .eq("send_status", "pending");
-              } catch (emailError: any) {
-                console.error(`Email send failed for ${customer.email}:`, emailError);
+                console.log(`✅ Email sent to ${customer.email}: ${title}`);
+              } else {
                 await supabase
                   .from("notification_deliveries")
-                  .update({ send_status: "failed", error_message: emailError.message })
+                  .update({ send_status: "failed", error_message: result.error })
                   .eq("customer_id", customer.id)
                   .eq("reminder_rule_id", rule.id)
                   .eq("related_expiry_type", expiry.type)
                   .eq("related_expiry_date", expiry.date)
                   .eq("channel", "email")
                   .eq("send_status", "pending");
+                console.error(`❌ Email failed for ${customer.email}:`, result.error);
+                errors.push(`${customer.customer_name}/email: ${result.error}`);
               }
             }
 
