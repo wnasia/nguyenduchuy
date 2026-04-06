@@ -128,8 +128,9 @@ Deno.serve(async (req) => {
         for (const expiry of expiryTypes) {
           if (!expiry.date) continue;
 
-          const expiryDate = new Date(expiry.date);
-          const daysUntil = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          const expiryDate = new Date(expiry.date + "T00:00:00Z");
+          const todayMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+          const daysUntil = Math.round((expiryDate.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
 
           if (daysUntil < 0 || Math.abs(daysUntil - rule.days_before_expiry) > 1) continue;
 
