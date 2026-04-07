@@ -1,0 +1,1 @@
+DELETE FROM public.reminder_rules WHERE name = 'Test 5-day reminder';
