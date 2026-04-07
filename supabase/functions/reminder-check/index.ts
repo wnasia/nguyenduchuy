@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
             // For email: send via Resend
             if (channel === "email" && customer.email) {
               const htmlBody = buildEmailHtml(title, message);
-              const result = await sendEmailViaResend(customer.email, title, htmlBody);
+              const result = await sendEmailViaSmtp(customer.email, title, htmlBody);
 
               if (result.success) {
                 await supabase
