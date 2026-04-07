@@ -1,0 +1,1 @@
+DELETE FROM public.notification_deliveries WHERE send_status = 'failed';
