@@ -6,35 +6,32 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-async function sendEmailViaResend(
+async function sendEmailViaSmtp(
   to: string,
   subject: string,
   htmlBody: string
 ): Promise<{ success: boolean; error?: string }> {
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
-  if (!resendApiKey) {
-    return { success: false, error: "RESEND_API_KEY not configured" };
+  const smtpUser = Deno.env.get("SMTP_USER");
+  const smtpPass = Deno.env.get("SMTP_PASS");
+  if (!smtpUser || !smtpPass) {
+    return { success: false, error: "SMTP_USER or SMTP_PASS not configured" };
   }
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${resendApiKey}`,
-      },
-      body: JSON.stringify({
-        from: "WebNhanh <hello@webnhanh.asia>",
-        to: [to],
-        subject,
-        html: htmlBody,
-      }),
+    const { default: nodemailer } = await import("npm:nodemailer@6.9.16");
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: { user: smtpUser, pass: smtpPass },
     });
 
-    if (!res.ok) {
-      const errBody = await res.text();
-      return { success: false, error: `Resend API ${res.status}: ${errBody}` };
-    }
+    await transporter.sendMail({
+      from: `WebNhanh <${smtpUser}>`,
+      to,
+      subject,
+      html: htmlBody,
+    });
 
     return { success: true };
   } catch (err: any) {
@@ -205,7 +202,7 @@ Deno.serve(async (req) => {
             // For email: send via Resend
             if (channel === "email" && customer.email) {
               const htmlBody = buildEmailHtml(title, message);
-              const result = await sendEmailViaResend(customer.email, title, htmlBody);
+              const result = await sendEmailViaSmtp(customer.email, title, htmlBody);
 
               if (result.success) {
                 await supabase
