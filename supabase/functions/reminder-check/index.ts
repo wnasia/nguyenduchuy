@@ -54,6 +54,14 @@ function buildEmailHtml(title: string, message: string): string {
           <h2 style="margin:0 0 16px;color:#1e293b;font-size:18px;">${title}</h2>
           <div style="color:#475569;font-size:15px;line-height:1.6;">${message.replace(/\n/g, "<br>")}</div>
         </td></tr>
+        <tr><td style="padding:24px 32px;background:#f0f9ff;border-top:2px solid #2563eb;">
+          <h3 style="margin:0 0 12px;color:#1e40af;font-size:16px;text-align:center;">📞 Liên hệ gia hạn ngay</h3>
+          <p style="margin:0 0 6px;color:#334155;font-size:14px;text-align:center;">Hotline: <a href="tel:0918795578" style="color:#2563eb;font-weight:bold;text-decoration:none;">0918795578</a></p>
+          <p style="margin:0 0 16px;color:#334155;font-size:14px;text-align:center;">Website: <a href="https://webnhanh.net" style="color:#2563eb;text-decoration:underline;">webnhanh.net</a></p>
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+            <a href="https://webnhanh.net" style="display:inline-block;background:#2563eb;color:#ffffff;font-size:16px;font-weight:bold;padding:14px 40px;border-radius:6px;text-decoration:none;text-align:center;">Gia hạn ngay</a>
+          </td></tr></table>
+        </td></tr>
         <tr><td style="padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;">
           <p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">© ${new Date().getFullYear()} WebNhanh.asia — Hệ thống nhắc nhở tự động</p>
         </td></tr>
