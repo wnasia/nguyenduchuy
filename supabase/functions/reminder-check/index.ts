@@ -120,6 +120,8 @@ function buildEmailHtml(title: string, message: string, pricing?: { serviceName:
           <div style="color:#475569;font-size:15px;line-height:1.7;">${message.replace(/\n/g, "<br>")}</div>
         </td></tr>
 
+        \${pricingSection}
+
         <!-- Divider -->
         <tr><td style="padding:0 40px;">
           <div style="height:1px;background:linear-gradient(90deg,transparent,#e2e8f0,transparent);"></div>
@@ -336,7 +338,14 @@ Deno.serve(async (req) => {
 
             // For email: send via Resend
             if (channel === "email" && customer.email) {
-              const htmlBody = buildEmailHtml(title, message);
+              const htmlBody = buildEmailHtml(title, message, {
+                serviceName: expiry.serviceName,
+                expiryDate: expiry.date || "",
+                unitPrice: formatVND(unitPrice),
+                taxRate: String(taxRate),
+                taxAmount: formatVND(taxAmount),
+                totalAmount: formatVND(totalAmount),
+              });
               const result = await sendEmailViaSmtp(customer.email, title, htmlBody);
 
               if (result.success) {
