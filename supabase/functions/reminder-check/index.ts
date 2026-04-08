@@ -39,7 +39,41 @@ async function sendEmailViaSmtp(
   }
 }
 
-function buildEmailHtml(title: string, message: string): string {
+function buildEmailHtml(title: string, message: string, pricing?: { serviceName: string; expiryDate: string; unitPrice: string; taxRate: string; taxAmount: string; totalAmount: string }): string {
+  const pricingSection = pricing ? `
+        <!-- Pricing Table -->
+        <tr><td style="padding:0 40px 24px;">
+          <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+            <tr><td style="background:#1e40af;padding:14px 20px;">
+              <p style="margin:0;color:#ffffff;font-size:15px;font-weight:700;">📋 Chi tiết gia hạn</p>
+            </td></tr>
+            <tr><td style="padding:0;">
+              <table cellpadding="0" cellspacing="0" style="width:100%;">
+                <tr>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:14px;width:40%;">Tên dịch vụ</td>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px;font-weight:600;">${pricing.serviceName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:14px;">Ngày hết hạn</td>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#dc2626;font-size:14px;font-weight:600;">${pricing.expiryDate}</td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:14px;">Đơn giá</td>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px;font-weight:600;">${pricing.unitPrice}</td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:14px;">Tiền thuế (${pricing.taxRate}%)</td>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px;">${pricing.taxAmount}</td>
+                </tr>
+                <tr style="background:#f8fafc;">
+                  <td style="padding:16px 20px;color:#1e40af;font-size:15px;font-weight:700;">Thành tiền</td>
+                  <td style="padding:16px 20px;color:#1e40af;font-size:18px;font-weight:700;">${pricing.totalAmount}</td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </td></tr>` : '';
+
   return `<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -85,6 +119,8 @@ function buildEmailHtml(title: string, message: string): string {
         <tr><td style="padding:24px 40px 32px;">
           <div style="color:#475569;font-size:15px;line-height:1.7;">${message.replace(/\n/g, "<br>")}</div>
         </td></tr>
+
+        \${pricingSection}
 
         <!-- Divider -->
         <tr><td style="padding:0 40px;">
@@ -226,6 +262,14 @@ Deno.serve(async (req) => {
           let title = template?.subject || `Nhắc nhở: ${expiry.serviceName} sẽ hết hạn trong ${daysUntil} ngày`;
           let message = template?.body_template || `Dịch vụ ${expiry.serviceName} của ${customer.website_url || customer.customer_name} sẽ hết hạn trong ${daysUntil} ngày (${expiry.date}). Vui lòng gia hạn sớm.`;
 
+          // Calculate pricing
+          const unitPrice = expiry.type === "hosting" ? (customer.hosting_price || 0) : (customer.domain_price || 0);
+          const taxRate = customer.tax_rate || 10;
+          const taxAmount = Math.round(unitPrice * taxRate / 100);
+          const totalAmount = unitPrice + taxAmount;
+
+          const formatVND = (n: number) => n.toLocaleString("vi-VN") + "đ";
+
           const replacePlaceholders = (text: string) => text
             .replace(/\{\{customer_name\}\}/g, customer.customer_name || "")
             .replace(/\{\{website_url\}\}/g, customer.website_url || "")
@@ -233,7 +277,11 @@ Deno.serve(async (req) => {
             .replace(/\{\{domain_expiry_date\}\}/g, customer.domain_expiry_date || "")
             .replace(/\{\{days_remaining\}\}/g, String(daysUntil))
             .replace(/\{\{service_name\}\}/g, expiry.serviceName)
-            .replace(/\{\{expiry_date\}\}/g, expiry.date || "");
+            .replace(/\{\{expiry_date\}\}/g, expiry.date || "")
+            .replace(/\{\{unit_price\}\}/g, formatVND(unitPrice))
+            .replace(/\{\{tax_amount\}\}/g, formatVND(taxAmount))
+            .replace(/\{\{total_amount\}\}/g, formatVND(totalAmount))
+            .replace(/\{\{tax_rate\}\}/g, String(taxRate));
 
           title = replacePlaceholders(title);
           message = replacePlaceholders(message);
@@ -290,7 +338,14 @@ Deno.serve(async (req) => {
 
             // For email: send via Resend
             if (channel === "email" && customer.email) {
-              const htmlBody = buildEmailHtml(title, message);
+              const htmlBody = buildEmailHtml(title, message, {
+                serviceName: expiry.serviceName,
+                expiryDate: expiry.date || "",
+                unitPrice: formatVND(unitPrice),
+                taxRate: String(taxRate),
+                taxAmount: formatVND(taxAmount),
+                totalAmount: formatVND(totalAmount),
+              });
               const result = await sendEmailViaSmtp(customer.email, title, htmlBody);
 
               if (result.success) {
