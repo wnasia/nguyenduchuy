@@ -231,6 +231,7 @@ const AdminCustomers = () => {
       customer_name: c.customer_name, services: c.services || [], website_url: c.website_url || "",
       hosting_provider: c.hosting_provider || "", hosting_expiry_date: c.hosting_expiry_date || "",
       domain_provider_info: c.domain_provider_info || "", domain_expiry_date: c.domain_expiry_date || "",
+      hosting_price: c.hosting_price || 0, domain_price: c.domain_price || 0, tax_rate: c.tax_rate ?? 10,
       notes: c.notes || "", contact_name: c.contact_name || "", phone: c.phone || "",
       email: c.email || "", address: c.address || "", is_active: c.is_active,
     });
