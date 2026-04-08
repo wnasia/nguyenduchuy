@@ -39,7 +39,41 @@ async function sendEmailViaSmtp(
   }
 }
 
-function buildEmailHtml(title: string, message: string): string {
+function buildEmailHtml(title: string, message: string, pricing?: { serviceName: string; expiryDate: string; unitPrice: string; taxRate: string; taxAmount: string; totalAmount: string }): string {
+  const pricingSection = pricing ? `
+        <!-- Pricing Table -->
+        <tr><td style="padding:0 40px 24px;">
+          <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+            <tr><td style="background:#1e40af;padding:14px 20px;">
+              <p style="margin:0;color:#ffffff;font-size:15px;font-weight:700;">📋 Chi tiết gia hạn</p>
+            </td></tr>
+            <tr><td style="padding:0;">
+              <table cellpadding="0" cellspacing="0" style="width:100%;">
+                <tr>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:14px;width:40%;">Tên dịch vụ</td>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px;font-weight:600;">${pricing.serviceName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:14px;">Ngày hết hạn</td>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#dc2626;font-size:14px;font-weight:600;">${pricing.expiryDate}</td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:14px;">Đơn giá</td>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px;font-weight:600;">${pricing.unitPrice}</td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:14px;">Tiền thuế (${pricing.taxRate}%)</td>
+                  <td style="padding:14px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px;">${pricing.taxAmount}</td>
+                </tr>
+                <tr style="background:#f8fafc;">
+                  <td style="padding:16px 20px;color:#1e40af;font-size:15px;font-weight:700;">Thành tiền</td>
+                  <td style="padding:16px 20px;color:#1e40af;font-size:18px;font-weight:700;">${pricing.totalAmount}</td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </td></tr>` : '';
+
   return `<!DOCTYPE html>
 <html lang="vi">
 <head>
