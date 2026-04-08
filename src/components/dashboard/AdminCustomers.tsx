@@ -26,6 +26,9 @@ interface Customer {
   hosting_expiry_date: string | null;
   domain_provider_info: string | null;
   domain_expiry_date: string | null;
+  hosting_price: number;
+  domain_price: number;
+  tax_rate: number;
   notes: string | null;
   contact_name: string | null;
   phone: string | null;
@@ -60,6 +63,7 @@ interface RenewalRecord {
 const emptyForm: Omit<Customer, "id" | "created_at" | "updated_at" | "created_by"> = {
   customer_name: "", services: [], website_url: "", hosting_provider: "",
   hosting_expiry_date: "", domain_provider_info: "", domain_expiry_date: "",
+  hosting_price: 0, domain_price: 0, tax_rate: 10,
   notes: "", contact_name: "", phone: "", email: "", address: "", is_active: true,
 };
 
