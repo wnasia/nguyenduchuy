@@ -254,6 +254,9 @@ const AdminCustomers = () => {
       services: servicesInput ? servicesInput.split(",").map(s => s.trim()).filter(Boolean) : [],
       hosting_expiry_date: form.hosting_expiry_date || null,
       domain_expiry_date: form.domain_expiry_date || null,
+      hosting_price: form.hosting_price || 0,
+      domain_price: form.domain_price || 0,
+      tax_rate: form.tax_rate ?? 10,
       website_url: form.website_url || null, hosting_provider: form.hosting_provider || null,
       domain_provider_info: form.domain_provider_info || null, notes: form.notes || null,
       contact_name: form.contact_name || null, phone: form.phone || null,
@@ -447,6 +450,7 @@ const AdminCustomers = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">#</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Services</TableHead>
                     <TableHead>Website</TableHead>
@@ -457,8 +461,9 @@ const AdminCustomers = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginated.map(c => (
+                  {paginated.map((c, index) => (
                     <TableRow key={c.id} className="group">
+                      <TableCell className="text-muted-foreground text-sm">{page * PER_PAGE + index + 1}</TableCell>
                       <TableCell>
                         <div>
                           <p className="font-medium">{c.customer_name}</p>
@@ -536,7 +541,10 @@ const AdminCustomers = () => {
             <div className="space-y-1.5"><Label>Phone</Label><Input value={form.phone || ""} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Email</Label><Input value={form.email || ""} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
             <div className="md:col-span-2 space-y-1.5"><Label>Address</Label><Input value={form.address || ""} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
-            <div className="md:col-span-2 space-y-1.5"><Label>Notes</Label><Textarea value={form.notes || ""} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} /></div>
+            <div className="md:col-span-2"><Separator /><p className="text-sm font-semibold text-muted-foreground">Giá dịch vụ</p></div>
+            <div className="space-y-1.5"><Label>Giá Hosting (VNĐ)</Label><Input type="number" value={form.hosting_price || ""} onChange={e => setForm({ ...form, hosting_price: Number(e.target.value) || 0 })} placeholder="0" /></div>
+            <div className="space-y-1.5"><Label>Giá Domain (VNĐ)</Label><Input type="number" value={form.domain_price || ""} onChange={e => setForm({ ...form, domain_price: Number(e.target.value) || 0 })} placeholder="0" /></div>
+            <div className="space-y-1.5"><Label>Thuế suất (%)</Label><Input type="number" value={form.tax_rate} onChange={e => setForm({ ...form, tax_rate: Number(e.target.value) || 0 })} placeholder="10" /></div>
             <div className="flex items-center gap-3"><Label>Active</Label><Switch checked={form.is_active} onCheckedChange={v => setForm({ ...form, is_active: v })} /></div>
           </div>
           <DialogFooter>
