@@ -120,15 +120,18 @@ export type Database = {
           created_by: string | null
           customer_name: string
           domain_expiry_date: string | null
+          domain_price: number | null
           domain_provider_info: string | null
           email: string | null
           hosting_expiry_date: string | null
+          hosting_price: number | null
           hosting_provider: string | null
           id: string
           is_active: boolean
           notes: string | null
           phone: string | null
           services: string[] | null
+          tax_rate: number | null
           updated_at: string
           website_url: string | null
         }
@@ -140,15 +143,18 @@ export type Database = {
           created_by?: string | null
           customer_name: string
           domain_expiry_date?: string | null
+          domain_price?: number | null
           domain_provider_info?: string | null
           email?: string | null
           hosting_expiry_date?: string | null
+          hosting_price?: number | null
           hosting_provider?: string | null
           id?: string
           is_active?: boolean
           notes?: string | null
           phone?: string | null
           services?: string[] | null
+          tax_rate?: number | null
           updated_at?: string
           website_url?: string | null
         }
@@ -160,15 +166,18 @@ export type Database = {
           created_by?: string | null
           customer_name?: string
           domain_expiry_date?: string | null
+          domain_price?: number | null
           domain_provider_info?: string | null
           email?: string | null
           hosting_expiry_date?: string | null
+          hosting_price?: number | null
           hosting_provider?: string | null
           id?: string
           is_active?: boolean
           notes?: string | null
           phone?: string | null
           services?: string[] | null
+          tax_rate?: number | null
           updated_at?: string
           website_url?: string | null
         }

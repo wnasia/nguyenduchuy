@@ -226,6 +226,14 @@ Deno.serve(async (req) => {
           let title = template?.subject || `Nhắc nhở: ${expiry.serviceName} sẽ hết hạn trong ${daysUntil} ngày`;
           let message = template?.body_template || `Dịch vụ ${expiry.serviceName} của ${customer.website_url || customer.customer_name} sẽ hết hạn trong ${daysUntil} ngày (${expiry.date}). Vui lòng gia hạn sớm.`;
 
+          // Calculate pricing
+          const unitPrice = expiry.type === "hosting" ? (customer.hosting_price || 0) : (customer.domain_price || 0);
+          const taxRate = customer.tax_rate || 10;
+          const taxAmount = Math.round(unitPrice * taxRate / 100);
+          const totalAmount = unitPrice + taxAmount;
+
+          const formatVND = (n: number) => n.toLocaleString("vi-VN") + "đ";
+
           const replacePlaceholders = (text: string) => text
             .replace(/\{\{customer_name\}\}/g, customer.customer_name || "")
             .replace(/\{\{website_url\}\}/g, customer.website_url || "")
@@ -233,7 +241,11 @@ Deno.serve(async (req) => {
             .replace(/\{\{domain_expiry_date\}\}/g, customer.domain_expiry_date || "")
             .replace(/\{\{days_remaining\}\}/g, String(daysUntil))
             .replace(/\{\{service_name\}\}/g, expiry.serviceName)
-            .replace(/\{\{expiry_date\}\}/g, expiry.date || "");
+            .replace(/\{\{expiry_date\}\}/g, expiry.date || "")
+            .replace(/\{\{unit_price\}\}/g, formatVND(unitPrice))
+            .replace(/\{\{tax_amount\}\}/g, formatVND(taxAmount))
+            .replace(/\{\{total_amount\}\}/g, formatVND(totalAmount))
+            .replace(/\{\{tax_rate\}\}/g, String(taxRate));
 
           title = replacePlaceholders(title);
           message = replacePlaceholders(message);
