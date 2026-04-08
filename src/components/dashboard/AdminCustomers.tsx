@@ -463,7 +463,7 @@ const AdminCustomers = () => {
                 <TableBody>
                   {paginated.map((c, index) => (
                     <TableRow key={c.id} className="group">
-                      <TableCell className="text-muted-foreground text-sm">{page * PER_PAGE + index + 1}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{page * PAGE_SIZE + index + 1}</TableCell>
                       <TableCell>
                         <div>
                           <p className="font-medium">{c.customer_name}</p>
