@@ -395,10 +395,15 @@ const AdminTokenomics = () => {
               <p className="text-2xl font-bold text-primary">{metrics.todayValidViews.toLocaleString()}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-amber-200 bg-amber-50/40">
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Pending Settlement</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                Chờ quyết toán
+              </p>
               <p className="text-2xl font-bold text-amber-600">{metrics.pendingViews.toLocaleString()}</p>
+              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                Số lượt đọc hợp lệ chưa được phân phối token. Sẽ tự động quyết toán vào 00:00 UTC mỗi ngày (hoặc khi admin chạy "Run Settlement Now").
+              </p>
             </CardContent>
           </Card>
           <Card>
