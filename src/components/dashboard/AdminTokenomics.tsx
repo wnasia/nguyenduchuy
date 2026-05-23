@@ -620,6 +620,54 @@ const AdminTokenomics = () => {
           </Card>
         </TabsContent>
 
+        {/* Pending Settlement Tab */}
+        <TabsContent value="pending">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Lượt đọc chờ quyết toán</CardTitle>
+              <CardDescription>
+                Danh sách các lượt đọc hợp lệ chưa được quyết toán (settled = false). Sẽ được phân phối token vào lần chạy settlement tiếp theo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {pendingViews.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  Không có lượt đọc nào đang chờ quyết toán
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Ngày</TableHead>
+                      <TableHead>Người dùng</TableHead>
+                      <TableHead>Bài viết</TableHead>
+                      <TableHead>IP</TableHead>
+                      <TableHead>Thời gian</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingViews.map((v: any) => (
+                      <TableRow key={v.id}>
+                        <TableCell className="font-mono text-xs">{v.view_date}</TableCell>
+                        <TableCell className="text-sm">
+                          {v._profile?.display_name || v._profile?.email || (v.user_id ? <span className="text-muted-foreground font-mono text-xs">{String(v.user_id).slice(0, 8)}…</span> : <span className="text-muted-foreground italic">Khách</span>)}
+                        </TableCell>
+                        <TableCell className="text-sm max-w-md truncate">
+                          {v._post?.title || <span className="text-muted-foreground italic">—</span>}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">{v.ip_address || '—'}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {new Date(v.created_at).toLocaleString('vi-VN')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="security">
           <Card>
             <CardHeader>
