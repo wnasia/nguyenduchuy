@@ -97,7 +97,8 @@ const AdminTokenomics = () => {
 
   const fetchPendingViews = async () => {
     try {
-      const { data } = await supabase
+      const sb: any = supabase;
+      const { data } = await sb
         .from('valid_views')
         .select('id, user_id, post_id, view_date, created_at, ip_address')
         .eq('settled', false)
@@ -105,21 +106,20 @@ const AdminTokenomics = () => {
         .limit(200);
       const views = (data || []) as any[];
 
-      const userIds = Array.from(new Set(views.map((v) => v.user_id).filter(Boolean)));
-      const postIds = Array.from(new Set(views.map((v) => v.post_id).filter(Boolean)));
+      const userIds = Array.from(new Set(views.map((v) => v.user_id).filter(Boolean))) as string[];
+      const postIds = Array.from(new Set(views.map((v) => v.post_id).filter(Boolean))) as string[];
 
-      const profsPromise: Promise<any> = userIds.length
-        ? (supabase.from('profiles').select('user_id, display_name, email').in('user_id', userIds as string[]) as any)
-        : Promise.resolve({ data: [] });
-      const postsPromise: Promise<any> = postIds.length
-        ? (supabase.from('posts').select('id, title').in('id', postIds as string[]) as any)
-        : Promise.resolve({ data: [] });
-      const [profsRes, postsRes] = await Promise.all([profsPromise, postsPromise]);
+      const profsRes = userIds.length
+        ? await sb.from('profiles').select('user_id, display_name, email').in('user_id', userIds)
+        : { data: [] };
+      const postsRes = postIds.length
+        ? await sb.from('posts').select('id, title').in('id', postIds)
+        : { data: [] };
 
       const profMap: Record<string, any> = {};
-      ((profsRes as any).data || []).forEach((p: any) => { profMap[p.user_id] = p; });
+      (profsRes.data || []).forEach((p: any) => { profMap[p.user_id] = p; });
       const postMap: Record<string, any> = {};
-      ((postsRes as any).data || []).forEach((p: any) => { postMap[p.id] = p; });
+      (postsRes.data || []).forEach((p: any) => { postMap[p.id] = p; });
 
       setPendingViews(views.map((v) => ({ ...v, _post: postMap[v.post_id], _profile: profMap[v.user_id] })));
     } catch (error) {
