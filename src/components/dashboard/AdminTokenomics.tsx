@@ -428,6 +428,9 @@ const AdminTokenomics = () => {
         <TabsList>
           <TabsTrigger value="config" className="transition-all duration-200">Cấu hình</TabsTrigger>
           <TabsTrigger value="settlements" className="transition-all duration-200">Settlement Proof</TabsTrigger>
+          <TabsTrigger value="pending" className="transition-all duration-200">
+            Chờ quyết toán {pendingViews.length > 0 && <Badge variant="secondary" className="ml-2">{pendingViews.length}</Badge>}
+          </TabsTrigger>
           <TabsTrigger value="security" className="transition-all duration-200">Bảo mật</TabsTrigger>
           <TabsTrigger value="blocked" className="transition-all duration-200">Danh sách chặn</TabsTrigger>
         </TabsList>
