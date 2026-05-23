@@ -220,6 +220,7 @@ const AdminTokenomics = () => {
     fetchSettlements();
     fetchSuspiciousActivity();
     fetchMetrics();
+    fetchPendingViews();
   };
 
   const handleSaveConfig = async () => {
