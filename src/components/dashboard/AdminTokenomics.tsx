@@ -99,23 +99,30 @@ const AdminTokenomics = () => {
     try {
       const { data } = await supabase
         .from('valid_views')
-        .select('id, user_id, post_id, view_date, created_at, ip_address, posts(title)')
+        .select('id, user_id, post_id, view_date, created_at, ip_address')
         .eq('settled', false)
         .order('created_at', { ascending: false })
         .limit(200);
-      const views = data || [];
-      setPendingViews(views);
+      const views = (data || []) as any[];
 
-      const userIds = Array.from(new Set(views.map((v: any) => v.user_id).filter(Boolean)));
-      if (userIds.length > 0) {
-        const { data: profs } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, email')
-          .in('user_id', userIds);
-        const map: Record<string, any> = {};
-        (profs || []).forEach((p: any) => { map[p.user_id] = p; });
-        setPendingProfiles(map);
-      }
+      const userIds = Array.from(new Set(views.map((v) => v.user_id).filter(Boolean)));
+      const postIds = Array.from(new Set(views.map((v) => v.post_id).filter(Boolean)));
+
+      const [profsRes, postsRes] = await Promise.all([
+        userIds.length
+          ? supabase.from('profiles').select('user_id, display_name, email').in('user_id', userIds as string[])
+          : Promise.resolve({ data: [] as any[] }),
+        postIds.length
+          ? supabase.from('posts').select('id, title').in('id', postIds as string[])
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+
+      const profMap: Record<string, any> = {};
+      ((profsRes as any).data || []).forEach((p: any) => { profMap[p.user_id] = p; });
+      const postMap: Record<string, any> = {};
+      ((postsRes as any).data || []).forEach((p: any) => { postMap[p.id] = p; });
+
+      setPendingViews(views.map((v) => ({ ...v, _post: postMap[v.post_id], _profile: profMap[v.user_id] })));
     } catch (error) {
       console.error('Error fetching pending views:', error);
     }
