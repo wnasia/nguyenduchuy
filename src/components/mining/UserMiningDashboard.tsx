@@ -141,14 +141,18 @@ const UserMiningDashboard = () => {
 
       {/* Info banner */}
       <Card className="bg-muted/50 border-dashed">
-        <CardContent className="p-4">
-          <p className="text-sm text-muted-foreground">
-            💡 <strong>Lưu ý:</strong> Token được tính vào cuối mỗi ngày (00:00 UTC). 
-            Lượt đọc hợp lệ cần ít nhất 30 giây đọc thực sự (timer dừng khi chuyển tab).
-            Mỗi IP chỉ tính 1 lượt/bài/ngày.
+        <CardContent className="p-4 space-y-2 text-sm text-muted-foreground">
+          <p>
+            💡 <strong>Lượt đọc hợp lệ:</strong> cần ít nhất 30 giây đọc thực sự (timer dừng khi chuyển tab).
+            Mỗi IP chỉ tính 1 lượt/bài/ngày. Mọi mục hiển thị bên dưới đều đã được xác nhận là <strong>hợp lệ</strong>.
+          </p>
+          <p>
+            🕒 <strong>Chờ quyết toán:</strong> lượt đọc đã hợp lệ nhưng <em>chưa được phân phối token</em>.
+            Hệ thống tự động quyết toán vào cuối mỗi ngày (00:00 UTC) — sau đó badge sẽ chuyển thành số token bạn nhận được.
           </p>
         </CardContent>
       </Card>
+
 
       {/* Tabs */}
       <Tabs defaultValue="history" className="w-full">
