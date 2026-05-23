@@ -83,6 +83,8 @@ const AdminTokenomics = () => {
   const [settlements, setSettlements] = useState<DailySettlement[]>([]);
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [pendingViews, setPendingViews] = useState<any[]>([]);
+  const [pendingProfiles, setPendingProfiles] = useState<Record<string, { email?: string; display_name?: string }>>({});
 
   useEffect(() => {
     fetchConfig();
@@ -90,7 +92,40 @@ const AdminTokenomics = () => {
     fetchBlockedEntities();
     fetchSettlements();
     fetchMetrics();
+    fetchPendingViews();
   }, []);
+
+  const fetchPendingViews = async () => {
+    try {
+      const sb: any = supabase;
+      const { data } = await sb
+        .from('valid_views')
+        .select('id, user_id, post_id, view_date, created_at, ip_address')
+        .eq('settled', false)
+        .order('created_at', { ascending: false })
+        .limit(200);
+      const views = (data || []) as any[];
+
+      const userIds = Array.from(new Set(views.map((v) => v.user_id).filter(Boolean))) as string[];
+      const postIds = Array.from(new Set(views.map((v) => v.post_id).filter(Boolean))) as string[];
+
+      const profsRes = userIds.length
+        ? await sb.from('profiles').select('user_id, display_name, email').in('user_id', userIds)
+        : { data: [] };
+      const postsRes = postIds.length
+        ? await sb.from('posts').select('id, title').in('id', postIds)
+        : { data: [] };
+
+      const profMap: Record<string, any> = {};
+      (profsRes.data || []).forEach((p: any) => { profMap[p.user_id] = p; });
+      const postMap: Record<string, any> = {};
+      (postsRes.data || []).forEach((p: any) => { postMap[p.id] = p; });
+
+      setPendingViews(views.map((v) => ({ ...v, _post: postMap[v.post_id], _profile: profMap[v.user_id] })));
+    } catch (error) {
+      console.error('Error fetching pending views:', error);
+    }
+  };
 
   const fetchConfig = async () => {
     try {
@@ -185,6 +220,7 @@ const AdminTokenomics = () => {
     fetchSettlements();
     fetchSuspiciousActivity();
     fetchMetrics();
+    fetchPendingViews();
   };
 
   const handleSaveConfig = async () => {
@@ -392,6 +428,9 @@ const AdminTokenomics = () => {
         <TabsList>
           <TabsTrigger value="config" className="transition-all duration-200">Cấu hình</TabsTrigger>
           <TabsTrigger value="settlements" className="transition-all duration-200">Settlement Proof</TabsTrigger>
+          <TabsTrigger value="pending" className="transition-all duration-200">
+            Chờ quyết toán {pendingViews.length > 0 && <Badge variant="secondary" className="ml-2">{pendingViews.length}</Badge>}
+          </TabsTrigger>
           <TabsTrigger value="security" className="transition-all duration-200">Bảo mật</TabsTrigger>
           <TabsTrigger value="blocked" className="transition-all duration-200">Danh sách chặn</TabsTrigger>
         </TabsList>
@@ -577,6 +616,54 @@ const AdminTokenomics = () => {
                   )}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Pending Settlement Tab */}
+        <TabsContent value="pending">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Lượt đọc chờ quyết toán</CardTitle>
+              <CardDescription>
+                Danh sách các lượt đọc hợp lệ chưa được quyết toán (settled = false). Sẽ được phân phối token vào lần chạy settlement tiếp theo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {pendingViews.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  Không có lượt đọc nào đang chờ quyết toán
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Ngày</TableHead>
+                      <TableHead>Người dùng</TableHead>
+                      <TableHead>Bài viết</TableHead>
+                      <TableHead>IP</TableHead>
+                      <TableHead>Thời gian</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingViews.map((v: any) => (
+                      <TableRow key={v.id}>
+                        <TableCell className="font-mono text-xs">{v.view_date}</TableCell>
+                        <TableCell className="text-sm">
+                          {v._profile?.display_name || v._profile?.email || (v.user_id ? <span className="text-muted-foreground font-mono text-xs">{String(v.user_id).slice(0, 8)}…</span> : <span className="text-muted-foreground italic">Khách</span>)}
+                        </TableCell>
+                        <TableCell className="text-sm max-w-md truncate">
+                          {v._post?.title || <span className="text-muted-foreground italic">—</span>}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">{v.ip_address || '—'}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {new Date(v.created_at).toLocaleString('vi-VN')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
