@@ -83,6 +83,8 @@ const AdminTokenomics = () => {
   const [settlements, setSettlements] = useState<DailySettlement[]>([]);
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [pendingViews, setPendingViews] = useState<any[]>([]);
+  const [pendingProfiles, setPendingProfiles] = useState<Record<string, { email?: string; display_name?: string }>>({});
 
   useEffect(() => {
     fetchConfig();
@@ -90,7 +92,34 @@ const AdminTokenomics = () => {
     fetchBlockedEntities();
     fetchSettlements();
     fetchMetrics();
+    fetchPendingViews();
   }, []);
+
+  const fetchPendingViews = async () => {
+    try {
+      const { data } = await supabase
+        .from('valid_views')
+        .select('id, user_id, post_id, view_date, created_at, ip_address, posts(title)')
+        .eq('settled', false)
+        .order('created_at', { ascending: false })
+        .limit(200);
+      const views = data || [];
+      setPendingViews(views);
+
+      const userIds = Array.from(new Set(views.map((v: any) => v.user_id).filter(Boolean)));
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email')
+          .in('user_id', userIds);
+        const map: Record<string, any> = {};
+        (profs || []).forEach((p: any) => { map[p.user_id] = p; });
+        setPendingProfiles(map);
+      }
+    } catch (error) {
+      console.error('Error fetching pending views:', error);
+    }
+  };
 
   const fetchConfig = async () => {
     try {
