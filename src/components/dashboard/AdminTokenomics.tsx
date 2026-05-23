@@ -108,14 +108,13 @@ const AdminTokenomics = () => {
       const userIds = Array.from(new Set(views.map((v) => v.user_id).filter(Boolean)));
       const postIds = Array.from(new Set(views.map((v) => v.post_id).filter(Boolean)));
 
-      const [profsRes, postsRes] = await Promise.all([
-        userIds.length
-          ? supabase.from('profiles').select('user_id, display_name, email').in('user_id', userIds as string[])
-          : Promise.resolve({ data: [] as any[] }),
-        postIds.length
-          ? supabase.from('posts').select('id, title').in('id', postIds as string[])
-          : Promise.resolve({ data: [] as any[] }),
-      ]);
+      const profsPromise: Promise<any> = userIds.length
+        ? (supabase.from('profiles').select('user_id, display_name, email').in('user_id', userIds as string[]) as any)
+        : Promise.resolve({ data: [] });
+      const postsPromise: Promise<any> = postIds.length
+        ? (supabase.from('posts').select('id, title').in('id', postIds as string[]) as any)
+        : Promise.resolve({ data: [] });
+      const [profsRes, postsRes] = await Promise.all([profsPromise, postsPromise]);
 
       const profMap: Record<string, any> = {};
       ((profsRes as any).data || []).forEach((p: any) => { profMap[p.user_id] = p; });
