@@ -179,7 +179,7 @@ const Videos = () => {
                       {decodedTitle}
                     </CardTitle>
                     <CardDescription className="text-sm">
-                      {t("story.by_author")} {video.profiles?.full_name || t("story.anonymous")} • {new Date(video.created_at).toLocaleDateString('vi-VN')}
+                      {new Date(video.created_at).toLocaleDateString('vi-VN')}
                     </CardDescription>
                   </CardHeader>
                   
