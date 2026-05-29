@@ -181,7 +181,7 @@ const StoryDetail = () => {
                   {decodedTitle}
                 </CardTitle>
                 <CardDescription className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4 text-sm sm:text-base">
-                  <span>by {story.profiles?.full_name || 'Anonymous'}</span>
+                  
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     {new Date(story.created_at).toLocaleDateString()}

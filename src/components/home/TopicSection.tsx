@@ -65,7 +65,7 @@ const TopicSection = ({ topicName, posts, showAll }: TopicSectionProps) => {
             </h3>
             <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{getExcerpt(featured.content, 140)}</p>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" />{featured.profiles?.full_name || "Ẩn danh"}</span>
+              
               <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" />{featured.view_count}</span>
             </div>
           </div>
