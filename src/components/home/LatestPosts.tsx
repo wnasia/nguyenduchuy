@@ -61,7 +61,7 @@ const LatestPosts = ({ posts }: { posts: Post[] }) => {
             </h3>
             <p className="text-base text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{getExcerpt(main.content, 180)}</p>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" />{main.profiles?.full_name || "Ẩn danh"}</span>
+              
               <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" />{new Date(main.created_at).toLocaleDateString('vi-VN')}</span>
               <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" />{main.view_count}</span>
             </div>

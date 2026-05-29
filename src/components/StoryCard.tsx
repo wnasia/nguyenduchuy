@@ -127,7 +127,6 @@ const StoryCard = ({ story, index }: StoryCardProps) => {
               {decodedTitle}
             </CardTitle>
             <CardDescription className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm">
-              <span>{t("story.by_author")} {story.profiles?.full_name || t("story.author")}</span>
               <span className="flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 {new Date(story.created_at).toLocaleDateString()}
