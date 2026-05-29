@@ -53,19 +53,19 @@ const AdminDashboard = () => {
         <SidebarInset className="flex-1 flex flex-col">
           {/* Premium Header */}
           <header className={cn(
-            "sticky top-0 z-10 flex h-16 shrink-0 items-center gap-4",
+            "sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 sm:gap-4",
             "bg-background/80 backdrop-blur-xl border-b border-border",
-            "px-6"
+            "px-3 sm:px-6"
           )}>
             <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors" />
             <Separator orientation="vertical" className="h-6 bg-border" />
             
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="text-lg font-semibold text-foreground leading-none">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="min-w-0">
+                <h1 className="text-sm sm:text-lg font-semibold text-foreground leading-none truncate">
                   {currentModule.title}
                 </h1>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">
                   {currentModule.subtitle}
                 </p>
               </div>
@@ -81,7 +81,7 @@ const AdminDashboard = () => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 lg:p-8">
+          <main className="flex-1 p-3 sm:p-6 lg:p-8 overflow-x-hidden">
             <div className="max-w-7xl mx-auto">
               <CurrentComponent />
             </div>

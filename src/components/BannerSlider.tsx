@@ -83,7 +83,7 @@ const BannerSlider = () => {
   const bannerSubtitle = isFallback ? (currentBanner as typeof fallbackBanners[0]).subtitle : null;
 
   return (
-    <section className="relative w-full h-[500px] overflow-hidden">
+    <section className="relative w-full h-[260px] sm:h-[360px] md:h-[460px] lg:h-[500px] overflow-hidden">
       {/* Background Image */}
       <div
         className="absolute inset-0 transition-opacity duration-500 ease-in-out"
