@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.mining-stats]
 verify_jwt = false
+
+[functions.tax-debt-fetch]
+verify_jwt = false
