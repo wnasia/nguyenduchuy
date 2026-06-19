@@ -27,9 +27,20 @@ function extractDriveFileId(url: string): string | null {
 
 function buildFetchUrl(rawUrl: string): string {
   const trimmed = rawUrl.trim();
-  // Google Sheets published / export URLs: use as-is.
+  // Google Sheets edit/view URLs serve an HTML app page, not spreadsheet data.
+  // Convert them to a real CSV export URL and keep the selected sheet gid.
+  if (trimmed.includes("docs.google.com/spreadsheets")) {
+    if (trimmed.includes("/pub?") || trimmed.includes("output=csv")) {
+      return trimmed;
+    }
+    const spreadsheetId = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/)?.[1];
+    const gid = trimmed.match(/[?#&]gid=([0-9]+)/)?.[1] || "0";
+    if (spreadsheetId) {
+      return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
+    }
+  }
+
   if (
-    trimmed.includes("docs.google.com/spreadsheets") ||
     trimmed.includes("output=csv") ||
     trimmed.endsWith(".csv") ||
     trimmed.endsWith(".xlsx")
@@ -45,14 +56,38 @@ function buildFetchUrl(rawUrl: string): string {
 
 async function parseFile(buffer: ArrayBuffer, filenameHint: string) {
   // XLSX library handles both CSV and XLSX/XLS via SheetJS.
-  const wb = XLSX.read(new Uint8Array(buffer), { type: "array" });
+  const isCsv =
+    filenameHint.includes("format=csv") ||
+    filenameHint.includes("output=csv") ||
+    filenameHint.toLowerCase().endsWith(".csv");
+  const wb = isCsv
+    ? XLSX.read(new TextDecoder("utf-8").decode(buffer), {
+        type: "string",
+        codepage: 65001,
+      })
+    : XLSX.read(new Uint8Array(buffer), { type: "array", codepage: 65001 });
   const sheetName = wb.SheetNames[0];
   const sheet = wb.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+  const matrix = XLSX.utils.sheet_to_json<string[]>(sheet, {
+    header: 1,
     defval: "",
     raw: false,
   });
-  return rows;
+  const headerIndex = matrix.findIndex((row) => {
+    const normalized = row.map((cell) => String(cell).toLowerCase());
+    return (
+      normalized.some((cell) => cell.includes("mst") || cell.includes("mã số thuế")) &&
+      normalized.some((cell) => cell.includes("tên") || cell.includes("người nộp thuế"))
+    );
+  });
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+    range: headerIndex >= 0 ? headerIndex : 0,
+    defval: "",
+    raw: false,
+  });
+  return rows.filter((row) =>
+    Object.values(row).some((value) => String(value ?? "").trim() !== ""),
+  );
 }
 
 Deno.serve(async (req) => {
