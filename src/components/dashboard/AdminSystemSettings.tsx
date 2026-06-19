@@ -331,6 +331,39 @@ const AdminSystemSettings = () => {
         </CardContent>
       </Card>
 
+      {/* Tax Debt Lookup Source */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileSearch className="h-5 w-5" />
+            Nguồn dữ liệu Tra cứu Doanh nghiệp Nợ thuế
+          </CardTitle>
+          <CardDescription>
+            Dán link Google Drive (public) của file CSV/XLSX chứa danh sách. Hỗ trợ link dạng <span className="font-mono text-xs">drive.google.com/file/d/.../view</span> hoặc link Google Sheets đã xuất CSV. File phải để chế độ "Anyone with the link".
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Label htmlFor="tax_debt_url">Link nguồn</Label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Input
+              id="tax_debt_url"
+              value={taxDebtUrl}
+              onChange={(e) => setTaxDebtUrl(e.target.value)}
+              placeholder="https://drive.google.com/file/d/xxxxx/view"
+              className="flex-1"
+            />
+            <Button onClick={saveTaxDebtUrl} disabled={taxDebtSaving}>
+              <Save className="h-4 w-4 mr-2" />
+              {taxDebtSaving ? "Đang lưu..." : "Lưu"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Hàng đầu tiên của file sẽ được dùng làm tiêu đề cột (VD: MST, Tên doanh nghiệp, Số tiền nợ, Tỉnh/TP...). Kết quả được cache 10 phút.
+          </p>
+        </CardContent>
+      </Card>
+
+
       {/* Current Settings Summary */}
       <Card>
         <CardHeader>
