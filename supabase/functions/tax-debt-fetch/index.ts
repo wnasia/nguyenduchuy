@@ -54,6 +54,93 @@ function buildFetchUrl(rawUrl: string): string {
   return trimmed;
 }
 
+function parseCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (quoted && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (char === "," && !quoted) {
+      out.push(cur.trim());
+      cur = "";
+    } else {
+      cur += char;
+    }
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function normalizeText(value: unknown): string {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d");
+}
+
+async function parseCsvStream(
+  stream: ReadableStream<Uint8Array>,
+  query: string,
+  page: number,
+  pageSize: number,
+) {
+  const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
+  const normalizedQuery = normalizeText(query.trim());
+  let header: string[] | null = null;
+  let leftover = "";
+  let sourceCount = 0;
+  let matchedCount = 0;
+  const rows: Record<string, string>[] = [];
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+
+  const consumeLine = (rawLine: string) => {
+    const line = rawLine.replace(/\r$/, "");
+    if (!line.trim()) return;
+    const cells = parseCsvLine(line);
+    if (!header) {
+      const normalized = cells.map(normalizeText);
+      const looksLikeHeader =
+        normalized.some((cell) => cell === "mst" || cell.includes("ma so thue")) &&
+        normalized.some((cell) => cell.includes("ten") || cell.includes("nguoi nop thue"));
+      if (looksLikeHeader) {
+        header = cells.map((cell, index) => cell || `Cột ${index + 1}`);
+      }
+      return;
+    }
+
+    const row = Object.fromEntries(
+      header.map((name, index) => [name, cells[index] ?? ""]),
+    ) as Record<string, string>;
+    if (!Object.values(row).some((value) => value.trim())) return;
+    sourceCount++;
+    const matches =
+      !normalizedQuery ||
+      Object.values(row).some((value) => normalizeText(value).includes(normalizedQuery));
+    if (!matches) return;
+    if (matchedCount >= start && matchedCount < end) rows.push(row);
+    matchedCount++;
+  };
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    const parts = (leftover + value).split("\n");
+    leftover = parts.pop() ?? "";
+    for (const part of parts) consumeLine(part);
+  }
+  consumeLine(leftover);
+  return { rows, count: sourceCount, matchedCount };
+}
+
 async function parseFile(buffer: ArrayBuffer, filenameHint: string) {
   // XLSX library handles both CSV and XLSX/XLS via SheetJS.
   const isCsv =
@@ -96,6 +183,13 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const url = new URL(req.url);
+    const query = url.searchParams.get("q") || "";
+    const page = Math.max(1, Number(url.searchParams.get("page") || "1") || 1);
+    const pageSize = Math.min(
+      100,
+      Math.max(1, Number(url.searchParams.get("pageSize") || "25") || 25),
+    );
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -129,14 +223,30 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       throw new Error(`Không tải được file từ nguồn (HTTP ${res.status})`);
     }
-    const buffer = await res.arrayBuffer();
-    const rows = await parseFile(buffer, fetchUrl);
+    const isCsv =
+      fetchUrl.includes("format=csv") ||
+      fetchUrl.includes("output=csv") ||
+      fetchUrl.toLowerCase().endsWith(".csv");
+    const parsed = isCsv && res.body
+      ? await parseCsvStream(res.body, query, page, pageSize)
+      : { rows: await parseFile(await res.arrayBuffer(), fetchUrl), count: 0, matchedCount: 0 };
+    const rows = isCsv ? parsed.rows : parsed.rows.slice((page - 1) * pageSize, page * pageSize);
+    const count = isCsv ? parsed.count : parsed.rows.length;
+    const matchedCount = isCsv
+      ? parsed.matchedCount
+      : parsed.rows.filter((row) =>
+          !query.trim() ||
+          Object.values(row).some((value) => normalizeText(value).includes(normalizeText(query))),
+        ).length;
 
     return new Response(
       JSON.stringify({
         configured: true,
         rows,
-        count: rows.length,
+        count,
+        matchedCount,
+        page,
+        pageSize,
         fetchedAt: new Date().toISOString(),
       }),
       {
