@@ -41,6 +41,8 @@ const AdminSystemSettings = () => {
   const [settings, setSettings] = useState<SystemSettings>(defaultSettings);
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [taxDebtUrl, setTaxDebtUrl] = useState("");
+  const [taxDebtSaving, setTaxDebtSaving] = useState(false);
 
   useEffect(() => {
     // Load settings from localStorage
@@ -52,7 +54,31 @@ const AdminSystemSettings = () => {
         console.error('Error parsing saved settings:', e);
       }
     }
+    // Load tax-debt source URL from app_settings
+    (async () => {
+      const { data } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'tax_debt_source_url')
+        .maybeSingle();
+      if (data?.value) setTaxDebtUrl(data.value);
+    })();
   }, []);
+
+  const saveTaxDebtUrl = async () => {
+    setTaxDebtSaving(true);
+    try {
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ key: 'tax_debt_source_url', value: taxDebtUrl.trim(), updated_at: new Date().toISOString() });
+      if (error) throw error;
+      toast({ title: 'Đã lưu', description: 'Đã cập nhật link nguồn dữ liệu thuế.' });
+    } catch (err: any) {
+      toast({ title: 'Lỗi', description: err.message || 'Không lưu được', variant: 'destructive' });
+    } finally {
+      setTaxDebtSaving(false);
+    }
+  };
 
   const handleChange = <K extends keyof SystemSettings>(key: K, value: SystemSettings[K]) => {
     setSettings(prev => ({
