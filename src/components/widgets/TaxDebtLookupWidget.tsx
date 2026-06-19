@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   Table,
   TableBody,
@@ -18,6 +19,9 @@ interface FetchResponse {
   configured: boolean;
   rows: Row[];
   count?: number;
+  matchedCount?: number;
+  page?: number;
+  pageSize?: number;
   fetchedAt?: string;
   message?: string;
   error?: string;
@@ -31,14 +35,15 @@ const TaxDebtLookupWidget = () => {
   const [data, setData] = useState<FetchResponse | null>(null);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const debouncedQuery = useDebounce(query, 350);
 
-  const load = async () => {
+  const load = async (search = debouncedQuery, targetPage = page) => {
     setLoading(true);
     setError(null);
     try {
       const { data: res, error: fnError } = await supabase.functions.invoke(
         "tax-debt-fetch",
-        { method: "GET" },
+        { body: { q: search, page: targetPage, pageSize: PAGE_SIZE } },
       );
       if (fnError) throw fnError;
       setData(res as FetchResponse);
@@ -50,31 +55,18 @@ const TaxDebtLookupWidget = () => {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    load(debouncedQuery, page);
+  }, [debouncedQuery, page]);
 
   const columns = useMemo(() => {
     if (!data?.rows?.length) return [];
     return Object.keys(data.rows[0]);
   }, [data]);
 
-  const filtered = useMemo(() => {
-    if (!data?.rows) return [];
-    const q = query.trim().toLowerCase();
-    if (!q) return data.rows;
-    return data.rows.filter((row) =>
-      Object.values(row).some((v) =>
-        String(v ?? "").toLowerCase().includes(q),
-      ),
-    );
-  }, [data, query]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalMatches = data?.matchedCount ?? data?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalMatches / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const pageRows = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
+  const pageRows = data?.rows ?? [];
 
   if (loading) {
     return (
