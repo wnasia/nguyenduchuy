@@ -100,6 +100,8 @@ async function parseCsvStream(
   const rows: Record<string, string>[] = [];
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
+  const shouldCountAll = !query.trim();
+  let doneCollecting = false;
 
   const consumeLine = (rawLine: string) => {
     const line = rawLine.replace(/\r$/, "");
@@ -127,6 +129,7 @@ async function parseCsvStream(
     if (!matches) return;
     if (matchedCount >= start && matchedCount < end) rows.push(row);
     matchedCount++;
+    if (!shouldCountAll && rows.length >= pageSize) doneCollecting = true;
   };
 
   while (true) {
@@ -135,8 +138,12 @@ async function parseCsvStream(
     const parts = (leftover + value).split("\n");
     leftover = parts.pop() ?? "";
     for (const part of parts) consumeLine(part);
+    if (doneCollecting) {
+      await reader.cancel();
+      break;
+    }
   }
-  consumeLine(leftover);
+  if (!doneCollecting) consumeLine(leftover);
   return { rows, count: sourceCount, matchedCount };
 }
 
