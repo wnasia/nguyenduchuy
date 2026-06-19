@@ -7,7 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Save, RotateCcw, Globe, Bell, Shield, Palette, Database } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Settings, Save, RotateCcw, Globe, Bell, Shield, Palette, Database, FileSearch } from "lucide-react";
 
 interface SystemSettings {
   site_name: string;
