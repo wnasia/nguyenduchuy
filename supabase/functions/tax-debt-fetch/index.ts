@@ -248,6 +248,34 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (sourceUrl.includes("docs.google.com/spreadsheets")) {
+      const { rows, count, matchedCount } = await fetchSheetRows(
+        sourceUrl,
+        query,
+        page,
+        pageSize,
+      );
+      return new Response(
+        JSON.stringify({
+          configured: true,
+          rows,
+          count,
+          matchedCount,
+          page,
+          pageSize,
+          fetchedAt: new Date().toISOString(),
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Cache-Control": "public, max-age=600",
+          },
+          status: 200,
+        },
+      );
+    }
+
     const fetchUrl = buildFetchUrl(sourceUrl);
     const res = await fetch(fetchUrl, { redirect: "follow" });
     if (!res.ok) {
