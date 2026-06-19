@@ -53,6 +53,25 @@ function buildFetchUrl(rawUrl: string): string {
   return trimmed;
 }
 
+function getSheetInfo(rawUrl: string): { spreadsheetId: string; gid: string } | null {
+  const spreadsheetId = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/)?.[1];
+  if (!spreadsheetId) return null;
+  return {
+    spreadsheetId,
+    gid: rawUrl.match(/[?#&]gid=([0-9]+)/)?.[1] || "0",
+  };
+}
+
+function escapeSheetQueryValue(value: string): string {
+  return value.replace(/[\\']/g, " ").trim();
+}
+
+function buildSheetQueryUrl(rawUrl: string, sheetQuery: string): string | null {
+  const info = getSheetInfo(rawUrl);
+  if (!info) return null;
+  return `https://docs.google.com/spreadsheets/d/${info.spreadsheetId}/gviz/tq?tqx=out:csv&gid=${info.gid}&tq=${encodeURIComponent(sheetQuery)}`;
+}
+
 function parseCsvLine(line: string): string[] {
   const out: string[] = [];
   let cur = "";
@@ -83,6 +102,41 @@ function normalizeText(value: unknown): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/đ/g, "d");
+}
+
+function parseCsvText(text: string): Record<string, string>[] {
+  const lines = text.split(/\r?\n/).filter((line) => line.trim());
+  if (lines.length < 2) return [];
+  const header = parseCsvLine(lines[0]).map((cell, index) => cell || `Cột ${index + 1}`);
+  return lines.slice(1).map((line) => {
+    const cells = parseCsvLine(line);
+    return Object.fromEntries(header.map((name, index) => [name, cells[index] ?? ""]));
+  });
+}
+
+async function fetchSheetRows(sourceUrl: string, query: string, page: number, pageSize: number) {
+  const offset = (page - 1) * pageSize;
+  const cleanQuery = escapeSheetQueryValue(query);
+  const where = cleanQuery
+    ? ` where B contains '${cleanQuery}' or C contains '${cleanQuery}'`
+    : "";
+  const select =
+    "select A,B,C,D,E" +
+    where +
+    ` limit ${pageSize} offset ${offset} ` +
+    "label A 'STT', B 'MST', C 'Tên Người nộp thuế', D 'Trạng thái MST', E 'Cơ quan thuế quản lý'";
+  const countQuery = `select count(A)${where}`;
+  const rowsUrl = buildSheetQueryUrl(sourceUrl, select);
+  const countUrl = buildSheetQueryUrl(sourceUrl, countQuery);
+  if (!rowsUrl || !countUrl) throw new Error("Link Google Sheets không hợp lệ");
+
+  const [rowsRes, countRes] = await Promise.all([fetch(rowsUrl), fetch(countUrl)]);
+  if (!rowsRes.ok) throw new Error(`Không truy vấn được Google Sheets (HTTP ${rowsRes.status})`);
+  if (!countRes.ok) throw new Error(`Không đếm được dữ liệu Google Sheets (HTTP ${countRes.status})`);
+  const rows = parseCsvText(await rowsRes.text());
+  const countRows = parseCsvText(await countRes.text());
+  const matchedCount = Number(Object.values(countRows[0] ?? {})[0] ?? rows.length) || rows.length;
+  return { rows, count: matchedCount, matchedCount };
 }
 
 async function parseCsvStream(
