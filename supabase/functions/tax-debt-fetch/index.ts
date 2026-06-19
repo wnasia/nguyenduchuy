@@ -2,7 +2,6 @@
 // link configured in app_settings.tax_debt_source_url, parses it server-side, and returns
 // JSON to the browser (avoiding CORS issues with drive.google.com).
 import { createClient } from "npm:@supabase/supabase-js@2";
-import * as XLSX from "npm:xlsx@0.18.5";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -139,42 +138,6 @@ async function parseCsvStream(
   }
   consumeLine(leftover);
   return { rows, count: sourceCount, matchedCount };
-}
-
-async function parseFile(buffer: ArrayBuffer, filenameHint: string) {
-  // XLSX library handles both CSV and XLSX/XLS via SheetJS.
-  const isCsv =
-    filenameHint.includes("format=csv") ||
-    filenameHint.includes("output=csv") ||
-    filenameHint.toLowerCase().endsWith(".csv");
-  const wb = isCsv
-    ? XLSX.read(new TextDecoder("utf-8").decode(buffer), {
-        type: "string",
-        codepage: 65001,
-      })
-    : XLSX.read(new Uint8Array(buffer), { type: "array", codepage: 65001 });
-  const sheetName = wb.SheetNames[0];
-  const sheet = wb.Sheets[sheetName];
-  const matrix = XLSX.utils.sheet_to_json<string[]>(sheet, {
-    header: 1,
-    defval: "",
-    raw: false,
-  });
-  const headerIndex = matrix.findIndex((row) => {
-    const normalized = row.map((cell) => String(cell).toLowerCase());
-    return (
-      normalized.some((cell) => cell.includes("mst") || cell.includes("mã số thuế")) &&
-      normalized.some((cell) => cell.includes("tên") || cell.includes("người nộp thuế"))
-    );
-  });
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
-    range: headerIndex >= 0 ? headerIndex : 0,
-    defval: "",
-    raw: false,
-  });
-  return rows.filter((row) =>
-    Object.values(row).some((value) => String(value ?? "").trim() !== ""),
-  );
 }
 
 Deno.serve(async (req) => {
