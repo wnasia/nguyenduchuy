@@ -199,21 +199,9 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       throw new Error(`Không tải được file từ nguồn (HTTP ${res.status})`);
     }
-    const isCsv =
-      fetchUrl.includes("format=csv") ||
-      fetchUrl.includes("output=csv") ||
-      fetchUrl.toLowerCase().endsWith(".csv");
-    const parsed = isCsv && res.body
-      ? await parseCsvStream(res.body, query, page, pageSize)
-      : { rows: await parseFile(await res.arrayBuffer(), fetchUrl), count: 0, matchedCount: 0 };
-    const rows = isCsv ? parsed.rows : parsed.rows.slice((page - 1) * pageSize, page * pageSize);
-    const count = isCsv ? parsed.count : parsed.rows.length;
-    const matchedCount = isCsv
-      ? parsed.matchedCount
-      : parsed.rows.filter((row) =>
-          !query.trim() ||
-          Object.values(row).some((value) => normalizeText(value).includes(normalizeText(query))),
-        ).length;
+    if (!res.body) throw new Error("Nguồn dữ liệu không có nội dung để đọc");
+    const parsed = await parseCsvStream(res.body, query, page, pageSize);
+    const { rows, count, matchedCount } = parsed;
 
     return new Response(
       JSON.stringify({
