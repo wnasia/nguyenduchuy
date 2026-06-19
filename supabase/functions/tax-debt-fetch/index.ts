@@ -184,12 +184,18 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const query = url.searchParams.get("q") || "";
-    const page = Math.max(1, Number(url.searchParams.get("page") || "1") || 1);
-    const pageSize = Math.min(
+    let query = url.searchParams.get("q") || "";
+    let page = Math.max(1, Number(url.searchParams.get("page") || "1") || 1);
+    let pageSize = Math.min(
       100,
       Math.max(1, Number(url.searchParams.get("pageSize") || "25") || 25),
     );
+    if (req.method !== "GET") {
+      const body = await req.json().catch(() => ({}));
+      query = String(body.q ?? body.query ?? query);
+      page = Math.max(1, Number(body.page ?? page) || 1);
+      pageSize = Math.min(100, Math.max(1, Number(body.pageSize ?? pageSize) || 25));
+    }
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
