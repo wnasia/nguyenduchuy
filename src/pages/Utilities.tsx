@@ -140,6 +140,8 @@ const Utilities = () => {
         return <HoroscopeWidget />;
       case "stock-market":
         return <StockMarketWidget />;
+      case "tax-debt":
+        return <TaxDebtLookupWidget />;
       default:
         return null;
     }
