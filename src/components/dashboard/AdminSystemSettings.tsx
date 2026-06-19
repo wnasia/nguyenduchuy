@@ -7,7 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Save, RotateCcw, Globe, Bell, Shield, Palette, Database } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Settings, Save, RotateCcw, Globe, Bell, Shield, Palette, Database, FileSearch } from "lucide-react";
 
 interface SystemSettings {
   site_name: string;
@@ -40,6 +41,8 @@ const AdminSystemSettings = () => {
   const [settings, setSettings] = useState<SystemSettings>(defaultSettings);
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [taxDebtUrl, setTaxDebtUrl] = useState("");
+  const [taxDebtSaving, setTaxDebtSaving] = useState(false);
 
   useEffect(() => {
     // Load settings from localStorage
@@ -51,7 +54,31 @@ const AdminSystemSettings = () => {
         console.error('Error parsing saved settings:', e);
       }
     }
+    // Load tax-debt source URL from app_settings
+    (async () => {
+      const { data } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'tax_debt_source_url')
+        .maybeSingle();
+      if (data?.value) setTaxDebtUrl(data.value);
+    })();
   }, []);
+
+  const saveTaxDebtUrl = async () => {
+    setTaxDebtSaving(true);
+    try {
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ key: 'tax_debt_source_url', value: taxDebtUrl.trim(), updated_at: new Date().toISOString() });
+      if (error) throw error;
+      toast({ title: 'Đã lưu', description: 'Đã cập nhật link nguồn dữ liệu thuế.' });
+    } catch (err: any) {
+      toast({ title: 'Lỗi', description: err.message || 'Không lưu được', variant: 'destructive' });
+    } finally {
+      setTaxDebtSaving(false);
+    }
+  };
 
   const handleChange = <K extends keyof SystemSettings>(key: K, value: SystemSettings[K]) => {
     setSettings(prev => ({
@@ -303,6 +330,39 @@ const AdminSystemSettings = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tax Debt Lookup Source */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileSearch className="h-5 w-5" />
+            Nguồn dữ liệu Tra cứu Doanh nghiệp Nợ thuế
+          </CardTitle>
+          <CardDescription>
+            Dán link Google Drive (public) của file CSV/XLSX chứa danh sách. Hỗ trợ link dạng <span className="font-mono text-xs">drive.google.com/file/d/.../view</span> hoặc link Google Sheets đã xuất CSV. File phải để chế độ "Anyone with the link".
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Label htmlFor="tax_debt_url">Link nguồn</Label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Input
+              id="tax_debt_url"
+              value={taxDebtUrl}
+              onChange={(e) => setTaxDebtUrl(e.target.value)}
+              placeholder="https://drive.google.com/file/d/xxxxx/view"
+              className="flex-1"
+            />
+            <Button onClick={saveTaxDebtUrl} disabled={taxDebtSaving}>
+              <Save className="h-4 w-4 mr-2" />
+              {taxDebtSaving ? "Đang lưu..." : "Lưu"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Hàng đầu tiên của file sẽ được dùng làm tiêu đề cột (VD: MST, Tên doanh nghiệp, Số tiền nợ, Tỉnh/TP...). Kết quả được cache 10 phút.
+          </p>
+        </CardContent>
+      </Card>
+
 
       {/* Current Settings Summary */}
       <Card>

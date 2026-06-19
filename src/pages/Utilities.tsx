@@ -11,7 +11,8 @@ import {
   ArrowRight,
   Globe,
   Bitcoin,
-  Pickaxe
+  Pickaxe,
+  FileSearch
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +22,7 @@ import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 import HoroscopeWidget from "@/components/widgets/HoroscopeWidget";
 import GoldPriceHistoryWidget from "@/components/widgets/GoldPriceHistoryWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
+import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 
 const Utilities = () => {
   const { t } = useI18n();
@@ -99,6 +101,16 @@ const Utilities = () => {
       color: "from-indigo-500 to-violet-500",
       bgColor: "bg-indigo-50",
       iconColor: "text-indigo-600"
+    },
+    {
+      id: "tax-debt",
+      icon: FileSearch,
+      title: "Tra cứu doanh nghiệp nợ thuế",
+      description: "Tra cứu nhanh danh sách doanh nghiệp đang nợ thuế theo mã số thuế hoặc tên doanh nghiệp",
+      action: "Tra cứu",
+      color: "from-rose-500 to-red-500",
+      bgColor: "bg-rose-50",
+      iconColor: "text-rose-600"
     }
   ];
 
@@ -128,6 +140,8 @@ const Utilities = () => {
         return <HoroscopeWidget />;
       case "stock-market":
         return <StockMarketWidget />;
+      case "tax-debt":
+        return <TaxDebtLookupWidget />;
       default:
         return null;
     }
