@@ -117,8 +117,9 @@ function parseCsvText(text: string): Record<string, string>[] {
 async function fetchSheetRows(sourceUrl: string, query: string, page: number, pageSize: number) {
   const offset = (page - 1) * pageSize;
   const cleanQuery = escapeSheetQueryValue(query);
+  const upperQuery = cleanQuery.toLocaleUpperCase("vi-VN");
   const where = cleanQuery
-    ? ` where B contains '${cleanQuery}' or C contains '${cleanQuery}'`
+    ? ` where B contains '${cleanQuery}' or C contains '${cleanQuery}' or C contains '${upperQuery}'`
     : "";
   const select =
     "select A,B,C,D,E" +
