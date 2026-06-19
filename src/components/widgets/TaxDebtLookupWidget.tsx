@@ -87,7 +87,7 @@ const TaxDebtLookupWidget = () => {
           <p className="font-medium text-destructive">Không tải được dữ liệu</p>
           <p className="mt-1 text-muted-foreground">{error}</p>
         </div>
-        <Button size="sm" variant="outline" onClick={load}>
+        <Button size="sm" variant="outline" onClick={() => load()}>
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
           Thử lại
         </Button>
@@ -122,7 +122,7 @@ const TaxDebtLookupWidget = () => {
             className="pl-9"
           />
         </div>
-        <Button variant="outline" size="sm" onClick={load}>
+        <Button variant="outline" size="sm" onClick={() => load()}>
           <RefreshCw className="h-4 w-4 mr-1.5" />
           Tải lại
         </Button>
@@ -133,7 +133,7 @@ const TaxDebtLookupWidget = () => {
           Tổng: <strong>{data?.count ?? 0}</strong> bản ghi
         </span>
         <span>
-          Khớp: <strong>{filtered.length}</strong>
+          Khớp: <strong>{totalMatches}</strong>
         </span>
         {data?.fetchedAt && (
           <span>
@@ -142,7 +142,7 @@ const TaxDebtLookupWidget = () => {
         )}
       </div>
 
-      {filtered.length === 0 ? (
+      {pageRows.length === 0 ? (
         <div className="rounded-lg border bg-muted/20 p-8 text-center text-sm text-muted-foreground">
           Không tìm thấy kết quả phù hợp.
         </div>
