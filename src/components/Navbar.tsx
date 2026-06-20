@@ -275,6 +275,32 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
+
+              {/* Mobile: Utilities group */}
+              <Link
+                to="/utilities"
+                onClick={() => setIsOpen(false)}
+                className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${
+                  isActive("/utilities")
+                    ? "text-primary bg-primary/10"
+                    : "text-foreground hover:text-primary hover:bg-primary/5"
+                }`}
+              >
+                {t("common.utilities") || "Tiện ích"}
+              </Link>
+              <div className="pl-4 space-y-1">
+                {utilityItems.map((u) => (
+                  <Link
+                    key={u.id}
+                    to={`/utilities?tool=${u.id}`}
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-1.5 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors"
+                  >
+                    {u.name}
+                  </Link>
+                ))}
+              </div>
+              
               
               {loading ? (
                 <div className="flex justify-center py-2">
