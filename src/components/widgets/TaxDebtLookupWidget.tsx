@@ -167,78 +167,84 @@ const TaxDebtLookupWidget = () => {
         )}
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-16 rounded-lg border bg-muted/20">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          <span className="ml-3 text-sm text-muted-foreground">
-            Đang tải dữ liệu...
-          </span>
-        </div>
-      ) : pageRows.length === 0 ? (
-        <div className="rounded-lg border bg-muted/20 p-8 text-center text-sm text-muted-foreground">
-          {submittedQuery
-            ? "Không tìm thấy kết quả phù hợp."
-            : "Nhập từ khoá và bấm Tìm để tra cứu."}
-        </div>
-      ) : (
-        <>
-          {/* Desktop table */}
-          <div className="hidden md:block rounded-lg border overflow-auto max-h-[55vh]">
-            <Table>
-              <TableHeader className="sticky top-0 bg-background z-10">
-                <TableRow>
-                  <TableHead className="w-12">#</TableHead>
-                  {columns.map((col) => (
-                    <TableHead key={col} className="whitespace-nowrap">
-                      {col}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pageRows.map((row, idx) => (
-                  <TableRow key={(currentPage - 1) * PAGE_SIZE + idx}>
-                    <TableCell className="text-muted-foreground">
-                      {(currentPage - 1) * PAGE_SIZE + idx + 1}
-                    </TableCell>
+      <div className="relative min-h-[320px]">
+        {pageRows.length === 0 ? (
+          <div className="rounded-lg border bg-muted/20 p-8 text-center text-sm text-muted-foreground min-h-[320px] flex items-center justify-center">
+            {loading
+              ? "Đang tải dữ liệu..."
+              : submittedQuery
+                ? "Không tìm thấy kết quả phù hợp."
+                : "Nhập từ khoá và bấm Tìm để tra cứu."}
+          </div>
+        ) : (
+          <div className={loading ? "opacity-60 transition-opacity" : "transition-opacity"}>
+            {/* Desktop table */}
+            <div className="hidden md:block rounded-lg border overflow-auto max-h-[55vh]">
+              <Table>
+                <TableHeader className="sticky top-0 bg-background z-10">
+                  <TableRow>
+                    <TableHead className="w-12">#</TableHead>
                     {columns.map((col) => (
-                      <TableCell key={col} className="text-sm">
-                        {String(row[col] ?? "")}
-                      </TableCell>
+                      <TableHead key={col} className="whitespace-nowrap">
+                        {col}
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="md:hidden space-y-3">
-            {pageRows.map((row, idx) => (
-              <div
-                key={(currentPage - 1) * PAGE_SIZE + idx}
-                className="rounded-lg border bg-card p-3 text-sm"
-              >
-                <div className="text-xs text-muted-foreground mb-2">
-                  #{(currentPage - 1) * PAGE_SIZE + idx + 1}
-                </div>
-                <dl className="space-y-1.5">
-                  {columns.map((col) => (
-                    <div key={col} className="grid grid-cols-3 gap-2">
-                      <dt className="col-span-1 text-xs text-muted-foreground truncate">
-                        {col}
-                      </dt>
-                      <dd className="col-span-2 break-words">
-                        {String(row[col] ?? "")}
-                      </dd>
-                    </div>
+                </TableHeader>
+                <TableBody>
+                  {pageRows.map((row, idx) => (
+                    <TableRow key={(currentPage - 1) * PAGE_SIZE + idx}>
+                      <TableCell className="text-muted-foreground align-top">
+                        {(currentPage - 1) * PAGE_SIZE + idx + 1}
+                      </TableCell>
+                      {columns.map((col) => (
+                        <TableCell key={col} className="text-sm align-top break-words">
+                          {String(row[col] ?? "")}
+                        </TableCell>
+                      ))}
+                    </TableRow>
                   ))}
-                </dl>
-              </div>
-            ))}
-          </div>
+                </TableBody>
+              </Table>
+            </div>
 
-          {totalPages > 1 && (
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {pageRows.map((row, idx) => (
+                <div
+                  key={(currentPage - 1) * PAGE_SIZE + idx}
+                  className="rounded-lg border bg-card p-3 text-sm"
+                >
+                  <div className="text-xs text-muted-foreground mb-2">
+                    #{(currentPage - 1) * PAGE_SIZE + idx + 1}
+                  </div>
+                  <dl className="space-y-1.5">
+                    {columns.map((col) => (
+                      <div key={col} className="grid grid-cols-3 gap-2">
+                        <dt className="col-span-1 text-xs text-muted-foreground truncate">
+                          {col}
+                        </dt>
+                        <dd className="col-span-2 break-words">
+                          {String(row[col] ?? "")}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {loading && pageRows.length > 0 && (
+          <div className="absolute top-2 right-2 bg-background/80 backdrop-blur rounded-md border px-2 py-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Đang tải...
+          </div>
+        )}
+      </div>
+
+      {pageRows.length > 0 && totalPages > 1 && (
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-muted-foreground">
                 Trang {currentPage} / {totalPages}
