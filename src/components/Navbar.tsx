@@ -144,6 +144,34 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+
+            {/* Utilities dropdown (hover) */}
+            <div className="relative group">
+              <Link
+                to="/utilities"
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors inline-flex items-center ${
+                  isActive("/utilities")
+                    ? "text-primary bg-primary/10"
+                    : "text-foreground hover:text-primary hover:bg-primary/5"
+                }`}
+              >
+                {t("common.utilities") || "Tiện ích"}
+              </Link>
+              <div className="absolute left-0 top-full pt-2 w-56 hidden group-hover:block z-50">
+                <div className="bg-popover border border-border rounded-md shadow-lg py-1">
+                  {utilityItems.map((u) => (
+                    <Link
+                      key={u.id}
+                      to={`/utilities?tool=${u.id}`}
+                      className="block px-4 py-2 text-sm text-foreground hover:bg-primary/5 hover:text-primary transition-colors"
+                    >
+                      {u.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
              {/* Dark Mode Toggle - Icon only */}
              <button
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
