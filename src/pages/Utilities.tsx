@@ -27,9 +27,33 @@ import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 const Utilities = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   usePageTitle(t("meta.utilities_title") || "Tiện ích - Huy's");
   
   const [openModal, setOpenModal] = useState<string | null>(null);
+
+  // Auto-open modal (or redirect) when ?tool=<id> is present
+  useEffect(() => {
+    const tool = searchParams.get("tool");
+    if (!tool) return;
+    if (tool === "crypto") {
+      navigate("/crypto", { replace: true });
+    } else if (tool === "mining-explorer") {
+      navigate("/explorer", { replace: true });
+    } else {
+      setOpenModal(tool);
+    }
+  }, [searchParams, navigate]);
+
+  const handleModalChange = (open: boolean) => {
+    if (!open) {
+      setOpenModal(null);
+      if (searchParams.get("tool")) {
+        searchParams.delete("tool");
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  };
 
   const utilities = [
     {
