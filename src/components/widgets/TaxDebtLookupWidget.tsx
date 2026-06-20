@@ -267,9 +267,7 @@ const TaxDebtLookupWidget = () => {
                   Sau
                 </Button>
               </div>
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
   );
