@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useDebounce } from "@/hooks/useDebounce";
 import {
   Table,
   TableBody,
@@ -34,10 +33,10 @@ const TaxDebtLookupWidget = () => {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<FetchResponse | null>(null);
   const [query, setQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [page, setPage] = useState(1);
-  const debouncedQuery = useDebounce(query, 350);
 
-  const load = async (search = debouncedQuery, targetPage = page) => {
+  const load = async (search: string, targetPage: number) => {
     setLoading(true);
     setError(null);
     try {
@@ -54,9 +53,27 @@ const TaxDebtLookupWidget = () => {
     }
   };
 
+  // Initial load + reload only when submittedQuery or page changes
   useEffect(() => {
-    load(debouncedQuery, page);
-  }, [debouncedQuery, page]);
+    load(submittedQuery, page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submittedQuery, page]);
+
+  const handleSearch = () => {
+    setPage(1);
+    if (query === submittedQuery) {
+      // force reload even when value unchanged
+      load(query, 1);
+    } else {
+      setSubmittedQuery(query);
+    }
+  };
+
+  const handleReset = () => {
+    setQuery("");
+    setPage(1);
+    setSubmittedQuery("");
+  };
 
   const columns = useMemo(() => {
     if (!data?.rows?.length) return [];
@@ -68,26 +85,15 @@ const TaxDebtLookupWidget = () => {
   const currentPage = Math.min(page, totalPages);
   const pageRows = data?.rows ?? [];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        <span className="ml-3 text-sm text-muted-foreground">
-          Đang tải dữ liệu...
-        </span>
-      </div>
-    );
-  }
-
   if (error) {
     return (
-      <div className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
+      <div className="flex flex-col sm:flex-row items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
         <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <p className="font-medium text-destructive">Không tải được dữ liệu</p>
-          <p className="mt-1 text-muted-foreground">{error}</p>
+          <p className="mt-1 text-muted-foreground break-words">{error}</p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => load()}>
+        <Button size="sm" variant="outline" onClick={() => load(submittedQuery, page)}>
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
           Thử lại
         </Button>
@@ -108,25 +114,44 @@ const TaxDebtLookupWidget = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-4 w-full">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSearch();
+        }}
+        className="flex flex-col sm:flex-row gap-2 w-full"
+      >
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Tìm theo mã số thuế, tên doanh nghiệp..."
-            className="pl-9"
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Nhập MST hoặc tên DN rồi bấm Tìm..."
+            className="pl-9 w-full"
+            inputMode="search"
           />
         </div>
-        <Button variant="outline" size="sm" onClick={() => load()}>
-          <RefreshCw className="h-4 w-4 mr-1.5" />
-          Tải lại
-        </Button>
-      </div>
+        <div className="flex gap-2">
+          <Button type="submit" className="flex-1 sm:flex-none" disabled={loading}>
+            {loading ? (
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4 mr-1.5" />
+            )}
+            Tìm
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleReset}
+            disabled={loading}
+          >
+            <RefreshCw className="h-4 w-4 sm:mr-1.5" />
+            <span className="hidden sm:inline">Đặt lại</span>
+          </Button>
+        </div>
+      </form>
 
       <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
         <span>
@@ -136,19 +161,29 @@ const TaxDebtLookupWidget = () => {
           Khớp: <strong>{totalMatches}</strong>
         </span>
         {data?.fetchedAt && (
-          <span>
+          <span className="truncate">
             Cập nhật: {new Date(data.fetchedAt).toLocaleString("vi-VN")}
           </span>
         )}
       </div>
 
-      {pageRows.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-16 rounded-lg border bg-muted/20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <span className="ml-3 text-sm text-muted-foreground">
+            Đang tải dữ liệu...
+          </span>
+        </div>
+      ) : pageRows.length === 0 ? (
         <div className="rounded-lg border bg-muted/20 p-8 text-center text-sm text-muted-foreground">
-          Không tìm thấy kết quả phù hợp.
+          {submittedQuery
+            ? "Không tìm thấy kết quả phù hợp."
+            : "Nhập từ khoá và bấm Tìm để tra cứu."}
         </div>
       ) : (
         <>
-          <div className="rounded-lg border overflow-auto max-h-[55vh]">
+          {/* Desktop table */}
+          <div className="hidden md:block rounded-lg border overflow-auto max-h-[55vh]">
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
@@ -177,8 +212,34 @@ const TaxDebtLookupWidget = () => {
             </Table>
           </div>
 
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {pageRows.map((row, idx) => (
+              <div
+                key={(currentPage - 1) * PAGE_SIZE + idx}
+                className="rounded-lg border bg-card p-3 text-sm"
+              >
+                <div className="text-xs text-muted-foreground mb-2">
+                  #{(currentPage - 1) * PAGE_SIZE + idx + 1}
+                </div>
+                <dl className="space-y-1.5">
+                  {columns.map((col) => (
+                    <div key={col} className="grid grid-cols-3 gap-2">
+                      <dt className="col-span-1 text-xs text-muted-foreground truncate">
+                        {col}
+                      </dt>
+                      <dd className="col-span-2 break-words">
+                        {String(row[col] ?? "")}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ))}
+          </div>
+
           {totalPages > 1 && (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-muted-foreground">
                 Trang {currentPage} / {totalPages}
               </span>
@@ -186,7 +247,7 @@ const TaxDebtLookupWidget = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  disabled={currentPage === 1}
+                  disabled={currentPage === 1 || loading}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
                   Trước
@@ -194,7 +255,7 @@ const TaxDebtLookupWidget = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || loading}
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 >
                   Sau
