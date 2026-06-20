@@ -14,8 +14,8 @@ import {
   Pickaxe,
   FileSearch
 } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import LunarCalendarFull from "@/components/LunarCalendarFull";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
