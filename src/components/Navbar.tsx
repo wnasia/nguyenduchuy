@@ -73,8 +73,17 @@ const Navbar = () => {
     { name: t("common.stories"), href: "/stories" },
     { name: t("common.gallery"), href: "/gallery" },
     { name: t("common.videos"), href: "/videos" },
-    { name: t("common.utilities") || "Tiện ích", href: "/utilities" },
-    
+  ];
+
+  const utilityItems = [
+    { id: "lunar-calendar", name: "Lịch âm dương" },
+    { id: "horoscope", name: "Xem tử vi" },
+    { id: "gold-price", name: "Giá vàng" },
+    { id: "stock-market", name: "Chứng khoán VN" },
+    { id: "flight-booking", name: "Vé máy bay" },
+    { id: "crypto", name: "Crypto Tracker" },
+    { id: "mining-explorer", name: "Mining Explorer" },
+    { id: "tax-debt", name: "Tra cứu nợ thuế" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
