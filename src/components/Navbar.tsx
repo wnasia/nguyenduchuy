@@ -73,8 +73,17 @@ const Navbar = () => {
     { name: t("common.stories"), href: "/stories" },
     { name: t("common.gallery"), href: "/gallery" },
     { name: t("common.videos"), href: "/videos" },
-    { name: t("common.utilities") || "Tiện ích", href: "/utilities" },
-    
+  ];
+
+  const utilityItems = [
+    { id: "lunar-calendar", name: "Lịch âm dương" },
+    { id: "horoscope", name: "Xem tử vi" },
+    { id: "gold-price", name: "Giá vàng" },
+    { id: "stock-market", name: "Chứng khoán VN" },
+    { id: "flight-booking", name: "Vé máy bay" },
+    { id: "crypto", name: "Crypto Tracker" },
+    { id: "mining-explorer", name: "Mining Explorer" },
+    { id: "tax-debt", name: "Tra cứu nợ thuế" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -135,6 +144,34 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+
+            {/* Utilities dropdown (hover) */}
+            <div className="relative group">
+              <Link
+                to="/utilities"
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors inline-flex items-center ${
+                  isActive("/utilities")
+                    ? "text-primary bg-primary/10"
+                    : "text-foreground hover:text-primary hover:bg-primary/5"
+                }`}
+              >
+                {t("common.utilities") || "Tiện ích"}
+              </Link>
+              <div className="absolute left-0 top-full pt-2 w-56 hidden group-hover:block z-50">
+                <div className="bg-popover border border-border rounded-md shadow-lg py-1">
+                  {utilityItems.map((u) => (
+                    <Link
+                      key={u.id}
+                      to={`/utilities?tool=${u.id}`}
+                      className="block px-4 py-2 text-sm text-foreground hover:bg-primary/5 hover:text-primary transition-colors"
+                    >
+                      {u.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
              {/* Dark Mode Toggle - Icon only */}
              <button
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
@@ -238,6 +275,32 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
+
+              {/* Mobile: Utilities group */}
+              <Link
+                to="/utilities"
+                onClick={() => setIsOpen(false)}
+                className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${
+                  isActive("/utilities")
+                    ? "text-primary bg-primary/10"
+                    : "text-foreground hover:text-primary hover:bg-primary/5"
+                }`}
+              >
+                {t("common.utilities") || "Tiện ích"}
+              </Link>
+              <div className="pl-4 space-y-1">
+                {utilityItems.map((u) => (
+                  <Link
+                    key={u.id}
+                    to={`/utilities?tool=${u.id}`}
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-1.5 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors"
+                  >
+                    {u.name}
+                  </Link>
+                ))}
+              </div>
+              
               
               {loading ? (
                 <div className="flex justify-center py-2">
