@@ -242,7 +242,7 @@ const Utilities = () => {
       </div>
 
       {/* Modal for utility content */}
-      <Dialog open={openModal !== null} onOpenChange={() => setOpenModal(null)}>
+      <Dialog open={openModal !== null} onOpenChange={handleModalChange}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">
