@@ -78,7 +78,7 @@ const Navbar = () => {
     { name: "Câu chuyện", href: "/stories" },
   ];
 
-  const utilityItems = [
+  const utilityItems: { id: string; name: string; href?: string }[] = [
     { id: "gallery", name: "Thư viện ảnh", href: "/gallery" },
     { id: "videos", name: "Video", href: "/videos" },
     { id: "lunar-calendar", name: "Lịch âm dương" },
