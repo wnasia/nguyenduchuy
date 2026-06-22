@@ -91,7 +91,11 @@ const Navbar = () => {
     { id: "tax-debt", name: "Tra cứu nợ thuế" },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const currentPathSearch = location.pathname + location.search;
+  const isActive = (path: string) => {
+    if (path.includes("?")) return currentPathSearch === path;
+    return location.pathname === path;
+  };
 
   const handleSignOut = async () => {
     try {
