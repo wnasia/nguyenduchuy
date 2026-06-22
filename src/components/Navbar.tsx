@@ -297,7 +297,7 @@ const Navbar = () => {
                 {utilityItems.map((u) => (
                   <Link
                     key={u.id}
-                    to={`/utilities?tool=${u.id}`}
+                    to={u.href ?? `/utilities?tool=${u.id}`}
                     onClick={() => setIsOpen(false)}
                     className="block px-3 py-1.5 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors"
                   >
