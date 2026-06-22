@@ -70,12 +70,17 @@ const Navbar = () => {
   }, [user]);
 
   const navigation = [
-    { name: t("common.stories"), href: "/stories" },
-    { name: t("common.gallery"), href: "/gallery" },
-    { name: t("common.videos"), href: "/videos" },
+    { name: "Công nghệ", href: "/?topic=cong-nghe" },
+    { name: "Đời sống", href: "/?topic=doi-song" },
+    { name: "Kinh tế", href: "/?topic=kinh-te" },
+    { name: "Giải trí", href: "/?topic=giai-tri" },
+    { name: "Thể thao", href: "/?topic=the-thao" },
+    { name: "Câu chuyện", href: "/stories" },
   ];
 
   const utilityItems = [
+    { id: "gallery", name: "Thư viện ảnh", href: "/gallery" },
+    { id: "videos", name: "Video", href: "/videos" },
     { id: "lunar-calendar", name: "Lịch âm dương" },
     { id: "horoscope", name: "Xem tử vi" },
     { id: "gold-price", name: "Giá vàng" },
