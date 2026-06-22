@@ -112,6 +112,30 @@ const Home = () => {
     document.title = t("meta.home_title");
   }, [fetchData, t]);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const topicSlug = searchParams.get("topic");
+
+  // Sync ?topic=<slug> from URL to selectedTopicId
+  useEffect(() => {
+    if (!topics.length) return;
+    if (topicSlug) {
+      const found = topics.find(tp => tp.slug === topicSlug);
+      setSelectedTopicId(found ? found.id : null);
+    } else {
+      setSelectedTopicId(null);
+    }
+  }, [topicSlug, topics]);
+
+  const handleSelectTopic = (id: string | null) => {
+    setSelectedTopicId(id);
+    if (id) {
+      const tp = topics.find(x => x.id === id);
+      if (tp) setSearchParams({ topic: tp.slug });
+    } else {
+      setSearchParams({});
+    }
+  };
+
   // Get filtered posts for selected topic
   const getSelectedTopicPosts = () => {
     if (!selectedTopicId) return null;
