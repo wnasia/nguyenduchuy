@@ -70,12 +70,17 @@ const Navbar = () => {
   }, [user]);
 
   const navigation = [
-    { name: t("common.stories"), href: "/stories" },
-    { name: t("common.gallery"), href: "/gallery" },
-    { name: t("common.videos"), href: "/videos" },
+    { name: "Công nghệ", href: "/?topic=cong-nghe" },
+    { name: "Đời sống", href: "/?topic=doi-song" },
+    { name: "Kinh tế", href: "/?topic=kinh-te" },
+    { name: "Giải trí", href: "/?topic=giai-tri" },
+    { name: "Thể thao", href: "/?topic=the-thao" },
+    { name: "Câu chuyện", href: "/stories" },
   ];
 
-  const utilityItems = [
+  const utilityItems: { id: string; name: string; href?: string }[] = [
+    { id: "gallery", name: "Thư viện ảnh", href: "/gallery" },
+    { id: "videos", name: "Video", href: "/videos" },
     { id: "lunar-calendar", name: "Lịch âm dương" },
     { id: "horoscope", name: "Xem tử vi" },
     { id: "gold-price", name: "Giá vàng" },
@@ -86,7 +91,11 @@ const Navbar = () => {
     { id: "tax-debt", name: "Tra cứu nợ thuế" },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const currentPathSearch = location.pathname + location.search;
+  const isActive = (path: string) => {
+    if (path.includes("?")) return currentPathSearch === path;
+    return location.pathname === path;
+  };
 
   const handleSignOut = async () => {
     try {
@@ -162,7 +171,7 @@ const Navbar = () => {
                   {utilityItems.map((u) => (
                     <Link
                       key={u.id}
-                      to={`/utilities?tool=${u.id}`}
+                      to={u.href ?? `/utilities?tool=${u.id}`}
                       className="block px-4 py-2 text-sm text-foreground hover:bg-primary/5 hover:text-primary transition-colors"
                     >
                       {u.name}
@@ -292,7 +301,7 @@ const Navbar = () => {
                 {utilityItems.map((u) => (
                   <Link
                     key={u.id}
-                    to={`/utilities?tool=${u.id}`}
+                    to={u.href ?? `/utilities?tool=${u.id}`}
                     onClick={() => setIsOpen(false)}
                     className="block px-3 py-1.5 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors"
                   >
