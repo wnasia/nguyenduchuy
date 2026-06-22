@@ -169,7 +169,7 @@ const Home = () => {
           <TopicNav
             topics={topics}
             selectedTopicId={selectedTopicId}
-            onSelectTopic={setSelectedTopicId}
+            onSelectTopic={handleSelectTopic}
           />
         )}
 
