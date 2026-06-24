@@ -34,30 +34,32 @@ const AppLayout = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <InfoBar />
-      <Navbar />
-      <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/stories" element={<Stories />} />
-          <Route path="/story/:id" element={<StoryDetail />} />
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/videos" element={<Videos />} />
-          <Route path="/crypto" element={<CryptoTracker />} />
-          <Route path="/utilities" element={<Utilities />} />
-          <Route path="/explorer" element={<Explorer />} />
-          <Route path="/submit" element={<Submit />} />
-          <Route path="/login" element={<Login />} />
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
+      <div className="relative flex-1 flex flex-col">
+        <Navbar />
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/stories" element={<Stories />} />
+            <Route path="/story/:id" element={<StoryDetail />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/videos" element={<Videos />} />
+            <Route path="/crypto" element={<CryptoTracker />} />
+            <Route path="/utilities" element={<Utilities />} />
+            <Route path="/explorer" element={<Explorer />} />
+            <Route path="/submit" element={<Submit />} />
+            <Route path="/login" element={<Login />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </div>
       {!isDashboard && <Footer />}
     </div>
   );
