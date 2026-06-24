@@ -109,8 +109,8 @@ const InfoBar = () => {
   };
 
   return (
-    <div className="w-full bg-muted/80 border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center gap-4 text-xs sm:text-sm flex-wrap">
+    <div className={isHome ? "w-full" : "w-full bg-muted/80 border-b border-border"}>
+      <div className={`max-w-7xl mx-auto px-4 py-1.5 flex items-center gap-4 text-xs sm:text-sm flex-wrap ${isHome ? "text-white/90" : ""}`}>
         {/* Gold price */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-yellow-500">🥇</span>
