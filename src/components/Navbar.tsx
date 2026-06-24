@@ -144,7 +144,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden max-w-7xl mx-auto mt-2 bg-background border border-border rounded-2xl shadow-xl animate-fade-in overflow-hidden">
+        <div className="max-w-7xl mx-auto mt-2 bg-background border border-border rounded-2xl shadow-xl animate-fade-in overflow-hidden">
           <div className="p-2 space-y-1">
             {navigation.map((item) => (
               <Link
