@@ -123,105 +123,160 @@ const Navbar = () => {
           </a>
         </div>
 
-        {/* Right controls — always hamburger style */}
-        <div className="flex items-center gap-1">
+        {/* Right controls */}
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            className={`p-2 rounded-full transition-colors ${isHome ? "text-white/90 hover:text-white hover:bg-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+            className={`p-2 rounded-full transition-colors ${isHome ? "text-white/90 hover:text-white hover:bg-white/15" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
             aria-label="Toggle theme"
           >
             {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
-          <Button variant="ghost" size="icon" className={`rounded-full relative ${isHome ? "text-white hover:text-white hover:bg-white/10" : ""}`} onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            {user && unreadCount > 0 && !isOpen && (
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
-            )}
+
+          {/* Login / User — outside dropdown */}
+          {loading ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className={`relative h-10 w-10 rounded-full p-0 ${isHome ? "ring-2 ring-white/40 hover:ring-white/70" : ""}`}>
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
+                    <AvatarFallback>{getUserInitials(user.user_metadata?.full_name || user.email)}</AvatarFallback>
+                  </Avatar>
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-background" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-popover" align="end" forceMount>
+                <div className="px-3 py-2 border-b">
+                  <div className="text-sm font-medium">{user.user_metadata?.full_name || "User"}</div>
+                  <div className="text-xs text-muted-foreground">{user.email}</div>
+                </div>
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard" className="w-full">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigateToModule("profile")}>Profile</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigateToModule("notifications")}>
+                  Notifications
+                  {unreadCount > 0 && (
+                    <Badge variant="destructive" className="ml-auto h-5 min-w-[20px] px-1.5 text-xs">{unreadCount}</Badge>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/login">
+              <Button
+                className={`rounded-full h-10 px-5 font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all ${
+                  isHome
+                    ? "bg-white text-primary hover:bg-white/90"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                }`}
+              >
+                Đăng nhập
+              </Button>
+            </Link>
+          )}
+
+          {/* Hamburger — always visible, white on home */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`rounded-full h-10 w-10 ${
+              isHome
+                ? "text-white hover:text-white hover:bg-white/15 drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
+                : "text-foreground hover:bg-muted"
+            }`}
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Menu"
+          >
+            {isOpen ? <X className="h-7 w-7" strokeWidth={2.5} /> : <Menu className="h-7 w-7" strokeWidth={2.75} />}
           </Button>
         </div>
       </nav>
 
 
-      {/* Mobile menu */}
+      {/* Mega menu panel */}
       {isOpen && (
-        <div className="max-w-7xl mx-auto mt-2 bg-background border border-border rounded-2xl shadow-xl animate-fade-in overflow-hidden">
-          <div className="p-2 space-y-1">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`block px-4 py-2.5 text-base font-medium rounded-xl transition-colors ${
-                  isActive(item.href)
-                    ? "text-primary bg-primary/10"
-                    : "text-foreground hover:text-primary hover:bg-muted"
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
+        <>
+          <div className="fixed inset-0 z-40 bg-black/30 animate-fade-in" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-3 sm:right-4 lg:right-6 top-full mt-2 w-[min(560px,calc(100vw-1.5rem))] z-50 bg-popover border border-border rounded-2xl shadow-2xl animate-fade-in overflow-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
+              {/* Categories column */}
+              <div className="p-4">
+                <div className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Chuyên mục
+                </div>
+                <div className="space-y-0.5">
+                  {navigation.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`block px-3 py-2 text-[15px] rounded-lg transition-colors ${
+                        isActive(item.href)
+                          ? "text-primary bg-primary/10 font-semibold"
+                          : "text-foreground hover:bg-muted hover:text-primary"
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
 
-            <Link
-              to="/utilities"
-              onClick={() => setIsOpen(false)}
-              className={`block px-4 py-2.5 text-base font-medium rounded-xl transition-colors ${
-                utilitiesActive ? "text-primary bg-primary/10" : "text-foreground hover:text-primary hover:bg-muted"
-              }`}
-            >
-              {t("common.utilities") || "Tiện ích"}
-            </Link>
-            <div className="pl-3 space-y-0.5">
-              {utilityItems.map((u) => (
-                <Link
-                  key={u.id}
-                  to={u.href ?? `/utilities?tool=${u.id}`}
-                  onClick={() => setIsOpen(false)}
-                  className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-colors"
-                >
-                  {u.name}
-                </Link>
-              ))}
+              {/* Utilities column */}
+              <div className="p-4">
+                <div className="px-2 pb-2 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("common.utilities") || "Tiện ích"}
+                  </span>
+                  <Link
+                    to="/utilities"
+                    onClick={() => setIsOpen(false)}
+                    className="text-[11px] font-medium text-primary hover:underline"
+                  >
+                    Xem tất cả →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-2 gap-0.5">
+                  {utilityItems.map((u) => (
+                    <Link
+                      key={u.id}
+                      to={u.href ?? `/utilities?tool=${u.id}`}
+                      onClick={() => setIsOpen(false)}
+                      className="px-3 py-2 text-sm text-foreground hover:text-primary hover:bg-muted rounded-lg transition-colors truncate"
+                    >
+                      {u.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {loading ? (
-              <div className="flex justify-center py-2">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-              </div>
-            ) : user ? (
-              <div className="space-y-1 pt-2 mt-2 border-t border-border">
-                <div className="px-3 py-2 flex items-center space-x-3">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
-                    <AvatarFallback>{getUserInitials(user.user_metadata?.full_name || user.email)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="text-sm font-medium">{user.user_metadata?.full_name || "User"}</div>
-                    <div className="text-xs text-muted-foreground">{user.email}</div>
-                  </div>
+            {user && (
+              <div className="border-t border-border bg-muted/30 px-4 py-3 flex items-center gap-3">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
+                  <AvatarFallback>{getUserInitials(user.user_metadata?.full_name || user.email)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{user.user_metadata?.full_name || "User"}</div>
+                  <div className="text-xs text-muted-foreground truncate">{user.email}</div>
                 </div>
                 <Link to="/dashboard" onClick={() => setIsOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start rounded-xl">Dashboard</Button>
+                  <Button size="sm" variant="outline" className="rounded-full">Dashboard</Button>
                 </Link>
-                <Button variant="ghost" className="w-full justify-start rounded-xl" onClick={() => { handleNavigateToModule("profile"); setIsOpen(false); }}>Profile</Button>
-                <Button variant="ghost" className="w-full justify-start rounded-xl" onClick={() => { handleNavigateToModule("profile"); setIsOpen(false); }}>Wallet</Button>
-                <Button variant="ghost" className="w-full justify-start rounded-xl" onClick={() => { handleNavigateToModule("notifications"); setIsOpen(false); }}>
-                  Notifications
-                  {unreadCount > 0 && (
-                    <Badge variant="destructive" className="ml-2 h-5 min-w-[20px] px-1.5 text-xs">{unreadCount}</Badge>
-                  )}
-                </Button>
-                <Button variant="ghost" className="w-full justify-start rounded-xl" onClick={() => { handleSignOut(); setIsOpen(false); }}>Logout</Button>
               </div>
-            ) : (
-              <Link to="/login" onClick={() => setIsOpen(false)} className="block px-2 pt-2">
-                <Button className="w-full rounded-full h-11 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
-                  Đăng nhập
-                </Button>
-              </Link>
             )}
           </div>
-        </div>
+        </>
       )}
+
     </div>
   );
 };
