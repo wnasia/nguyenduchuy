@@ -99,8 +99,8 @@ const Navbar = () => {
   };
 
   return (
-    <div className="sticky top-0 z-50 px-3 sm:px-4 lg:px-6 pt-3 pb-2 bg-background/60 backdrop-blur-md">
-      <nav className="max-w-7xl mx-auto bg-background border border-border rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <div className="absolute top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-3 pb-2">
+      <nav className="max-w-7xl mx-auto bg-background/70 backdrop-blur-md border border-border/60 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center flex-shrink-0">
           <a
@@ -121,118 +121,8 @@ const Navbar = () => {
           </a>
         </div>
 
-        {/* Desktop categories */}
-        <ul className="hidden lg:flex items-center gap-x-7 h-full">
-          {navigation.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <li key={item.name} className="h-full flex items-center relative">
-                <Link
-                  to={item.href}
-                  className={`text-[15px] transition-colors duration-200 relative ${
-                    active
-                      ? "font-semibold text-foreground"
-                      : "font-medium text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {item.name}
-                  {active && (
-                    <span className="absolute -bottom-[22px] left-0 w-full h-[3px] rounded-full bg-gradient-to-r from-primary to-primary/60" />
-                  )}
-                </Link>
-              </li>
-            );
-          })}
-
-          {/* Tiện ích dropdown */}
-          <li className="relative group h-full flex items-center">
-            <Link
-              to="/utilities"
-              className={`flex items-center gap-1.5 text-[15px] transition-colors duration-200 relative ${
-                utilitiesActive
-                  ? "font-semibold text-foreground"
-                  : "font-medium text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t("common.utilities") || "Tiện ích"}
-              <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
-              {utilitiesActive && (
-                <span className="absolute -bottom-[22px] left-0 w-[calc(100%-20px)] h-[3px] rounded-full bg-gradient-to-r from-primary to-primary/60" />
-              )}
-            </Link>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-60 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-50">
-              <div className="bg-popover border border-border rounded-xl shadow-2xl overflow-hidden py-2">
-                {utilityItems.map((u) => (
-                  <Link
-                    key={u.id}
-                    to={u.href ?? `/utilities?tool=${u.id}`}
-                    className="block px-5 py-2.5 text-sm text-foreground hover:bg-muted hover:text-primary transition-colors"
-                  >
-                    {u.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </li>
-        </ul>
-
-        {/* Right controls */}
-        <div className="hidden md:flex items-center gap-3">
-          <button
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            className="p-2 rounded-full transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-            aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </button>
-
-          {loading ? (
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-          ) : user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
-                    <AvatarFallback>{getUserInitials(user.user_metadata?.full_name || user.email)}</AvatarFallback>
-                  </Avatar>
-                  {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-background" />
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-popover" align="end" forceMount>
-                <div className="px-3 py-2 border-b">
-                  <div className="text-sm font-medium">{user.user_metadata?.full_name || "User"}</div>
-                  <div className="text-xs text-muted-foreground">{user.email}</div>
-                </div>
-                <DropdownMenuItem onClick={() => handleNavigateToModule("profile")}>Profile</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigateToModule("profile")}>Wallet</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigateToModule("notifications")}>
-                  Notifications
-                  {unreadCount > 0 && (
-                    <Badge variant="destructive" className="ml-auto h-5 min-w-[20px] px-1.5 text-xs">{unreadCount}</Badge>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="w-full">Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link to="/login">
-              <Button className="rounded-full px-6 h-10 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
-                Đăng nhập
-              </Button>
-            </Link>
-          )}
-        </div>
-
-        {/* Mobile right controls */}
-        <div className="md:hidden flex items-center gap-1">
+        {/* Right controls — always hamburger style */}
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             className="p-2 rounded-full transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -240,11 +130,15 @@ const Navbar = () => {
           >
             {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
-          <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setIsOpen(!isOpen)}>
+          <Button variant="ghost" size="icon" className="rounded-full relative" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {user && unreadCount > 0 && !isOpen && (
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
+            )}
           </Button>
         </div>
       </nav>
+
 
       {/* Mobile menu */}
       {isOpen && (
