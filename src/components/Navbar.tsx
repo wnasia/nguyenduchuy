@@ -98,9 +98,11 @@ const Navbar = () => {
     navigate("/dashboard", { state: { module } });
   };
 
+  const isHome = location.pathname === "/";
+
   return (
-    <div className="absolute top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-3 pb-2">
-      <nav className="max-w-7xl mx-auto bg-background/70 backdrop-blur-md border border-border/60 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] px-4 sm:px-6 h-16 flex items-center justify-between">
+    <div className={isHome ? "relative w-full px-3 sm:px-4 lg:px-6 pt-1 pb-3" : "absolute top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-3 pb-2"}>
+      <nav className={`max-w-7xl mx-auto px-2 sm:px-4 h-16 flex items-center justify-between ${isHome ? "" : "bg-background/70 backdrop-blur-md border border-border/60 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]"}`}>
         {/* Logo */}
         <div className="flex items-center flex-shrink-0">
           <a
@@ -116,7 +118,7 @@ const Navbar = () => {
             <img
               src={huyLogo}
               alt="HUY"
-              className="h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              className={`h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200 ${isHome ? "drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" : ""}`}
             />
           </a>
         </div>
@@ -125,12 +127,12 @@ const Navbar = () => {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            className="p-2 rounded-full transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+            className={`p-2 rounded-full transition-colors ${isHome ? "text-white/90 hover:text-white hover:bg-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
             aria-label="Toggle theme"
           >
             {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
-          <Button variant="ghost" size="icon" className="rounded-full relative" onClick={() => setIsOpen(!isOpen)}>
+          <Button variant="ghost" size="icon" className={`rounded-full relative ${isHome ? "text-white hover:text-white hover:bg-white/10" : ""}`} onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             {user && unreadCount > 0 && !isOpen && (
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
