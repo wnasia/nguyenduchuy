@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { TrendingUp, TrendingDown, Newspaper } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { decodeHtmlEntities } from "@/lib/htmlUtils";
