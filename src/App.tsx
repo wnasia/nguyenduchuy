@@ -36,12 +36,14 @@ const AppLayout = () => {
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       {!isHome && <InfoBar />}
       <div className="relative flex-1 flex flex-col">
-        {isHome && (
+        {isHome ? (
           <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/60 via-black/25 to-transparent text-white">
             <InfoBar />
+            <Navbar />
           </div>
+        ) : (
+          <Navbar />
         )}
-        <Navbar />
         <main className={`flex-1 ${isHome || isDashboard ? "" : "pt-[88px]"}`}>
           <Routes>
             <Route path="/" element={<Home />} />
