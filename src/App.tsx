@@ -30,13 +30,14 @@ const queryClient = new QueryClient();
 const AppLayout = () => {
   const location = useLocation();
   const isDashboard = location.pathname === "/dashboard";
+  const isHome = location.pathname === "/";
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <InfoBar />
       <div className="relative flex-1 flex flex-col">
         <Navbar />
-        <main className="flex-1">
+        <main className={`flex-1 ${isHome || isDashboard ? "" : "pt-[88px]"}`}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/stories" element={<Stories />} />
