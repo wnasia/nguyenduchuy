@@ -50,6 +50,8 @@ const formatTimeAgo = (dateStr: string): string => {
 
 const InfoBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === "/";
   const [goldInfo, setGoldInfo] = useState<GoldInfo | null>(null);
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo | null>(null);
   const [latestPost, setLatestPost] = useState<LatestPost | null>(null);
