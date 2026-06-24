@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { TrendingUp, TrendingDown, Newspaper } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { decodeHtmlEntities } from "@/lib/htmlUtils";
@@ -50,6 +50,8 @@ const formatTimeAgo = (dateStr: string): string => {
 
 const InfoBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === "/";
   const [goldInfo, setGoldInfo] = useState<GoldInfo | null>(null);
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo | null>(null);
   const [latestPost, setLatestPost] = useState<LatestPost | null>(null);
@@ -107,8 +109,8 @@ const InfoBar = () => {
   };
 
   return (
-    <div className="w-full bg-muted/80 border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center gap-4 text-xs sm:text-sm flex-wrap">
+    <div className={isHome ? "w-full" : "w-full bg-muted/80 border-b border-border"}>
+      <div className={`max-w-7xl mx-auto px-4 py-1.5 flex items-center gap-4 text-xs sm:text-sm flex-wrap ${isHome ? "text-white/90" : ""}`}>
         {/* Gold price */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-yellow-500">🥇</span>
