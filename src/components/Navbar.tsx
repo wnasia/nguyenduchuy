@@ -171,10 +171,11 @@ const Navbar = () => {
           ) : (
             <Link to="/login">
               <Button
+                variant="ghost"
                 className={`rounded-full h-10 px-5 font-bold shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all ${
                   isHome
-                    ? "bg-white text-[hsl(var(--primary))] hover:bg-white ring-2 ring-white/60 hover:ring-white"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    ? "!bg-white !text-blue-600 hover:!bg-white hover:!text-blue-700 ring-2 ring-white/60 hover:ring-white"
+                    : "!bg-primary !text-primary-foreground hover:!bg-primary/90"
                 }`}
               >
                 Đăng nhập
