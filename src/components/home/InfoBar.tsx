@@ -108,22 +108,27 @@ const InfoBar = () => {
     if (latestPost) navigate(`/story/${latestPost.slug || latestPost.id}`);
   };
 
+  // Color classes vary by context: on home banner = white-on-dark, elsewhere = standard tokens
+  const labelClass = isHome ? "text-white/70" : "text-muted-foreground";
+  const valueClass = isHome ? "text-white font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]" : "text-foreground font-semibold";
+  const mutedClass = isHome ? "text-white/80" : "text-muted-foreground";
+
   return (
-    <div className={isHome ? "w-full" : "w-full bg-muted/80 border-b border-border"}>
-      <div className={`max-w-7xl mx-auto px-4 py-1.5 flex items-center gap-4 text-xs sm:text-sm flex-wrap ${isHome ? "text-white/90" : ""}`}>
+    <div className={isHome ? "w-full bg-gradient-to-b from-black/55 to-transparent" : "w-full bg-muted/80 border-b border-border"}>
+      <div className="max-w-7xl mx-auto px-4 py-2 flex items-center gap-4 text-xs sm:text-sm flex-wrap">
         {/* Gold price */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-yellow-500">🥇</span>
-          <span className="font-medium text-muted-foreground">SJC:</span>
+          <span className="text-yellow-400">🥇</span>
+          <span className={`font-medium ${labelClass}`}>SJC:</span>
           {goldInfo ? (
             <>
-              <span className="font-semibold text-foreground">{formatGoldPrice(goldInfo.price)}</span>
-              <span className={`flex items-center gap-0.5 ${goldInfo.change >= 0 ? "text-green-600" : "text-red-500"}`}>
+              <span className={valueClass}>{formatGoldPrice(goldInfo.price)}</span>
+              <span className={`flex items-center gap-0.5 font-semibold ${goldInfo.change >= 0 ? (isHome ? "text-green-300" : "text-green-600") : (isHome ? "text-red-300" : "text-red-500")}`}>
                 {goldInfo.change >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                 {goldInfo.change >= 0 ? "+" : ""}{Math.round(goldInfo.change / 1000)}K
               </span>
             </>
-          ) : <span className="text-muted-foreground">--</span>}
+          ) : <span className={mutedClass}>--</span>}
         </div>
 
         {/* Weather */}
@@ -131,14 +136,14 @@ const InfoBar = () => {
           {weatherInfo ? (
             <>
               <span>{weatherInfo.condition}</span>
-              <span className="font-semibold text-foreground">{weatherInfo.temp}°C</span>
-              <span className="text-muted-foreground">{weatherInfo.city}</span>
+              <span className={valueClass}>{weatherInfo.temp}°C</span>
+              <span className={mutedClass}>{weatherInfo.city}</span>
             </>
-          ) : <span className="text-muted-foreground">--</span>}
+          ) : <span className={mutedClass}>--</span>}
         </div>
 
         {/* Date */}
-        <div className="text-muted-foreground hidden sm:block flex-shrink-0">
+        <div className={`hidden sm:block flex-shrink-0 ${mutedClass}`}>
           {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric' })}
         </div>
 
@@ -150,11 +155,11 @@ const InfoBar = () => {
         {/* News ticker */}
         {latestPost && (
           <div className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer" onClick={handlePostClick}>
-            <Newspaper className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+            <Newspaper className={`h-3.5 w-3.5 flex-shrink-0 ${isHome ? "text-white" : "text-primary"}`} />
             <div className="overflow-hidden flex-1">
               <div className="animate-marquee whitespace-nowrap">
-                <span className="text-xs font-medium text-foreground">{decodeHtmlEntities(latestPost.title)}</span>
-                <span className="text-xs text-muted-foreground ml-2">{formatTimeAgo(latestPost.created_at)}</span>
+                <span className={`text-xs font-medium ${isHome ? "text-white" : "text-foreground"}`}>{decodeHtmlEntities(latestPost.title)}</span>
+                <span className={`text-xs ml-2 ${mutedClass}`}>{formatTimeAgo(latestPost.created_at)}</span>
               </div>
             </div>
           </div>

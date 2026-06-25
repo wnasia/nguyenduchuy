@@ -171,9 +171,9 @@ const Navbar = () => {
           ) : (
             <Link to="/login">
               <Button
-                className={`rounded-full h-10 px-5 font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all ${
+                className={`rounded-full h-10 px-5 font-bold shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all ${
                   isHome
-                    ? "bg-white text-primary hover:bg-white/90"
+                    ? "bg-white text-[hsl(var(--primary))] hover:bg-white ring-2 ring-white/60 hover:ring-white"
                     : "bg-primary text-primary-foreground hover:bg-primary/90"
                 }`}
               >
@@ -182,19 +182,19 @@ const Navbar = () => {
             </Link>
           )}
 
-          {/* Hamburger — always visible, white on home */}
+          {/* Hamburger — always visible, white on home with dark pill for contrast */}
           <Button
             variant="ghost"
             size="icon"
-            className={`rounded-full h-10 w-10 ${
+            className={`rounded-full h-11 w-11 ${
               isHome
-                ? "text-white hover:text-white hover:bg-white/15 drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
+                ? "text-white bg-black/35 hover:bg-black/55 hover:text-white backdrop-blur-md ring-1 ring-white/30 shadow-lg"
                 : "text-foreground hover:bg-muted"
             }`}
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Menu"
           >
-            {isOpen ? <X className="h-7 w-7" strokeWidth={2.5} /> : <Menu className="h-7 w-7" strokeWidth={2.75} />}
+            {isOpen ? <X className="h-6 w-6" strokeWidth={2.75} /> : <Menu className="h-6 w-6" strokeWidth={2.75} />}
           </Button>
         </div>
       </nav>
