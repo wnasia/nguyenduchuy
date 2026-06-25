@@ -53,7 +53,7 @@ const formatTimeAgo = (dateStr: string): string => {
   return `${diffDays} ngày trước`;
 };
 
-const InfoBar = () => {
+const InfoBar = ({ rightSlot }: InfoBarProps = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isHome = location.pathname === "/";
@@ -167,6 +167,13 @@ const InfoBar = () => {
                 <span className={`text-xs ml-2 ${mutedClass}`}>{formatTimeAgo(latestPost.created_at)}</span>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Right slot: theme + login (home only) */}
+        {rightSlot && (
+          <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+            {rightSlot}
           </div>
         )}
       </div>
