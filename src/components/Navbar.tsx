@@ -1,57 +1,19 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sun, Moon, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import huyLogo from "@/assets/huy-logo.png";
-import { useTheme } from "@/hooks/useTheme";
+import HeaderUserControls from "@/components/HeaderUserControls";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const { t } = useI18n();
-  const { user, signOut, loading } = useAuth();
-  const { resolvedTheme, setTheme } = useTheme();
-
-  useEffect(() => {
-    if (user) {
-      const fetchUnreadCount = async () => {
-        const { count, error } = await supabase
-          .from("notifications")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .eq("is_read", false);
-        if (!error && count !== null) setUnreadCount(count);
-      };
-      fetchUnreadCount();
-      const channel = supabase
-        .channel("notifications-count")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-          () => fetchUnreadCount()
-        )
-        .subscribe();
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    } else {
-      setUnreadCount(0);
-    }
-  }, [user]);
+  const { user } = useAuth();
 
   const navigation = [
     { name: "Công nghệ", href: "/?topic=cong-nghe" },
@@ -80,29 +42,45 @@ const Navbar = () => {
     if (path.includes("?")) return currentPathSearch === path;
     return location.pathname === path;
   };
-  const utilitiesActive =
-    location.pathname.startsWith("/utilities") ||
-    location.pathname.startsWith("/gallery") ||
-    location.pathname.startsWith("/videos");
 
-  const handleSignOut = async () => {
-    try { await signOut(); } catch (error) { console.error("Error signing out:", error); }
-  };
+  const isHome = location.pathname === "/";
 
   const getUserInitials = (name: string | null | undefined) => {
     if (!name) return "U";
     return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
-  const handleNavigateToModule = (module: string) => {
-    navigate("/dashboard", { state: { module } });
-  };
+  // Track scroll for sticky/condensed state on home
+  useEffect(() => {
+    if (!isHome) { setScrolled(false); return; }
+    const onScroll = () => setScrolled(window.scrollY > 120);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
 
-  const isHome = location.pathname === "/";
+  // Container styling
+  // - Home + top: absolute over banner, transparent (logo white, hamburger dark pill)
+  // - Home + scrolled: fixed top, white pill stuck — keep menu visible while scrolling
+  // - Not home: absolute white pill (existing behavior)
+  const homeTop = isHome && !scrolled;
+  const homeStuck = isHome && scrolled;
+
+  const containerClass = homeStuck
+    ? "fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-2 pb-2 animate-fade-in"
+    : homeTop
+    ? "absolute top-[42px] left-0 right-0 z-40 px-3 sm:px-4 lg:px-6 pt-1 pb-2"
+    : "absolute top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-3 pb-2";
+
+  const navClass = homeStuck
+    ? "max-w-7xl mx-auto px-3 sm:px-5 h-14 flex items-center justify-between bg-background/90 backdrop-blur-xl border border-border/60 rounded-full shadow-[0_10px_40px_rgb(0,0,0,0.12)]"
+    : homeTop
+    ? "max-w-7xl mx-auto px-2 sm:px-4 h-14 flex items-center justify-between"
+    : "max-w-7xl mx-auto px-2 sm:px-4 h-16 flex items-center justify-between bg-background/70 backdrop-blur-md border border-border/60 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]";
 
   return (
-    <div className={isHome ? "relative w-full px-3 sm:px-4 lg:px-6 pt-1 pb-3" : "absolute top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-3 pb-2"}>
-      <nav className={`max-w-7xl mx-auto px-2 sm:px-4 h-16 flex items-center justify-between ${isHome ? "" : "bg-background/70 backdrop-blur-md border border-border/60 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]"}`}>
+    <div className={containerClass}>
+      <nav className={navClass}>
         {/* Logo */}
         <div className="flex items-center flex-shrink-0">
           <a
@@ -118,77 +96,24 @@ const Navbar = () => {
             <img
               src={huyLogo}
               alt="HUY"
-              className={`h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200 ${isHome ? "drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" : ""}`}
+              className={`h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200 ${
+                homeTop ? "drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" : ""
+              }`}
             />
           </a>
         </div>
 
         {/* Right controls */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            className={`p-2 rounded-full transition-colors ${isHome ? "text-white/90 hover:text-white hover:bg-white/15" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
-            aria-label="Toggle theme"
-          >
-            {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </button>
+          {/* Theme + login moved to InfoBar on home (when at top). Show inline when stuck or non-home. */}
+          {!homeTop && <HeaderUserControls variant="dark" />}
 
-          {/* Login / User — outside dropdown */}
-          {loading ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
-          ) : user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className={`relative h-10 w-10 rounded-full p-0 ${isHome ? "ring-2 ring-white/40 hover:ring-white/70" : ""}`}>
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
-                    <AvatarFallback>{getUserInitials(user.user_metadata?.full_name || user.email)}</AvatarFallback>
-                  </Avatar>
-                  {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-background" />
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-popover" align="end" forceMount>
-                <div className="px-3 py-2 border-b">
-                  <div className="text-sm font-medium">{user.user_metadata?.full_name || "User"}</div>
-                  <div className="text-xs text-muted-foreground">{user.email}</div>
-                </div>
-                <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="w-full">Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigateToModule("profile")}>Profile</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigateToModule("notifications")}>
-                  Notifications
-                  {unreadCount > 0 && (
-                    <Badge variant="destructive" className="ml-auto h-5 min-w-[20px] px-1.5 text-xs">{unreadCount}</Badge>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link to="/login">
-              <Button
-                variant="ghost"
-                className={`rounded-full h-10 px-5 font-bold shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all ${
-                  isHome
-                    ? "!bg-white !text-blue-600 hover:!bg-white hover:!text-blue-700 ring-2 ring-white/60 hover:ring-white"
-                    : "!bg-primary !text-primary-foreground hover:!bg-primary/90"
-                }`}
-              >
-                Đăng nhập
-              </Button>
-            </Link>
-          )}
-
-          {/* Hamburger — always visible, white on home with dark pill for contrast */}
+          {/* Hamburger */}
           <Button
             variant="ghost"
             size="icon"
-            className={`rounded-full h-11 w-11 ${
-              isHome
+            className={`rounded-full h-10 w-10 ${
+              homeTop
                 ? "text-white bg-black/35 hover:bg-black/55 hover:text-white backdrop-blur-md ring-1 ring-white/30 shadow-lg"
                 : "text-foreground hover:bg-muted"
             }`}
@@ -200,57 +125,59 @@ const Navbar = () => {
         </div>
       </nav>
 
-
-      {/* Mega menu panel */}
+      {/* Mega menu panel — redesigned, no decorative icons, generous spacing */}
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/30 animate-fade-in" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-3 sm:right-4 lg:right-6 top-full mt-2 w-[min(560px,calc(100vw-1.5rem))] z-50 bg-popover border border-border rounded-2xl shadow-2xl animate-fade-in overflow-hidden">
-            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
-              {/* Categories column */}
-              <div className="p-4">
-                <div className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-3 sm:right-4 lg:right-6 top-full mt-3 w-[min(720px,calc(100vw-1.5rem))] z-50 bg-background border border-border/60 rounded-3xl shadow-[0_30px_80px_rgb(0,0,0,0.25)] animate-fade-in overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-5">
+              {/* Categories — left, accent column */}
+              <div className="md:col-span-2 p-6 bg-gradient-to-br from-primary/5 via-background to-background border-b md:border-b-0 md:border-r border-border/60">
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-4">
                   Chuyên mục
                 </div>
-                <div className="space-y-0.5">
+                <div className="flex flex-col gap-0.5">
                   {navigation.map((item) => (
                     <Link
                       key={item.name}
                       to={item.href}
                       onClick={() => setIsOpen(false)}
-                      className={`block px-3 py-2 text-[15px] rounded-lg transition-colors ${
+                      className={`group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${
                         isActive(item.href)
-                          ? "text-primary bg-primary/10 font-semibold"
-                          : "text-foreground hover:bg-muted hover:text-primary"
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-foreground hover:bg-muted"
                       }`}
                     >
-                      {item.name}
+                      <span className="text-[15px] leading-none">{item.name}</span>
+                      <span className={`text-base transition-transform group-hover:translate-x-1 ${isActive(item.href) ? "opacity-100" : "opacity-0 group-hover:opacity-60"}`}>
+                        →
+                      </span>
                     </Link>
                   ))}
                 </div>
               </div>
 
-              {/* Utilities column */}
-              <div className="p-4">
-                <div className="px-2 pb-2 flex items-center justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {/* Utilities — right, grid */}
+              <div className="md:col-span-3 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                     {t("common.utilities") || "Tiện ích"}
                   </span>
                   <Link
                     to="/utilities"
                     onClick={() => setIsOpen(false)}
-                    className="text-[11px] font-medium text-primary hover:underline"
+                    className="text-[11px] font-semibold text-primary hover:underline"
                   >
                     Xem tất cả →
                   </Link>
                 </div>
-                <div className="grid grid-cols-2 gap-0.5">
+                <div className="grid grid-cols-2 gap-1.5">
                   {utilityItems.map((u) => (
                     <Link
                       key={u.id}
                       to={u.href ?? `/utilities?tool=${u.id}`}
                       onClick={() => setIsOpen(false)}
-                      className="px-3 py-2 text-sm text-foreground hover:text-primary hover:bg-muted rounded-lg transition-colors truncate"
+                      className="px-3 py-2.5 text-[14px] text-foreground hover:text-primary hover:bg-muted rounded-xl transition-colors truncate border border-transparent hover:border-border/60"
                     >
                       {u.name}
                     </Link>
@@ -260,24 +187,23 @@ const Navbar = () => {
             </div>
 
             {user && (
-              <div className="border-t border-border bg-muted/30 px-4 py-3 flex items-center gap-3">
-                <Avatar className="h-9 w-9">
+              <div className="border-t border-border/60 bg-muted/40 px-6 py-4 flex items-center gap-3">
+                <Avatar className="h-10 w-10 ring-2 ring-background">
                   <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
                   <AvatarFallback>{getUserInitials(user.user_metadata?.full_name || user.email)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{user.user_metadata?.full_name || "User"}</div>
+                  <div className="text-sm font-semibold truncate">{user.user_metadata?.full_name || "User"}</div>
                   <div className="text-xs text-muted-foreground truncate">{user.email}</div>
                 </div>
                 <Link to="/dashboard" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" variant="outline" className="rounded-full">Dashboard</Button>
+                  <Button size="sm" className="rounded-full px-5">Dashboard</Button>
                 </Link>
               </div>
             )}
           </div>
         </>
       )}
-
     </div>
   );
 };
