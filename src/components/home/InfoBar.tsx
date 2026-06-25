@@ -1,9 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TrendingUp, TrendingDown, Newspaper } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { decodeHtmlEntities } from "@/lib/htmlUtils";
 import LanguageSelector from "@/components/LanguageSelector";
+
+interface InfoBarProps {
+  rightSlot?: ReactNode;
+}
+
 
 interface GoldInfo {
   price: number;
