@@ -11,6 +11,7 @@ import { I18nProvider } from "@/hooks/useI18n";
 import Navbar from "./components/Navbar";
 import GoogleOneTap from "./components/GoogleOneTap";
 import InfoBar from "./components/home/InfoBar";
+import HeaderUserControls from "./components/HeaderUserControls";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Stories from "./pages/Stories";
@@ -37,10 +38,12 @@ const AppLayout = () => {
       {!isHome && <InfoBar />}
       <div className="relative flex-1 flex flex-col">
         {isHome ? (
-          <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/60 via-black/25 to-transparent text-white">
-            <InfoBar />
+          <>
+            <div className="absolute top-0 left-0 right-0 z-40 bg-gradient-to-b from-black/65 via-black/30 to-transparent text-white">
+              <InfoBar rightSlot={<HeaderUserControls variant="light" />} />
+            </div>
             <Navbar />
-          </div>
+          </>
         ) : (
           <Navbar />
         )}
