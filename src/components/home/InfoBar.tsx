@@ -170,9 +170,9 @@ const InfoBar = ({ rightSlot }: InfoBarProps = {}) => {
           </div>
         )}
 
-        {/* Right slot: theme + login (home only) */}
+        {/* Right slot: theme + login (desktop only — on mobile these live inside the menu) */}
         {rightSlot && (
-          <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0 ml-auto">
             {rightSlot}
           </div>
         )}
