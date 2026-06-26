@@ -154,7 +154,7 @@ const InfoBar = ({ rightSlot }: InfoBarProps = {}) => {
 
         {/* Language selector */}
         <div className="flex-shrink-0">
-          <LanguageSelector />
+          <LanguageSelector variant={isHome ? "light" : "dark"} />
         </div>
 
         {/* News ticker */}
