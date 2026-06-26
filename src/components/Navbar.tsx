@@ -218,8 +218,8 @@ const Navbar = () => {
               </div>
             </div>
 
-            {user && (
-              <div className="border-t border-border/60 bg-muted/40 px-5 sm:px-6 py-4 flex items-center gap-3">
+            {user ? (
+              <div className="border-t border-border/60 bg-muted/40 px-5 sm:px-6 py-4 flex items-center gap-3 md:hidden">
                 <Avatar className="h-10 w-10 ring-2 ring-background">
                   <AvatarImage
                     src={user.user_metadata?.avatar_url}
@@ -238,6 +238,18 @@ const Navbar = () => {
                 <Link to="/dashboard" onClick={() => setIsOpen(false)}>
                   <Button size="sm" className="rounded-full px-4 sm:px-5">
                     Dashboard
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="border-t border-border/60 bg-muted/40 px-5 sm:px-6 py-4 flex items-center gap-3 md:hidden">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold">Chào bạn 👋</div>
+                  <div className="text-xs text-muted-foreground">Đăng nhập để chia sẻ câu chuyện của bạn</div>
+                </div>
+                <Link to="/login" onClick={() => setIsOpen(false)} className="flex-shrink-0">
+                  <Button size="sm" className="rounded-full px-5 font-semibold shadow-md">
+                    Đăng nhập
                   </Button>
                 </Link>
               </div>
