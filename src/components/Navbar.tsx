@@ -104,8 +104,8 @@ const Navbar = () => {
 
         {/* Right controls */}
         <div className="flex items-center gap-2">
-          {/* Theme + login moved to InfoBar on home (when at top). Show inline when stuck or non-home. */}
-          {!homeTop && <HeaderUserControls variant="dark" />}
+          {/* Theme + login: desktop inline (non-home); home top renders them in InfoBar. Mobile uses in-menu block. */}
+          {!homeTop && <div className="hidden md:flex"><HeaderUserControls variant="dark" /></div>}
 
           {/* Hamburger */}
           <Button
