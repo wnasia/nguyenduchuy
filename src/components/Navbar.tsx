@@ -134,6 +134,35 @@ const Navbar = () => {
           <div
             className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-4 lg:right-6 top-[68px] sm:top-full sm:mt-3 sm:w-[min(780px,calc(100vw-2rem))] z-50 bg-background border border-border/60 rounded-2xl sm:rounded-3xl shadow-[0_30px_80px_rgb(0,0,0,0.25)] animate-fade-in overflow-hidden max-h-[calc(100vh-88px)] overflow-y-auto"
           >
+            {/* Auth block — TOP on mobile so it's always visible without scrolling */}
+            {user ? (
+              <div className="bg-muted/40 px-5 sm:px-6 py-3 flex items-center gap-3 md:hidden border-b border-border/60">
+                <Avatar className="h-10 w-10 ring-2 ring-background">
+                  <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
+                  <AvatarFallback>{getUserInitials(user.user_metadata?.full_name || user.email)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold truncate">{user.user_metadata?.full_name || "User"}</div>
+                  <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+                </div>
+                <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                  <Button size="sm" className="rounded-full px-4">Dashboard</Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-5 sm:px-6 py-3 flex items-center gap-3 md:hidden border-b border-border/60">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold">Chào bạn 👋</div>
+                  <div className="text-xs text-muted-foreground">Đăng nhập để bắt đầu</div>
+                </div>
+                <Link to="/login" onClick={() => setIsOpen(false)} className="flex-shrink-0">
+                  <Button size="sm" className="rounded-full px-5 font-semibold shadow-md">
+                    Đăng nhập
+                  </Button>
+                </Link>
+              </div>
+            )}
+
             {/* Featured: Câu chuyện */}
             <Link
               to="/stories"
