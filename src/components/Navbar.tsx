@@ -21,7 +21,6 @@ const Navbar = () => {
     { name: "Kinh tế", href: "/?topic=kinh-te" },
     { name: "Giải trí", href: "/?topic=giai-tri" },
     { name: "Thể thao", href: "/?topic=the-thao" },
-    { name: "Câu chuyện", href: "/stories" },
   ];
 
   const utilityItems: { id: string; name: string; href?: string }[] = [
