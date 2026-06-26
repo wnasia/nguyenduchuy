@@ -21,7 +21,6 @@ const Navbar = () => {
     { name: "Kinh tế", href: "/?topic=kinh-te" },
     { name: "Giải trí", href: "/?topic=giai-tri" },
     { name: "Thể thao", href: "/?topic=the-thao" },
-    { name: "Câu chuyện", href: "/stories" },
   ];
 
   const utilityItems: { id: string; name: string; href?: string }[] = [
@@ -125,42 +124,43 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mega menu panel — redesigned, no decorative icons, generous spacing */}
+      {/* Mega menu panel — Utilities first, Categories second, Stories featured */}
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-3 sm:right-4 lg:right-6 top-full mt-3 w-[min(720px,calc(100vw-1.5rem))] z-50 bg-background border border-border/60 rounded-3xl shadow-[0_30px_80px_rgb(0,0,0,0.25)] animate-fade-in overflow-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-5">
-              {/* Categories — left, accent column */}
-              <div className="md:col-span-2 p-6 bg-gradient-to-br from-primary/5 via-background to-background border-b md:border-b-0 md:border-r border-border/60">
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-4">
-                  Chuyên mục
+          <div
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm animate-fade-in"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-4 lg:right-6 top-[68px] sm:top-full sm:mt-3 sm:w-[min(780px,calc(100vw-2rem))] z-50 bg-background border border-border/60 rounded-2xl sm:rounded-3xl shadow-[0_30px_80px_rgb(0,0,0,0.25)] animate-fade-in overflow-hidden max-h-[calc(100vh-88px)] overflow-y-auto"
+          >
+            {/* Featured: Câu chuyện */}
+            <Link
+              to="/stories"
+              onClick={() => setIsOpen(false)}
+              className="group flex items-center justify-between gap-3 px-5 sm:px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 transition-colors"
+            >
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] opacity-80">
+                  Nổi bật
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      onClick={() => setIsOpen(false)}
-                      className={`group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${
-                        isActive(item.href)
-                          ? "bg-primary text-primary-foreground font-semibold"
-                          : "text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <span className="text-[15px] leading-none">{item.name}</span>
-                      <span className={`text-base transition-transform group-hover:translate-x-1 ${isActive(item.href) ? "opacity-100" : "opacity-0 group-hover:opacity-60"}`}>
-                        →
-                      </span>
-                    </Link>
-                  ))}
+                <div className="text-base sm:text-lg font-bold leading-tight mt-0.5">
+                  Câu chuyện
+                </div>
+                <div className="text-xs opacity-80 mt-0.5 hidden sm:block">
+                  Những bài viết truyền cảm hứng, được tuyển chọn
                 </div>
               </div>
+              <span className="text-2xl transition-transform group-hover:translate-x-1 flex-shrink-0">
+                →
+              </span>
+            </Link>
 
-              {/* Utilities — right, grid */}
-              <div className="md:col-span-3 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            <div className="grid grid-cols-1 md:grid-cols-5">
+              {/* Utilities — left/primary */}
+              <div className="md:col-span-3 p-5 sm:p-6 border-b md:border-b-0 md:border-r border-border/60">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                     {t("common.utilities") || "Tiện ích"}
                   </span>
                   <Link
@@ -177,9 +177,41 @@ const Navbar = () => {
                       key={u.id}
                       to={u.href ?? `/utilities?tool=${u.id}`}
                       onClick={() => setIsOpen(false)}
-                      className="px-3 py-2.5 text-[14px] text-foreground hover:text-primary hover:bg-muted rounded-xl transition-colors truncate border border-transparent hover:border-border/60"
+                      className="px-3 py-2.5 text-[13px] sm:text-[14px] text-foreground hover:text-primary hover:bg-muted rounded-xl transition-colors truncate border border-transparent hover:border-border/60"
                     >
                       {u.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Categories — right/secondary */}
+              <div className="md:col-span-2 p-5 sm:p-6 bg-gradient-to-br from-muted/40 via-background to-background">
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3 sm:mb-4">
+                  Chuyên mục
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  {navigation.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${
+                        isActive(item.href)
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <span className="text-[14px] sm:text-[15px] leading-none">{item.name}</span>
+                      <span
+                        className={`text-base transition-transform group-hover:translate-x-1 ${
+                          isActive(item.href)
+                            ? "opacity-100"
+                            : "opacity-0 group-hover:opacity-60"
+                        }`}
+                      >
+                        →
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -187,17 +219,26 @@ const Navbar = () => {
             </div>
 
             {user && (
-              <div className="border-t border-border/60 bg-muted/40 px-6 py-4 flex items-center gap-3">
+              <div className="border-t border-border/60 bg-muted/40 px-5 sm:px-6 py-4 flex items-center gap-3">
                 <Avatar className="h-10 w-10 ring-2 ring-background">
-                  <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
-                  <AvatarFallback>{getUserInitials(user.user_metadata?.full_name || user.email)}</AvatarFallback>
+                  <AvatarImage
+                    src={user.user_metadata?.avatar_url}
+                    alt={user.user_metadata?.full_name || user.email}
+                  />
+                  <AvatarFallback>
+                    {getUserInitials(user.user_metadata?.full_name || user.email)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold truncate">{user.user_metadata?.full_name || "User"}</div>
+                  <div className="text-sm font-semibold truncate">
+                    {user.user_metadata?.full_name || "User"}
+                  </div>
                   <div className="text-xs text-muted-foreground truncate">{user.email}</div>
                 </div>
                 <Link to="/dashboard" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" className="rounded-full px-5">Dashboard</Button>
+                  <Button size="sm" className="rounded-full px-4 sm:px-5">
+                    Dashboard
+                  </Button>
                 </Link>
               </div>
             )}

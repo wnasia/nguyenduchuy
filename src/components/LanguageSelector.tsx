@@ -1,44 +1,58 @@
-
-import { Globe } from "lucide-react";
+import { Globe, Check } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useI18n, Language } from "@/hooks/useI18n";
 
-const LanguageSelector = () => {
-  const { currentLanguage, changeLanguage, t } = useI18n();
+interface Props {
+  variant?: "light" | "dark";
+}
 
-  const languages: { value: Language; label: string; flag: string }[] = [
-    { value: 'en', label: 'English', flag: '🇺🇸' },
-    { value: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
-    { value: 'zh', label: '简体中文', flag: '🇨🇳' },
-    { value: 'ja', label: '日本語', flag: '🇯🇵' },
+const LanguageSelector = ({ variant = "dark" }: Props) => {
+  const { currentLanguage, changeLanguage } = useI18n();
+  const isLight = variant === "light";
+
+  const languages: { value: Language; label: string; flag: string; code: string }[] = [
+    { value: 'vi', label: 'Tiếng Việt', flag: '🇻🇳', code: 'VI' },
+    { value: 'en', label: 'English', flag: '🇺🇸', code: 'EN' },
+    { value: 'zh', label: '简体中文', flag: '🇨🇳', code: 'ZH' },
+    { value: 'ja', label: '日本語', flag: '🇯🇵', code: 'JA' },
   ];
 
-  const currentLang = languages.find(lang => lang.value === currentLanguage);
+  const currentLang = languages.find((l) => l.value === currentLanguage) ?? languages[0];
 
   return (
-    <Select value={currentLanguage} onValueChange={changeLanguage}>
-      <SelectTrigger className="w-auto border-0 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xl" role="img" aria-label={currentLang?.label}>{currentLang?.flag}</span>
-        </div>
-      </SelectTrigger>
-      <SelectContent>
-        {languages.map((language) => (
-          <SelectItem key={language.value} value={language.value}>
-            <div className="flex items-center gap-2">
-              <span>{language.flag}</span>
-              <span>{language.label}</span>
-            </div>
-          </SelectItem>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          aria-label={`Language: ${currentLang.label}`}
+          className={`inline-flex items-center gap-1.5 h-8 px-2 rounded-full text-xs font-semibold transition-colors ${
+            isLight
+              ? "text-white/95 hover:text-white hover:bg-white/15 ring-1 ring-white/25"
+              : "text-foreground hover:bg-muted ring-1 ring-border/60"
+          }`}
+        >
+          <Globe className="h-3.5 w-3.5" strokeWidth={2.25} />
+          <span className="leading-none tracking-wide">{currentLang.code}</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-44 bg-popover">
+        {languages.map((lang) => (
+          <DropdownMenuItem
+            key={lang.value}
+            onClick={() => changeLanguage(lang.value)}
+            className="cursor-pointer"
+          >
+            <span className="mr-2 text-base leading-none">{lang.flag}</span>
+            <span className="flex-1 text-sm">{lang.label}</span>
+            {lang.value === currentLanguage && <Check className="h-4 w-4 text-primary" />}
+          </DropdownMenuItem>
         ))}
-      </SelectContent>
-    </Select>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
