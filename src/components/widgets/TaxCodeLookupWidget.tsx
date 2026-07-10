@@ -37,8 +37,11 @@ const TaxCodeLookupWidget = () => {
     setError(null);
     setData(null);
     try {
-      const res = await fetch(`https://api.vietqr.io/v2/business/${encodeURIComponent(code)}`);
-      const json = (await res.json()) as ApiResponse;
+      const { data: res, error: fnErr } = await supabase.functions.invoke("tax-code-lookup", {
+        body: { taxCode: code },
+      });
+      if (fnErr) throw fnErr;
+      const json = res as ApiResponse;
       if (json.code === "00" && json.data) {
         setData(json.data);
       } else {
