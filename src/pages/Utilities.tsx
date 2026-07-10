@@ -12,7 +12,8 @@ import {
   Globe,
   Bitcoin,
   Pickaxe,
-  FileSearch
+  FileSearch,
+  Building2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -23,6 +24,7 @@ import HoroscopeWidget from "@/components/widgets/HoroscopeWidget";
 import GoldPriceHistoryWidget from "@/components/widgets/GoldPriceHistoryWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
+import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
 
 const Utilities = () => {
   const { t } = useI18n();
@@ -135,6 +137,16 @@ const Utilities = () => {
       color: "from-rose-500 to-red-500",
       bgColor: "bg-rose-50",
       iconColor: "text-rose-600"
+    },
+    {
+      id: "tax-code",
+      icon: Building2,
+      title: "Tra cứu mã số thuế doanh nghiệp",
+      description: "Nhập mã số thuế để xem tên, tên quốc tế và địa chỉ doanh nghiệp (dữ liệu VietQR)",
+      action: "Tra cứu",
+      color: "from-sky-500 to-blue-500",
+      bgColor: "bg-sky-50",
+      iconColor: "text-sky-600"
     }
   ];
 
@@ -166,6 +178,8 @@ const Utilities = () => {
         return <StockMarketWidget />;
       case "tax-debt":
         return <TaxDebtLookupWidget />;
+      case "tax-code":
+        return <TaxCodeLookupWidget />;
       default:
         return null;
     }
