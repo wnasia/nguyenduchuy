@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, AlertCircle, Building2, MapPin, Globe, Hash } from "lucide-react";
+import { Loader2, Search, AlertCircle, Building2, MapPin, Globe, Hash, CircleDot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BusinessData {
@@ -10,6 +10,7 @@ interface BusinessData {
   internationalName?: string;
   shortName?: string;
   address?: string;
+  status?: string;
 }
 
 interface ApiResponse {
@@ -132,6 +133,18 @@ const TaxCodeLookupWidget = () => {
                 <div className="flex-1 min-w-0">
                   <dt className="text-xs text-muted-foreground">Địa chỉ</dt>
                   <dd className="break-words leading-relaxed">{data.address}</dd>
+                </div>
+              </div>
+            )}
+
+            {data.status && (
+              <div className="flex items-start gap-3">
+                <CircleDot className={`h-4 w-4 shrink-0 mt-0.5 ${data.status.toLowerCase().includes("đang hoạt động") ? "text-green-600" : "text-destructive"}`} />
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs text-muted-foreground">Trạng thái thuế</dt>
+                  <dd className={`font-medium ${data.status.toLowerCase().includes("đang hoạt động") ? "text-green-600" : "text-destructive"}`}>
+                    {data.status}
+                  </dd>
                 </div>
               </div>
             )}
