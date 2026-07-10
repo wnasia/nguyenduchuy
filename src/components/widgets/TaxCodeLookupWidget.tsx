@@ -136,6 +136,18 @@ const TaxCodeLookupWidget = () => {
                 </div>
               </div>
             )}
+
+            {data.status && (
+              <div className="flex items-start gap-3">
+                <CircleDot className={`h-4 w-4 shrink-0 mt-0.5 ${data.status.toLowerCase().includes("đang hoạt động") ? "text-green-600" : "text-destructive"}`} />
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs text-muted-foreground">Trạng thái thuế</dt>
+                  <dd className={`font-medium ${data.status.toLowerCase().includes("đang hoạt động") ? "text-green-600" : "text-destructive"}`}>
+                    {data.status}
+                  </dd>
+                </div>
+              </div>
+            )}
           </dl>
         </div>
       )}
