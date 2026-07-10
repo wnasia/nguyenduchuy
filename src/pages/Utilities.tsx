@@ -12,7 +12,8 @@ import {
   Globe,
   Bitcoin,
   Pickaxe,
-  FileSearch
+  FileSearch,
+  Building2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
