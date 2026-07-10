@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, AlertCircle, Building2, MapPin, Globe, Hash } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BusinessData {
   id: string;
