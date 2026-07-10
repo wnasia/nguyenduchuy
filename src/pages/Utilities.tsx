@@ -24,6 +24,7 @@ import HoroscopeWidget from "@/components/widgets/HoroscopeWidget";
 import GoldPriceHistoryWidget from "@/components/widgets/GoldPriceHistoryWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
+import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
 
 const Utilities = () => {
   const { t } = useI18n();
