@@ -137,6 +137,16 @@ const Utilities = () => {
       color: "from-rose-500 to-red-500",
       bgColor: "bg-rose-50",
       iconColor: "text-rose-600"
+    },
+    {
+      id: "tax-code",
+      icon: Building2,
+      title: "Tra cứu mã số thuế doanh nghiệp",
+      description: "Nhập mã số thuế để xem tên, tên quốc tế và địa chỉ doanh nghiệp (dữ liệu VietQR)",
+      action: "Tra cứu",
+      color: "from-sky-500 to-blue-500",
+      bgColor: "bg-sky-50",
+      iconColor: "text-sky-600"
     }
   ];
 
