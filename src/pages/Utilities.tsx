@@ -178,6 +178,8 @@ const Utilities = () => {
         return <StockMarketWidget />;
       case "tax-debt":
         return <TaxDebtLookupWidget />;
+      case "tax-code":
+        return <TaxCodeLookupWidget />;
       default:
         return null;
     }
