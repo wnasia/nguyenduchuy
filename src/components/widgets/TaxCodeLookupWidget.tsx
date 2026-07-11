@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, AlertCircle, Building2, MapPin, Globe, Hash, CircleDot, Briefcase, UserCircle2 } from "lucide-react";
@@ -21,11 +21,17 @@ interface ApiResponse {
   data?: BusinessData;
 }
 
-const TaxCodeLookupWidget = () => {
-  const [taxCode, setTaxCode] = useState("");
+interface TaxCodeLookupWidgetProps {
+  initialCode?: string;
+  autoLookup?: boolean;
+}
+
+const TaxCodeLookupWidget = ({ initialCode = "", autoLookup = false }: TaxCodeLookupWidgetProps = {}) => {
+  const [taxCode, setTaxCode] = useState(initialCode);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<BusinessData | null>(null);
+  const didAutoRef = useRef(false);
 
   const handleLookup = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -56,6 +62,15 @@ const TaxCodeLookupWidget = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (autoLookup && initialCode && !didAutoRef.current) {
+      didAutoRef.current = true;
+      handleLookup();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoLookup, initialCode]);
+
 
   return (
     <div className="space-y-4 w-full">

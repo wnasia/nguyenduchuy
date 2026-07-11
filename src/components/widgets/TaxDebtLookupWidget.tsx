@@ -28,12 +28,17 @@ interface FetchResponse {
 
 const PAGE_SIZE = 25;
 
-const TaxDebtLookupWidget = () => {
+interface TaxDebtLookupWidgetProps {
+  initialQuery?: string;
+  autoSearch?: boolean;
+}
+
+const TaxDebtLookupWidget = ({ initialQuery = "", autoSearch = false }: TaxDebtLookupWidgetProps = {}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<FetchResponse | null>(null);
-  const [query, setQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
+  const [submittedQuery, setSubmittedQuery] = useState(autoSearch ? initialQuery : "");
   const [page, setPage] = useState(1);
 
   const load = async (search: string, targetPage: number) => {
