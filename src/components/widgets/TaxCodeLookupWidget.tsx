@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, AlertCircle, Building2, MapPin, Globe, Hash, CircleDot } from "lucide-react";
+import { Loader2, Search, AlertCircle, Building2, MapPin, Globe, Hash, CircleDot, Briefcase, UserCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BusinessData {
@@ -11,6 +11,8 @@ interface BusinessData {
   shortName?: string;
   address?: string;
   status?: string;
+  industry?: string;
+  legalRepresentative?: string;
 }
 
 interface ApiResponse {
