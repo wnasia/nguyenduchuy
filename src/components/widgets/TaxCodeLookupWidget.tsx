@@ -63,6 +63,15 @@ const TaxCodeLookupWidget = ({ initialCode = "", autoLookup = false }: TaxCodeLo
     }
   };
 
+  useEffect(() => {
+    if (autoLookup && initialCode && !didAutoRef.current) {
+      didAutoRef.current = true;
+      handleLookup();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoLookup, initialCode]);
+
+
   return (
     <div className="space-y-4 w-full">
       <form onSubmit={handleLookup} className="flex flex-col sm:flex-row gap-2">
