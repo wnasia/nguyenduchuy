@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, AlertCircle, Building2, MapPin, Globe, Hash, CircleDot } from "lucide-react";
+import { Loader2, Search, AlertCircle, Building2, MapPin, Globe, Hash, CircleDot, Briefcase, UserCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BusinessData {
@@ -11,6 +11,8 @@ interface BusinessData {
   shortName?: string;
   address?: string;
   status?: string;
+  industry?: string;
+  legalRepresentative?: string;
 }
 
 interface ApiResponse {
@@ -145,6 +147,26 @@ const TaxCodeLookupWidget = () => {
                   <dd className={`font-medium ${data.status.toLowerCase().includes("đang hoạt động") ? "text-green-600" : "text-destructive"}`}>
                     {data.status}
                   </dd>
+                </div>
+              </div>
+            )}
+
+            {data.industry && (
+              <div className="flex items-start gap-3">
+                <Briefcase className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs text-muted-foreground">Ngành nghề kinh doanh chính</dt>
+                  <dd className="break-words">{data.industry}</dd>
+                </div>
+              </div>
+            )}
+
+            {data.legalRepresentative && (
+              <div className="flex items-start gap-3">
+                <UserCircle2 className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs text-muted-foreground">Người đại diện pháp luật</dt>
+                  <dd className="font-medium">{data.legalRepresentative}</dd>
                 </div>
               </div>
             )}
