@@ -150,6 +150,26 @@ const TaxCodeLookupWidget = () => {
                 </div>
               </div>
             )}
+
+            {data.industry && (
+              <div className="flex items-start gap-3">
+                <Briefcase className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs text-muted-foreground">Ngành nghề kinh doanh chính</dt>
+                  <dd className="break-words">{data.industry}</dd>
+                </div>
+              </div>
+            )}
+
+            {data.legalRepresentative && (
+              <div className="flex items-start gap-3">
+                <UserCircle2 className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs text-muted-foreground">Người đại diện pháp luật</dt>
+                  <dd className="font-medium">{data.legalRepresentative}</dd>
+                </div>
+              </div>
+            )}
           </dl>
         </div>
       )}
