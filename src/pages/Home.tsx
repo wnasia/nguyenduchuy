@@ -7,6 +7,7 @@ import TopicSection from "@/components/home/TopicSection";
 import LatestPosts from "@/components/home/LatestPosts";
 import FeaturedPosts from "@/components/home/FeaturedPosts";
 import TopicNav from "@/components/home/TopicNav";
+import HomeUtilitiesSection from "@/components/home/HomeUtilitiesSection";
 
 interface Post {
   id: string;
@@ -158,6 +159,9 @@ const Home = () => {
       <BannerSlider />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Quick utilities: tax code, tax debt, lunar calendar */}
+        {!selectedTopicId && <HomeUtilitiesSection />}
+
         {/* Latest Posts */}
         {!selectedTopicId && <LatestPosts posts={latestPosts} />}
 
