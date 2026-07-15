@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useMiningSession } from '@/hooks/useMiningSession';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import LoginPromptModal from '@/components/LoginPromptModal';
 
 interface MiningTimerProps {
   postId: string;
