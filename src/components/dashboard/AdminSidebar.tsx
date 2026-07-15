@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut } from "lucide-react";
-import huyLogo from "@/assets/huy-logo.png";
+import huyLogo from "@/assets/huy-logo-white.png.asset.json";
 import { cn } from "@/lib/utils";
 
 interface AdminSidebarProps {
