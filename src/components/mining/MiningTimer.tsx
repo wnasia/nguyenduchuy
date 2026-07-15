@@ -15,7 +15,8 @@ interface MiningTimerProps {
 const MiningTimer = ({ postId, className }: MiningTimerProps) => {
   const { user, profile } = useAuth();
   const [showDebug, setShowDebug] = useState(false);
-  const { 
+  const [loginOpen, setLoginOpen] = useState(false);
+  const {
     sessionId,
     activeSeconds, 
     isValid, 
