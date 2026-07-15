@@ -6,7 +6,6 @@ import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import huyLogo from "@/assets/huy-logo.png";
-import huyLogoWhite from "@/assets/huy-logo-white.png.asset.json";
 import HeaderUserControls from "@/components/HeaderUserControls";
 
 const Navbar = () => {
