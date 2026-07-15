@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useMiningSession } from '@/hooks/useMiningSession';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import LoginPromptModal from '@/components/LoginPromptModal';
 
 interface MiningTimerProps {
   postId: string;
@@ -14,7 +15,8 @@ interface MiningTimerProps {
 const MiningTimer = ({ postId, className }: MiningTimerProps) => {
   const { user, profile } = useAuth();
   const [showDebug, setShowDebug] = useState(false);
-  const { 
+  const [loginOpen, setLoginOpen] = useState(false);
+  const {
     sessionId,
     activeSeconds, 
     isValid, 
@@ -54,14 +56,26 @@ const MiningTimer = ({ postId, className }: MiningTimerProps) => {
 
   if (!user) {
     return (
-      <div className={cn(
-        "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4",
-        className
-      )}>
-        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-          <span className="text-sm font-medium">Đăng nhập để kiếm token khi đọc bài</span>
+      <>
+        <div className={cn(
+          "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4",
+          className
+        )}>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
+              Đăng nhập để kiếm token khi đọc bài
+            </span>
+            <Button
+              size="sm"
+              onClick={() => setLoginOpen(true)}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Đăng nhập
+            </Button>
+          </div>
         </div>
-      </div>
+        <LoginPromptModal open={loginOpen} onOpenChange={setLoginOpen} />
+      </>
     );
   }
 
