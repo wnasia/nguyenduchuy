@@ -94,7 +94,7 @@ const Navbar = () => {
             className="flex items-center group"
           >
             <img
-              src={huyLogo}
+              src={homeTop ? huyLogoWhite.url : huyLogo}
               alt="HUY"
               className={`h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200 ${
                 homeTop ? "drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" : ""
