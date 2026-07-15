@@ -89,7 +89,7 @@ const AdminSidebar = ({ activeModule, onModuleChange }: AdminSidebarProps) => {
           <Link to="/" className="flex items-center gap-3 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm transition-all duration-200 group-hover:bg-white/15">
               <img
-                src={huyLogo.url}
+                src={huyLogo}
                 alt="Logo"
                 className="h-6 w-6 object-contain"
               />
