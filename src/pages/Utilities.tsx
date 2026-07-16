@@ -1,23 +1,21 @@
 import { useI18n } from "@/hooks/useI18n";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Calendar, 
-  Star, 
-  Coins, 
-  TrendingUp, 
+import {
+  Calendar,
+  Star,
+  Coins,
+  TrendingUp,
   Plane,
-  ArrowRight,
-  Globe,
   Bitcoin,
   Pickaxe,
   FileSearch,
-  Building2
+  Building2,
+  ExternalLink,
+  Sparkles,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import LunarCalendarFull from "@/components/LunarCalendarFull";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 import HoroscopeWidget from "@/components/widgets/HoroscopeWidget";
@@ -26,248 +24,201 @@ import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
 
+type Tool = {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  external?: string;
+  render?: () => React.ReactNode;
+  accent: string; // tailwind color e.g. "text-sky-600 bg-sky-500/10"
+};
+
 const Utilities = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   usePageTitle(t("meta.utilities_title") || "Tiện ích - Huy's");
-  
-  const [openModal, setOpenModal] = useState<string | null>(null);
 
-  // Auto-open modal (or redirect) when ?tool=<id> is present
+  const tools: Tool[] = useMemo(
+    () => [
+      {
+        id: "tax-code",
+        icon: Building2,
+        title: "Tra cứu mã số thuế",
+        description: "Nhập MST để xem tên, địa chỉ, ngành nghề, người đại diện",
+        render: () => <TaxCodeLookupWidget />,
+        accent: "text-sky-600 bg-sky-500/10",
+      },
+      {
+        id: "tax-debt",
+        icon: FileSearch,
+        title: "Tra cứu nợ thuế",
+        description: "Danh sách doanh nghiệp đang nợ thuế",
+        render: () => <TaxDebtLookupWidget />,
+        accent: "text-rose-600 bg-rose-500/10",
+      },
+      {
+        id: "lunar-calendar",
+        icon: Calendar,
+        title: "Lịch âm dương",
+        description: "Ngày tốt xấu, giờ hoàng đạo",
+        render: () => <LunarCalendarFull />,
+        accent: "text-orange-600 bg-orange-500/10",
+      },
+      {
+        id: "horoscope",
+        icon: Star,
+        title: "Xem tử vi",
+        description: "Tử vi theo cung hoàng đạo",
+        render: () => <HoroscopeWidget />,
+        accent: "text-purple-600 bg-purple-500/10",
+      },
+      {
+        id: "gold-price",
+        icon: Coins,
+        title: "Giá vàng",
+        description: "Giá vàng SJC, PNJ, DOJI và thế giới",
+        render: () => <GoldPriceHistoryWidget />,
+        accent: "text-yellow-600 bg-yellow-500/10",
+      },
+      {
+        id: "stock-market",
+        icon: TrendingUp,
+        title: "Chứng khoán VN",
+        description: "VNINDEX, HNX & cổ phiếu",
+        render: () => <StockMarketWidget />,
+        accent: "text-green-600 bg-green-500/10",
+      },
+      {
+        id: "flight-booking",
+        icon: Plane,
+        title: "Vé máy bay",
+        description: "Tìm & so sánh chuyến bay",
+        render: () => (
+          <div className="max-w-lg">
+            <FlightSearchWidget />
+          </div>
+        ),
+        accent: "text-blue-600 bg-blue-500/10",
+      },
+      {
+        id: "crypto",
+        icon: Bitcoin,
+        title: "Crypto Tracker",
+        description: "Giá Bitcoin, Ethereum, altcoin",
+        external: "/crypto",
+        accent: "text-amber-600 bg-amber-500/10",
+      },
+      {
+        id: "mining-explorer",
+        icon: Pickaxe,
+        title: "Mining Explorer",
+        description: "Khám phá mining token",
+        external: "/explorer",
+        accent: "text-indigo-600 bg-indigo-500/10",
+      },
+    ],
+    []
+  );
+
+  const [activeId, setActiveId] = useState<string>(tools[0].id);
+
+  // sync ?tool=
   useEffect(() => {
     const tool = searchParams.get("tool");
     if (!tool) return;
-    if (tool === "crypto") {
-      navigate("/crypto", { replace: true });
-    } else if (tool === "mining-explorer") {
-      navigate("/explorer", { replace: true });
+    const found = tools.find((x) => x.id === tool);
+    if (!found) return;
+    if (found.external) {
+      navigate(found.external, { replace: true });
     } else {
-      setOpenModal(tool);
+      setActiveId(tool);
     }
-  }, [searchParams, navigate]);
+  }, [searchParams, tools, navigate]);
 
-  const handleModalChange = (open: boolean) => {
-    if (!open) {
-      setOpenModal(null);
-      if (searchParams.get("tool")) {
-        searchParams.delete("tool");
-        setSearchParams(searchParams, { replace: true });
-      }
+  const handleSelect = (tool: Tool) => {
+    if (tool.external) {
+      navigate(tool.external);
+      return;
     }
+    setActiveId(tool.id);
+    const next = new URLSearchParams(searchParams);
+    next.set("tool", tool.id);
+    setSearchParams(next, { replace: true });
   };
 
-  const utilities = [
-    {
-      id: "lunar-calendar",
-      icon: Calendar,
-      title: t("utilities.lunar_calendar") || "Lịch âm dương",
-      description: t("utilities.lunar_calendar_desc") || "Xem lịch âm dương, ngày tốt xấu, giờ hoàng đạo theo truyền thống Việt Nam",
-      action: t("utilities.view") || "Xem lịch",
-      color: "from-orange-500 to-amber-500",
-      bgColor: "bg-orange-50",
-      iconColor: "text-orange-600"
-    },
-    {
-      id: "horoscope",
-      icon: Star,
-      title: t("utilities.horoscope") || "Xem tử vi",
-      description: t("utilities.horoscope_desc") || "Tra cứu tử vi hàng ngày, hàng tuần và hàng năm theo cung hoàng đạo",
-      action: t("utilities.view") || "Xem tử vi",
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-purple-50",
-      iconColor: "text-purple-600"
-    },
-    {
-      id: "gold-price",
-      icon: Coins,
-      title: t("utilities.gold_price") || "Giá vàng Việt Nam / Thế giới",
-      description: t("utilities.gold_price_desc") || "Cập nhật giá vàng SJC, PNJ, DOJI và giá vàng thế giới theo thời gian thực",
-      action: t("utilities.view") || "Xem giá vàng",
-      color: "from-yellow-500 to-orange-500",
-      bgColor: "bg-yellow-50",
-      iconColor: "text-yellow-600"
-    },
-    {
-      id: "stock-market",
-      icon: TrendingUp,
-      title: t("utilities.stock_market") || "Chứng khoán Việt Nam (VNINDEX)",
-      description: t("utilities.stock_market_desc") || "Theo dõi chỉ số VNINDEX, HNX và các cổ phiếu phổ biến trên sàn giao dịch",
-      action: t("utilities.view") || "Xem chứng khoán",
-      color: "from-green-500 to-emerald-500",
-      bgColor: "bg-green-50",
-      iconColor: "text-green-600"
-    },
-    {
-      id: "flight-booking",
-      icon: Plane,
-      title: t("utilities.flight_booking") || "Vé máy bay",
-      description: t("utilities.flight_booking_desc") || "Tìm kiếm và so sánh giá vé máy bay nội địa và quốc tế",
-      action: t("utilities.search") || "Tìm chuyến bay",
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600"
-    },
-    {
-      id: "crypto",
-      icon: Bitcoin,
-      title: t("utilities.crypto") || "Crypto Tracker",
-      description: t("utilities.crypto_desc") || "Theo dõi giá tiền điện tử Bitcoin, Ethereum và các altcoin phổ biến theo thời gian thực",
-      action: t("utilities.view") || "Xem Crypto",
-      color: "from-amber-500 to-orange-500",
-      bgColor: "bg-amber-50",
-      iconColor: "text-amber-600"
-    },
-    {
-      id: "mining-explorer",
-      icon: Pickaxe,
-      title: "Mining Explorer",
-      description: "Khám phá hệ thống mining token, theo dõi phiên đọc và phần thưởng token của bạn",
-      action: "Khám phá",
-      color: "from-indigo-500 to-violet-500",
-      bgColor: "bg-indigo-50",
-      iconColor: "text-indigo-600"
-    },
-    {
-      id: "tax-debt",
-      icon: FileSearch,
-      title: "Tra cứu doanh nghiệp nợ thuế",
-      description: "Tra cứu nhanh danh sách doanh nghiệp đang nợ thuế theo mã số thuế hoặc tên doanh nghiệp",
-      action: "Tra cứu",
-      color: "from-rose-500 to-red-500",
-      bgColor: "bg-rose-50",
-      iconColor: "text-rose-600"
-    },
-    {
-      id: "tax-code",
-      icon: Building2,
-      title: "Tra cứu mã số thuế doanh nghiệp",
-      description: "Nhập mã số thuế để xem tên, tên quốc tế và địa chỉ doanh nghiệp (dữ liệu VietQR)",
-      action: "Tra cứu",
-      color: "from-sky-500 to-blue-500",
-      bgColor: "bg-sky-50",
-      iconColor: "text-sky-600"
-    }
-  ];
-
-  const handleCardClick = (id: string) => {
-    if (id === "crypto") {
-      navigate("/crypto");
-    } else if (id === "mining-explorer") {
-      navigate("/explorer");
-    } else {
-      setOpenModal(id);
-    }
-  };
-
-  const renderModalContent = (id: string) => {
-    switch (id) {
-      case "lunar-calendar":
-        return <LunarCalendarFull />;
-      case "gold-price":
-        return <GoldPriceHistoryWidget />;
-      case "flight-booking":
-        return (
-          <div className="max-w-lg mx-auto">
-            <FlightSearchWidget />
-          </div>
-        );
-      case "horoscope":
-        return <HoroscopeWidget />;
-      case "stock-market":
-        return <StockMarketWidget />;
-      case "tax-debt":
-        return <TaxDebtLookupWidget />;
-      case "tax-code":
-        return <TaxCodeLookupWidget />;
-      default:
-        return null;
-    }
-  };
-
-  const getModalTitle = (id: string) => {
-    const utility = utilities.find(u => u.id === id);
-    return utility?.title || "";
-  };
+  const active = tools.find((x) => x.id === activeId) ?? tools[0];
+  const ActiveIcon = active.icon;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent py-12 sm:py-16 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
-              <Globe className="h-8 w-8 text-primary" />
+    <div className="min-h-[calc(100vh-88px)] bg-muted/20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 lg:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 lg:gap-6">
+          {/* Sidebar */}
+          <aside className="lg:sticky lg:top-[100px] lg:self-start">
+            <div className="rounded-xl border bg-card overflow-hidden">
+              <div className="px-4 py-3 border-b flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold">Tiện ích</h2>
+              </div>
+              <nav className="p-2 flex flex-col gap-0.5 max-h-[70vh] overflow-y-auto">
+                {tools.map((tool) => {
+                  const Icon = tool.icon;
+                  const isActive = !tool.external && tool.id === activeId;
+                  return (
+                    <button
+                      key={tool.id}
+                      onClick={() => handleSelect(tool)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors group ${
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <span
+                        className={`shrink-0 h-8 w-8 rounded-md flex items-center justify-center ${tool.accent}`}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium truncate">
+                          {tool.title}
+                        </span>
+                      </span>
+                      {tool.external && (
+                        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              {t("utilities.title") || "Tiện ích"}
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-              {t("utilities.subtitle") || "Các công cụ và tiện ích hữu ích cho cuộc sống hàng ngày của bạn"}
-            </p>
-          </div>
+          </aside>
+
+          {/* Main content */}
+          <section className="min-w-0">
+            <div className="rounded-xl border bg-card">
+              <header className="px-4 sm:px-6 py-4 border-b flex items-start gap-3">
+                <div
+                  className={`shrink-0 h-10 w-10 rounded-lg flex items-center justify-center ${active.accent}`}
+                >
+                  <ActiveIcon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">
+                    {active.title}
+                  </h1>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {active.description}
+                  </p>
+                </div>
+              </header>
+              <div className="p-4 sm:p-6">{active.render?.()}</div>
+            </div>
+          </section>
         </div>
       </div>
-
-      {/* Utilities Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {utilities.map((utility) => {
-            const Icon = utility.icon;
-            return (
-              <Card 
-                key={utility.id}
-                className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1"
-                onClick={() => handleCardClick(utility.id)}
-              >
-                {/* Gradient accent */}
-                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${utility.color}`} />
-                
-                <CardHeader className="pb-3">
-                  <div className="flex items-start gap-4">
-                    <div className={`flex-shrink-0 p-3 rounded-xl ${utility.bgColor} group-hover:scale-110 transition-transform duration-300`}>
-                      <Icon className={`h-6 w-6 ${utility.iconColor}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg font-semibold text-gray-900 line-clamp-2">
-                        {utility.title}
-                      </CardTitle>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="pt-0">
-                  <CardDescription className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
-                    {utility.description}
-                  </CardDescription>
-                  
-                  <Button 
-                    variant="ghost" 
-                    className={`w-full justify-between group-hover:bg-gradient-to-r ${utility.color} group-hover:text-white transition-all duration-300`}
-                  >
-                    <span>{utility.action}</span>
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Modal for utility content */}
-      <Dialog open={openModal !== null} onOpenChange={handleModalChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
-              {openModal && getModalTitle(openModal)}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4">
-            {openModal && renderModalContent(openModal)}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
