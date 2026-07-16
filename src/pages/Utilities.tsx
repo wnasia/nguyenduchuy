@@ -145,12 +145,7 @@ const Utilities = () => {
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr]">
         {/* Sidebar */}
         <aside className="border-r border-border/60 lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)]">
-          <div className="px-3 py-5 h-full overflow-y-auto">
-            <div className="px-3 pb-3 mb-1">
-              <h2 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Tiện ích
-              </h2>
-            </div>
+          <div className="px-3 py-6 h-full overflow-y-auto">
             <nav className="flex flex-col gap-0.5">
               {tools.map((tool) => {
                 const Icon = tool.icon;
@@ -159,19 +154,21 @@ const Utilities = () => {
                   <button
                     key={tool.id}
                     onClick={() => handleSelect(tool)}
-                    className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-full text-left transition-all ${
+                    className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-full text-left transition-all ${
                       isActive
-                        ? "bg-muted text-foreground font-medium"
-                        : "text-foreground/75 hover:bg-muted/60 hover:text-foreground"
+                        ? "bg-muted text-foreground font-semibold"
+                        : "text-foreground/75 hover:bg-muted/60 hover:text-foreground font-normal"
                     }`}
                   >
                     <Icon
-                      className={`h-[18px] w-[18px] shrink-0 transition-colors ${
+                      className={`h-[18px] w-[18px] shrink-0 ${
                         isActive ? "text-primary" : "text-foreground/60"
                       }`}
                       strokeWidth={isActive ? 2.25 : 1.75}
                     />
-                    <span className="flex-1 text-[14px] truncate">{tool.title}</span>
+                    <span className="flex-1 text-[14px] truncate" style={{ fontFamily: "inherit" }}>
+                      {tool.title}
+                    </span>
                     {tool.badge && (
                       <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-400">
                         {tool.badge}
@@ -189,19 +186,17 @@ const Utilities = () => {
 
         {/* Main */}
         <section className="min-w-0">
-          <div className="max-w-3xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
-            <div className="flex items-center gap-3 mb-2 justify-center">
+          <div className="max-w-4xl mx-auto px-5 sm:px-10 py-10 sm:py-14">
+            <div className="flex items-center justify-center gap-2.5 mb-3">
               <ActiveIcon className="h-6 w-6 text-primary" strokeWidth={2} />
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+              <h1 className="!font-sans text-[26px] sm:text-[30px] font-semibold text-foreground tracking-tight leading-none">
                 {active.title}
               </h1>
             </div>
-            <p className="text-center text-sm text-muted-foreground mb-8 max-w-xl mx-auto">
+            <p className="text-center text-[15px] text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
               {active.description}
             </p>
-            <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6 shadow-sm">
-              {active.render?.()}
-            </div>
+            <div>{active.render?.()}</div>
           </div>
         </section>
       </div>
