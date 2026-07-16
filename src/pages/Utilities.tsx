@@ -186,17 +186,20 @@ const Utilities = () => {
 
         {/* Main */}
         <section className="min-w-0">
-          <div className="max-w-4xl mx-auto px-5 sm:px-10 py-10 sm:py-14">
-            <div className="flex items-center justify-center gap-2.5 mb-3">
-              <ActiveIcon className="h-6 w-6 text-primary" strokeWidth={2} />
-              <h1 className="!font-sans text-[26px] sm:text-[30px] font-semibold text-foreground tracking-tight leading-none">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+            <div className="flex items-center justify-center gap-2.5 mb-2">
+              <ActiveIcon className="h-5 w-5 text-primary" strokeWidth={2} />
+              <div
+                className="text-[22px] sm:text-[24px] font-semibold text-foreground tracking-tight leading-none"
+                style={{ fontFamily: "'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif" }}
+              >
                 {active.title}
-              </h1>
+              </div>
             </div>
-            <p className="text-center text-[15px] text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
+            <p className="text-center text-[14px] text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed">
               {active.description}
             </p>
-            <div>{active.render?.()}</div>
+            <div className="[&_.grid]:gap-3">{active.render?.()}</div>
           </div>
         </section>
       </div>
