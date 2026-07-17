@@ -186,10 +186,11 @@ const Utilities = () => {
 
         {/* Main */}
         <section className="min-w-0">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-4 sm:pt-5 pb-8">
-            <div className="mx-auto max-w-xl rounded-2xl border border-border/60 bg-card p-5 sm:p-6 [&_.grid]:gap-3">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-8">
+            <div className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 shadow-sm [&_.grid]:gap-3">
               {active.render?.()}
             </div>
+
 
 
 
