@@ -611,7 +611,7 @@ const HoroscopeWidget = () => {
 
   // Show input form
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-xl rounded-2xl border border-border/60 bg-card p-5 sm:p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {/* Full Name */}
       <div className="space-y-1.5">
         <Label htmlFor="fullName" className="text-[13px] font-medium">
