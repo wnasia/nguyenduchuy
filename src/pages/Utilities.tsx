@@ -186,7 +186,7 @@ const Utilities = () => {
 
         {/* Main */}
         <section className="min-w-0">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-4 sm:pt-5 pb-8">
             <div className="flex items-center justify-center gap-2.5 mb-2">
               <ActiveIcon className="h-5 w-5 text-primary" strokeWidth={2} />
               <div
@@ -196,10 +196,11 @@ const Utilities = () => {
                 {active.title}
               </div>
             </div>
-            <p className="text-center text-[14px] text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed">
+            <p className="text-center text-[14px] text-muted-foreground mb-6 max-w-lg mx-auto leading-relaxed">
               {active.description}
             </p>
             <div className="[&_.grid]:gap-3">{active.render?.()}</div>
+
           </div>
         </section>
       </div>
