@@ -611,69 +611,57 @@ const HoroscopeWidget = () => {
 
   // Show input form
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-4">
-          <Star className="h-8 w-8 text-purple-600" />
-        </div>
-        <h2 className="text-xl font-semibold text-foreground mb-2">Xem tử vi cá nhân</h2>
-        <p className="text-muted-foreground">
-          Nhập thông tin của bạn để xem tử vi chi tiết dành riêng cho bạn
-        </p>
+    <form onSubmit={handleSubmit} className="mx-auto max-w-xl rounded-2xl border border-border/60 bg-card p-5 sm:p-6 space-y-4">
+      {/* Full Name */}
+      <div className="space-y-1.5">
+        <Label htmlFor="fullName" className="text-[13px] font-medium">
+          Họ và tên <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="fullName"
+          placeholder="Nhập họ và tên đầy đủ"
+          value={formData.fullName}
+          onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+          className={`h-10 ${errors.fullName ? "border-red-500" : ""}`}
+          maxLength={100}
+        />
+        {errors.fullName && (
+          <p className="text-xs text-red-500">{errors.fullName}</p>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Full Name */}
-        <div className="space-y-2">
-          <Label htmlFor="fullName" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Họ và tên <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="fullName"
-            placeholder="Nhập họ và tên đầy đủ"
-            value={formData.fullName}
-            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            className={errors.fullName ? "border-red-500" : ""}
-            maxLength={100}
-          />
-          {errors.fullName && (
-            <p className="text-sm text-red-500">{errors.fullName}</p>
-          )}
-        </div>
+      {/* Gender */}
+      <div className="space-y-1.5">
+        <Label className="text-[13px] font-medium">
+          Giới tính <span className="text-red-500">*</span>
+        </Label>
+        <RadioGroup
+          value={formData.gender}
+          onValueChange={(value) => setFormData({ ...formData, gender: value as typeof formData.gender })}
+          className="flex flex-wrap gap-5 pt-1"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="male" id="male" />
+            <Label htmlFor="male" className="cursor-pointer text-sm font-normal">Nam</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="female" id="female" />
+            <Label htmlFor="female" className="cursor-pointer text-sm font-normal">Nữ</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="other" id="other" />
+            <Label htmlFor="other" className="cursor-pointer text-sm font-normal">Khác</Label>
+          </div>
+        </RadioGroup>
+        {errors.gender && (
+          <p className="text-xs text-red-500">{errors.gender}</p>
+        )}
+      </div>
 
-        {/* Gender */}
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            Giới tính <span className="text-red-500">*</span>
-          </Label>
-          <RadioGroup
-            value={formData.gender}
-            onValueChange={(value) => setFormData({ ...formData, gender: value as typeof formData.gender })}
-            className="flex flex-wrap gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="male" id="male" />
-              <Label htmlFor="male" className="cursor-pointer">Nam</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="female" id="female" />
-              <Label htmlFor="female" className="cursor-pointer">Nữ</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="other" id="other" />
-              <Label htmlFor="other" className="cursor-pointer">Khác</Label>
-            </div>
-          </RadioGroup>
-          {errors.gender && (
-            <p className="text-sm text-red-500">{errors.gender}</p>
-          )}
-        </div>
-
-        {/* Date of Birth */}
-        <div className="space-y-2">
-          <Label htmlFor="dateOfBirth" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
+      {/* Date + Time of Birth (2 cols) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="dateOfBirth" className="text-[13px] font-medium">
             Ngày sinh <span className="text-red-500">*</span>
           </Label>
           <Input
@@ -681,26 +669,22 @@ const HoroscopeWidget = () => {
             type="date"
             value={formData.dateOfBirth}
             onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-            className={errors.dateOfBirth ? "border-red-500" : ""}
+            className={`h-10 ${errors.dateOfBirth ? "border-red-500" : ""}`}
             max={new Date().toISOString().split('T')[0]}
           />
           {errors.dateOfBirth && (
-            <p className="text-sm text-red-500">{errors.dateOfBirth}</p>
+            <p className="text-xs text-red-500">{errors.dateOfBirth}</p>
           )}
         </div>
 
-        {/* Time of Birth */}
-        <div className="space-y-2">
-          <Label htmlFor="timeOfBirth" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Giờ sinh
-          </Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="timeOfBirth" className="text-[13px] font-medium">Giờ sinh</Label>
           <Select
             value={formData.timeOfBirth}
             onValueChange={(value) => setFormData({ ...formData, timeOfBirth: value })}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Chọn giờ sinh" />
+            <SelectTrigger className="h-10">
+              <SelectValue placeholder="Không rõ" />
             </SelectTrigger>
             <SelectContent>
               {birthHours.map((hour) => (
@@ -710,19 +694,15 @@ const HoroscopeWidget = () => {
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">
-            Nếu không biết giờ sinh chính xác, bạn có thể chọn "Không rõ"
-          </p>
         </div>
+      </div>
 
-        {/* Submit Button */}
-        <Button type="submit" className="w-full" size="lg">
-          <Star className="h-4 w-4 mr-2" />
-          Xem tử vi
-        </Button>
-      </form>
-    </div>
+      <Button type="submit" className="w-full h-10 mt-1">
+        Xem tử vi
+      </Button>
+    </form>
   );
 };
+
 
 export default HoroscopeWidget;
