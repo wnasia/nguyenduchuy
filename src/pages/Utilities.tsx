@@ -144,7 +144,7 @@ const Utilities = () => {
     <div className="min-h-[calc(100vh-88px)] bg-background">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr]">
         {/* Sidebar */}
-        <aside className="border-r border-border/60 lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)]">
+        <aside className="bg-primary lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)]">
           <div className="px-3 py-6 h-full overflow-y-auto">
             <nav className="flex flex-col gap-0.5">
               {tools.map((tool) => {
@@ -156,13 +156,13 @@ const Utilities = () => {
                     onClick={() => handleSelect(tool)}
                     className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-full text-left transition-all ${
                       isActive
-                        ? "bg-muted text-foreground font-semibold"
-                        : "text-foreground/75 hover:bg-muted/60 hover:text-foreground font-normal"
+                        ? "bg-white/15 text-white font-semibold"
+                        : "text-white/80 hover:bg-white/10 hover:text-white font-normal"
                     }`}
                   >
                     <Icon
                       className={`h-[18px] w-[18px] shrink-0 ${
-                        isActive ? "text-primary" : "text-foreground/60"
+                        isActive ? "text-white" : "text-white/70"
                       }`}
                       strokeWidth={isActive ? 2.25 : 1.75}
                     />
@@ -170,12 +170,12 @@ const Utilities = () => {
                       {tool.title}
                     </span>
                     {tool.badge && (
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-400">
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white text-primary">
                         {tool.badge}
                       </span>
                     )}
                     {tool.external && (
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ExternalLink className="h-3.5 w-3.5 text-white/70 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </button>
                 );
@@ -199,7 +199,10 @@ const Utilities = () => {
             <p className="text-center text-[14px] text-muted-foreground mb-6 max-w-lg mx-auto leading-relaxed">
               {active.description}
             </p>
-            <div className="[&_.grid]:gap-3">{active.render?.()}</div>
+            <div className="mx-auto max-w-xl rounded-2xl border border-border/60 bg-card p-5 sm:p-6 [&_.grid]:gap-3">
+              {active.render?.()}
+            </div>
+
 
           </div>
         </section>
