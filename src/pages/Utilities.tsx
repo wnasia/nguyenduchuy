@@ -225,8 +225,8 @@ const Utilities = () => {
     <div className="min-h-[calc(100vh-88px)] bg-background">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr]">
         {/* Sidebar */}
-        <aside className="bg-primary lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)]">
-          <div className="px-3 py-6 h-full overflow-y-auto">
+        <aside className="bg-primary lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)] lg:overflow-hidden">
+          <div className="px-3 py-6 h-full">
             <nav className="flex flex-col gap-0.5">
               {tools.map((tool) => {
                 const Icon = tool.icon;
