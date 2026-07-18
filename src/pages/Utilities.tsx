@@ -11,16 +11,21 @@ import {
   FileSearch,
   Building2,
   ExternalLink,
+  Briefcase,
+  GraduationCap,
+  MessageCircle,
+  ImagePlus,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LunarCalendarFull from "@/components/LunarCalendarFull";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 import HoroscopeWidget from "@/components/widgets/HoroscopeWidget";
-import GoldPriceHistoryWidget from "@/components/widgets/GoldPriceHistoryWidget";
+import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
+import ComingSoonWidget from "@/components/widgets/ComingSoonWidget";
 
 type Tool = {
   id: string;
@@ -50,7 +55,7 @@ const Utilities = () => {
       {
         id: "tax-debt",
         icon: FileSearch,
-        title: "Tra cứu nợ thuế",
+        title: "Danh Sách nợ thuế",
         description: "Danh sách doanh nghiệp đang nợ thuế theo MST hoặc tên.",
         render: () => <TaxDebtLookupWidget />,
       },
@@ -66,21 +71,22 @@ const Utilities = () => {
         icon: Star,
         title: "Xem tử vi",
         description: "Tử vi hàng ngày theo cung hoàng đạo.",
-        badge: "Mới",
+        badge: "Beta",
         render: () => <HoroscopeWidget />,
       },
       {
         id: "gold-price",
         icon: Coins,
         title: "Giá vàng",
-        description: "Giá vàng SJC, PNJ, DOJI và giá vàng thế giới.",
-        render: () => <GoldPriceHistoryWidget />,
+        description: "Giá vàng SJC, PNJ, DOJI — Mua vào / Bán ra.",
+        render: () => <GoldPriceWidget />,
       },
       {
         id: "stock-market",
         icon: TrendingUp,
         title: "Chứng khoán Việt Nam",
         description: "Chỉ số VNINDEX, HNX và các cổ phiếu phổ biến.",
+        badge: "Demo",
         render: () => <StockMarketWidget />,
       },
       {
@@ -107,6 +113,81 @@ const Utilities = () => {
         title: "Mining Explorer",
         description: "Khám phá hệ thống mining token & phần thưởng.",
         external: "/explorer",
+      },
+      {
+        id: "jobs",
+        icon: Briefcase,
+        title: "Tìm việc làm",
+        description: "Danh sách việc làm mới nhất.",
+        badge: "Sắp có",
+        render: () => (
+          <ComingSoonWidget
+            title="Tìm việc làm"
+            reason="Chưa có nguồn dữ liệu việc làm chính thức. Các trang lớn (VietnamWorks, TopCV, ITviec) không cung cấp API công khai miễn phí, cần đăng ký partner hoặc dùng crawler (rủi ro pháp lý)."
+            needs={[
+              "API key của một trong các đối tác: VietnamWorks / TopCV / ITviec / CareerBuilder, HOẶC",
+              "Cho phép tự đăng tin việc làm trong hệ thống (tạo bảng jobs riêng và form đăng)",
+              "Xác nhận danh mục nghề nghiệp, khu vực, mức lương muốn hiển thị",
+            ]}
+          />
+        ),
+      },
+      {
+        id: "homework",
+        icon: GraduationCap,
+        title: "Giải bài tập",
+        description: "Toán, Văn, Anh — giải nhanh bằng AI.",
+        badge: "Sắp có",
+        render: () => (
+          <ComingSoonWidget
+            title="Giải bài tập (Toán, Văn, Anh…)"
+            reason="Cần tích hợp AI Gateway (Lovable AI) và một Edge Function riêng để nhận đề bài + ảnh, gọi model (Gemini / GPT) và trả lời. Chưa build vì cần xác nhận phạm vi để tránh lạm dụng (giới hạn/turn, cấm gian lận thi cử...)."
+            needs={[
+              "Xác nhận bật Lovable AI Gateway cho tính năng này (miễn phí đến hết 6/10/2025 theo policy hiện tại)",
+              "Giới hạn: cho phép ai dùng (guest / user đã đăng nhập), số lượt/ngày",
+              "Có cho upload ảnh đề bài không (cần bật multimodal)",
+              "Môn học: Toán / Văn / Anh / thêm gì khác",
+            ]}
+          />
+        ),
+      },
+      {
+        id: "chatbot",
+        icon: MessageCircle,
+        title: "Chatbox AI",
+        description: "Trò chuyện trực tiếp với trợ lý AI.",
+        badge: "Sắp có",
+        render: () => (
+          <ComingSoonWidget
+            title="Chatbox AI"
+            reason="Cần Edge Function stream (streamText qua Lovable AI Gateway) + bảng lưu hội thoại nếu muốn giữ lịch sử. Chưa build vì cần chốt shape hội thoại và storage."
+            needs={[
+              "Hình thức: 1 hội thoại duy nhất hay nhiều thread?",
+              "Lưu lịch sử: Database (Supabase) / localStorage / không lưu?",
+              "Ai được dùng: guest hay chỉ user đã đăng nhập?",
+              "Có cần tool-calling (search web, đọc bài viết trên site) không?",
+            ]}
+          />
+        ),
+      },
+      {
+        id: "image-gen",
+        icon: ImagePlus,
+        title: "Tạo ảnh AI",
+        description: "Sinh ảnh từ mô tả bằng AI.",
+        badge: "Sắp có",
+        render: () => (
+          <ComingSoonWidget
+            title="Tạo ảnh AI"
+            reason="Cần Edge Function gọi /v1/images/generations qua Lovable AI Gateway (gpt-image-2 hoặc Gemini Nano Banana). Chưa build vì cần chốt giới hạn để tránh lạm dụng credit."
+            needs={[
+              "Model muốn dùng: gpt-image-2 (chất lượng cao, đắt) hay gemini-2.5-flash-image (rẻ, nhanh)?",
+              "Giới hạn: số ảnh/user/ngày, cho phép guest hay không",
+              "Có lưu ảnh vào Supabase Storage (bucket riêng) để user xem lại không?",
+              "Có cần tính năng edit ảnh (upload ảnh gốc + prompt) không?",
+            ]}
+          />
+        ),
       },
     ],
     []
@@ -144,8 +225,8 @@ const Utilities = () => {
     <div className="min-h-[calc(100vh-88px)] bg-background">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr]">
         {/* Sidebar */}
-        <aside className="bg-primary lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)]">
-          <div className="px-3 py-6 h-full overflow-y-auto">
+        <aside className="bg-primary lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)] lg:overflow-hidden">
+          <div className="px-3 py-6 h-full">
             <nav className="flex flex-col gap-0.5">
               {tools.map((tool) => {
                 const Icon = tool.icon;

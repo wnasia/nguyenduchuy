@@ -204,6 +204,9 @@ const StockMarketWidget = () => {
 
   return (
     <div className="space-y-6">
+      <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-[12px] text-amber-800 leading-relaxed">
+        <strong>Lưu ý:</strong> Dữ liệu hiển thị hiện là <em>mô phỏng</em> (có biến động nhẹ theo thời gian) — chưa phải giá real-time từ HOSE/HNX. Để lấy dữ liệu thật cần API có phí (VNDirect DChart, SSI FastConnect, TCBS API…) hoặc key VPS/Fireant. Xác nhận nguồn muốn tích hợp, mình sẽ nối vào Edge Function proxy.
+      </div>
       {/* Market Status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
