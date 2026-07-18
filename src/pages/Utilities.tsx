@@ -11,16 +11,21 @@ import {
   FileSearch,
   Building2,
   ExternalLink,
+  Briefcase,
+  GraduationCap,
+  MessageCircle,
+  ImagePlus,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LunarCalendarFull from "@/components/LunarCalendarFull";
 import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
 import HoroscopeWidget from "@/components/widgets/HoroscopeWidget";
-import GoldPriceHistoryWidget from "@/components/widgets/GoldPriceHistoryWidget";
+import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
+import ComingSoonWidget from "@/components/widgets/ComingSoonWidget";
 
 type Tool = {
   id: string;
