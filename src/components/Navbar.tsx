@@ -24,16 +24,16 @@ const Navbar = () => {
   ];
 
   const utilityItems: { id: string; name: string; href?: string }[] = [
-    { id: "gallery", name: "Thư viện ảnh", href: "/gallery" },
-    { id: "videos", name: "Video", href: "/videos" },
-    { id: "lunar-calendar", name: "Lịch âm dương" },
+    { id: "tax-code", name: "Tra cứu mã số thuế" },
+    { id: "lunar-calendar", name: "Lịch âm" },
     { id: "horoscope", name: "Xem tử vi" },
     { id: "gold-price", name: "Giá vàng" },
-    { id: "stock-market", name: "Chứng khoán VN" },
     { id: "flight-booking", name: "Vé máy bay" },
-    { id: "crypto", name: "Crypto Tracker" },
+    { id: "crypto", name: "Thị trường Crypto" },
+    { id: "stock-market", name: "Chứng khoán" },
     { id: "mining-explorer", name: "Mining Explorer" },
-    { id: "tax-debt", name: "Tra cứu nợ thuế" },
+    { id: "gallery", name: "Thư viện ảnh", href: "/gallery" },
+    { id: "videos", name: "Video", href: "/videos" },
   ];
 
   const currentPathSearch = location.pathname + location.search;
