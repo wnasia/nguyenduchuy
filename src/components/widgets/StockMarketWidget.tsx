@@ -203,7 +203,7 @@ const StockMarketWidget = () => {
   );
 
   return (
-      </div>
+    <div className="space-y-6">
       {/* Market Status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
