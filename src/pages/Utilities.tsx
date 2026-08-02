@@ -169,7 +169,7 @@ const Utilities = () => {
                     aria-disabled={disabled}
                     className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-full text-left transition-all ${
                       disabled
-                        ? "text-background cursor-not-allowed select-none"
+                        ? "text-muted-foreground cursor-not-allowed select-none"
                         : isActive
                           ? "bg-background text-foreground font-semibold shadow-sm"
                           : "text-muted-foreground hover:bg-background/70 hover:text-foreground font-normal"
@@ -177,7 +177,7 @@ const Utilities = () => {
                   >
                     <Icon
                       className={`h-[18px] w-[18px] shrink-0 ${
-                        disabled ? "text-background" : isActive ? "text-foreground" : "text-muted-foreground"
+                        disabled ? "text-muted-foreground" : isActive ? "text-foreground" : "text-muted-foreground"
                       }`}
                       strokeWidth={isActive ? 2.25 : 1.75}
                     />
