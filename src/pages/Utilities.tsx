@@ -154,7 +154,7 @@ const Utilities = () => {
     <div className="min-h-[calc(100vh-88px)] bg-background">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr]">
         {/* Sidebar */}
-        <aside className="bg-primary lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)] lg:overflow-hidden">
+        <aside className="bg-muted/50 border-r border-border/60 lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)] lg:overflow-hidden">
           <div className="px-3 py-6 h-full">
             <nav className="flex flex-col gap-0.5">
               {tools.map((tool) => {
@@ -169,22 +169,23 @@ const Utilities = () => {
                     aria-disabled={disabled}
                     className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-full text-left transition-all ${
                       disabled
-                        ? "text-white/25 cursor-not-allowed"
+                        ? "text-background cursor-not-allowed select-none"
                         : isActive
-                          ? "bg-white/15 text-white font-semibold"
-                          : "text-white/80 hover:bg-white/10 hover:text-white font-normal"
+                          ? "bg-background text-foreground font-semibold shadow-sm"
+                          : "text-muted-foreground hover:bg-background/70 hover:text-foreground font-normal"
                     }`}
                   >
                     <Icon
                       className={`h-[18px] w-[18px] shrink-0 ${
-                        disabled ? "text-white/25" : isActive ? "text-white" : "text-white/70"
+                        disabled ? "text-background" : isActive ? "text-foreground" : "text-muted-foreground"
                       }`}
                       strokeWidth={isActive ? 2.25 : 1.75}
                     />
                     <span className="flex-1 text-[14px] truncate">{tool.title}</span>
                     {tool.external && !disabled && (
-                      <ExternalLink className="h-3.5 w-3.5 text-white/70 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
+
                   </button>
                 );
               })}
