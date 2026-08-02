@@ -612,9 +612,6 @@ const HoroscopeWidget = () => {
   // Show input form
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-[12px] text-amber-800 leading-relaxed">
-        <strong>Lưu ý:</strong> Kết quả hiện tại được sinh theo thuật toán nội bộ (deterministic theo ngày sinh) — <em>chưa phải dữ liệu tử vi thật</em>. Để lấy nội dung tử vi + hình ảnh từng cung theo ngày, cần API bên thứ ba (ví dụ: aztro, horoscope-app-api) hoặc key OpenAI/Gemini để sinh nội dung hàng ngày. Bạn xác nhận nguồn dữ liệu muốn dùng, mình sẽ tích hợp.
-      </div>
       {/* Full Name */}
       <div className="space-y-1.5">
         <Label htmlFor="fullName" className="text-[13px] font-medium">
