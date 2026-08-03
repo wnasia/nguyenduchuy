@@ -165,12 +165,8 @@ const AdminBanners = () => {
 
       if (dbError) throw dbError;
 
-      const fileName = imageUrl.split('/').pop();
-      if (fileName) {
-        await supabase.storage
-          .from('banners')
-          .remove([fileName]);
-      }
+      await deleteFromR2(imageUrl);
+
 
       toast({
         title: t("common.success"),
