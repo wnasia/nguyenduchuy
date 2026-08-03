@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
 import { Trash2, Eye, X, ChevronLeft, ChevronRight, Upload, RefreshCw } from "lucide-react";
 import GalleryImageUpload from "./GalleryImageUpload";
+import { deleteFromR2 } from "@/lib/r2Upload";
 
 interface GalleryImage {
   id: string;
@@ -129,19 +130,15 @@ const AdminGallery = () => {
         return;
       }
 
-      // Delete from storage
+      // Delete from Cloudflare R2
       if (imagesToDelete) {
         for (const image of imagesToDelete) {
           if (image.image_url) {
-            const filePath = image.image_url.split('/').pop();
-            if (filePath) {
-              await supabase.storage
-                .from('story-images')
-                .remove([`gallery/${filePath}`]);
-            }
+            await deleteFromR2(image.image_url);
           }
         }
       }
+
 
       toast({
         title: t("gallery.delete_success"),
@@ -189,15 +186,11 @@ const AdminGallery = () => {
         return;
       }
 
-      // Delete from storage
+      // Delete from Cloudflare R2
       if (imageToDelete?.image_url) {
-        const filePath = imageToDelete.image_url.split('/').pop();
-        if (filePath) {
-          await supabase.storage
-            .from('story-images')
-            .remove([`gallery/${filePath}`]);
-        }
+        await deleteFromR2(imageToDelete.image_url);
       }
+
 
       toast({
         title: t("gallery.delete_success"),

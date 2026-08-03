@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { Upload, X, Image, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/hooks/useI18n";
@@ -79,15 +80,10 @@ const ImageUpload = ({ imageLinks, onImageLinksChange, disabled }: ImageUploadPr
         setUploadCount({ current: i + 1, total: validFiles.length });
         setUploadProgress(((i) / validFiles.length) * 100);
 
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = fileName;
-
-        const { error: uploadError } = await supabase.storage
-          .from('story-images')
-          .upload(filePath, file);
-
-        if (uploadError) {
+        try {
+          const { url } = await uploadToR2(file, "stories");
+          uploadedUrls.push(url);
+        } catch (uploadError) {
           console.error('Upload error:', uploadError);
           toast({
             title: t("submit.upload_failed"),
@@ -97,13 +93,6 @@ const ImageUpload = ({ imageLinks, onImageLinksChange, disabled }: ImageUploadPr
           continue;
         }
 
-        const { data: publicUrlData } = supabase.storage
-          .from('story-images')
-          .getPublicUrl(filePath);
-
-        if (publicUrlData?.publicUrl) {
-          uploadedUrls.push(publicUrlData.publicUrl);
-        }
       }
 
       if (uploadedUrls.length > 0) {

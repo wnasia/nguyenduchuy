@@ -4,6 +4,7 @@ import "react-quill/dist/quill.snow.css";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/hooks/useI18n";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { useToast } from "@/hooks/use-toast";
 
 interface RichTextEditorProps {
@@ -58,32 +59,13 @@ const RichTextEditor = ({ value, onChange, disabled }: RichTextEditorProps) => {
           return;
         }
 
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${user.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const { url } = await uploadToR2(file, "stories");
 
-        const { error: uploadError } = await supabase.storage
-          .from("story-images")
-          .upload(fileName, file);
-
-        if (uploadError) {
-          console.error("Upload error:", uploadError);
-          toast({
-            title: t("submit.upload_failed"),
-            description: t("submit.upload_failed_desc"),
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const { data: publicUrlData } = supabase.storage
-          .from("story-images")
-          .getPublicUrl(fileName);
-
-        if (publicUrlData?.publicUrl) {
+        if (url) {
           const quill = quillRef.current?.getEditor();
           if (quill) {
             const range = quill.getSelection(true);
-            quill.insertEmbed(range.index, "image", publicUrlData.publicUrl);
+            quill.insertEmbed(range.index, "image", url);
             quill.setSelection(range.index + 1, 0);
           }
 
@@ -92,6 +74,7 @@ const RichTextEditor = ({ value, onChange, disabled }: RichTextEditorProps) => {
             description: t("submit.image_uploaded_success"),
           });
         }
+
       } catch (error) {
         console.error("Error uploading image:", error);
         toast({

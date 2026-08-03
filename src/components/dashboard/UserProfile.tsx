@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { uploadToR2 } from "@/lib/r2Upload";
 
 interface ProfileData {
   full_name: string | null;
@@ -118,21 +119,8 @@ const UserProfile = () => {
     try {
       setUploading(true);
 
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const { url: newAvatarUrl } = await uploadToR2(file, "avatars");
 
-      const { error: uploadError } = await supabase.storage
-        .from("story-images")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("story-images")
-        .getPublicUrl(filePath);
-
-      const newAvatarUrl = urlData.publicUrl;
 
       const { error: updateError } = await supabase
         .from("profiles")
