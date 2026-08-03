@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
 import { Upload, Trash2, RefreshCw, Image as ImageIcon } from "lucide-react";
+import { uploadToR2, deleteFromR2 } from "@/lib/r2Upload";
 
 interface Banner {
   id: string;
@@ -96,18 +97,8 @@ const AdminBanners = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const fileExt = newBanner.imageFile.name.split('.').pop();
-      const fileName = `banner-${Date.now()}.${fileExt}`;
+      const { url: publicUrl } = await uploadToR2(newBanner.imageFile, "banners");
 
-      const { error: uploadError } = await supabase.storage
-        .from('banners')
-        .upload(fileName, newBanner.imageFile);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('banners')
-        .getPublicUrl(fileName);
 
       const { error: dbError } = await supabase
         .from('homepage_banners')

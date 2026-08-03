@@ -65,18 +65,9 @@ const UserGallery = () => {
 
   const handleDeleteImage = async (imageId: string, imageUrl: string) => {
     try {
-      // Extract file path from URL
-      const urlParts = imageUrl.split('/');
-      const filePath = urlParts.slice(-2).join('/');
+      // Delete from Cloudflare R2
+      await deleteFromR2(imageUrl);
 
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('story-images')
-        .remove([filePath]);
-
-      if (storageError) {
-        console.error('Storage error:', storageError);
-      }
 
       // Delete from database
       const { error: dbError } = await supabase
