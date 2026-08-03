@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
 import { X, Image } from "lucide-react";
@@ -106,16 +107,12 @@ const GalleryImageUpload = ({ onUploadSuccess, onClose }: GalleryImageUploadProp
       }
 
       for (const file of selectedFiles) {
-        // Upload to storage
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `gallery/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('story-images')
-          .upload(filePath, file);
-
-        if (uploadError) {
+        // Upload to Cloudflare R2
+        let publicUrl: string;
+        try {
+          const result = await uploadToR2(file, "gallery");
+          publicUrl = result.url;
+        } catch (uploadError) {
           console.error('Upload error:', uploadError);
           toast({
             title: t("gallery.upload_error"),
@@ -125,10 +122,6 @@ const GalleryImageUpload = ({ onUploadSuccess, onClose }: GalleryImageUploadProp
           continue;
         }
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('story-images')
-          .getPublicUrl(filePath);
 
         // Save to database
         const { error: dbError } = await supabase

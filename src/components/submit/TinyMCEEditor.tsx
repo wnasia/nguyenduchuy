@@ -3,6 +3,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/hooks/useI18n";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { useToast } from "@/hooks/use-toast";
 
 interface TinyMCEEditorProps {
@@ -17,43 +18,23 @@ const TinyMCEEditor = ({ value, onChange, disabled }: TinyMCEEditorProps) => {
   const editorRef = useRef<any>(null);
 
   const handleImageUpload = async (blobInfo: any, progress: (percent: number) => void) => {
-    return new Promise<string>(async (resolve, reject) => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          reject("Please log in to upload images");
-          return;
-        }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Please log in to upload images");
 
-        const file = blobInfo.blob();
-        const fileExt = file.type.split("/")[1];
-        const fileName = `${user.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const blob = blobInfo.blob();
+    const file = blob instanceof File
+      ? blob
+      : new File([blob], blobInfo.filename?.() || `image.${blob.type.split("/")[1] || "png"}`, { type: blob.type });
 
-        const { error: uploadError } = await supabase.storage
-          .from("story-images")
-          .upload(fileName, file);
-
-        if (uploadError) {
-          console.error("Upload error:", uploadError);
-          reject("Failed to upload image");
-          return;
-        }
-
-        const { data: publicUrlData } = supabase.storage
-          .from("story-images")
-          .getPublicUrl(fileName);
-
-        if (publicUrlData?.publicUrl) {
-          resolve(publicUrlData.publicUrl);
-        } else {
-          reject("Failed to get image URL");
-        }
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        reject("Unexpected error during upload");
-      }
-    });
+    try {
+      const { url } = await uploadToR2(file, "stories");
+      return url;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw new Error("Failed to upload image");
+    }
   };
+
 
   return (
     <div className="space-y-2">
