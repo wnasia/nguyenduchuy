@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/useI18n";
 import { Image as ImageIcon, Upload, Trash2, Eye, X } from "lucide-react";
 import GalleryImageUpload from "./GalleryImageUpload";
+import { deleteFromR2 } from "@/lib/r2Upload";
 
 interface GalleryImage {
   id: string;
