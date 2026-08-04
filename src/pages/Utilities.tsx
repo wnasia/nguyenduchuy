@@ -177,7 +177,7 @@ const Utilities = () => {
                     onClick={() => handleSelect(tool)}
                     disabled={disabled}
                     aria-disabled={disabled}
-                    className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                    className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-left transition-all ${
                       disabled
                         ? "text-muted-foreground/70 cursor-not-allowed select-none"
                         : isActive
