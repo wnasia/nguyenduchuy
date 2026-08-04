@@ -33,17 +33,23 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Only admins may run the migration
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const asUser = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
-    const { data: { user } } = await asUser.auth.getUser();
-    if (!user) return json({ error: "Unauthorized" }, 401);
-    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: user.id, _role: "admin" });
-    if (!isAdmin) return json({ error: "Forbidden" }, 403);
+    // Access control: internal migration token OR an authenticated admin user
+    const migrateToken = Deno.env.get("MIGRATE_ADMIN_TOKEN");
+    const providedToken = req.headers.get("x-migrate-token");
+    const tokenOk = !!migrateToken && providedToken === migrateToken;
+
+    if (!tokenOk) {
+      const authHeader = req.headers.get("Authorization") ?? "";
+      const asUser = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } },
+      );
+      const { data: { user } } = await asUser.auth.getUser();
+      if (!user) return json({ error: "Unauthorized" }, 401);
+      const { data: isAdmin } = await admin.rpc("has_role", { _user_id: user.id, _role: "admin" });
+      if (!isAdmin) return json({ error: "Forbidden" }, 403);
+    }
 
     const client = new AwsClient({ accessKeyId, secretAccessKey, service: "s3", region: "auto" });
     const endpoint = `https://${accountId}.r2.cloudflarestorage.com/${bucket}`;
