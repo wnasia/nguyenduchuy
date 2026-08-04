@@ -161,8 +161,8 @@ const Utilities = () => {
     <div className="min-h-[calc(100vh-88px)] bg-background">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr]">
         {/* Sidebar (desktop) */}
-        <aside className="hidden lg:block bg-muted/40 border-r border-border/60 lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)] lg:overflow-hidden">
-          <div className="px-3 py-6 h-full">
+        <aside className="hidden lg:block bg-muted/40 border-r border-border/60 lg:sticky lg:top-[88px] lg:self-start">
+          <div className="px-3 py-5">
             <p className="px-4 pb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Tiện ích
             </p>
@@ -177,7 +177,7 @@ const Utilities = () => {
                     onClick={() => handleSelect(tool)}
                     disabled={disabled}
                     aria-disabled={disabled}
-                    className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                    className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-left transition-all ${
                       disabled
                         ? "text-muted-foreground/70 cursor-not-allowed select-none"
                         : isActive
