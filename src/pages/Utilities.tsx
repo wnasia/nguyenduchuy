@@ -15,6 +15,7 @@ import {
   MessageCircle,
   ImagePlus,
   Video,
+  ChevronDown,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -25,6 +26,12 @@ import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Tool = {
   id: string;
@@ -52,7 +59,7 @@ const Utilities = () => {
           <div className="space-y-8">
             <TaxCodeLookupWidget />
             <div className="pt-6 border-t">
-              <h3 className="text-base font-semibold mb-3">
+              <h3 className="text-lg font-semibold mb-4">
                 Danh sách doanh nghiệp trạng thái 06 (nợ thuế)
               </h3>
               <TaxDebtLookupWidget />
@@ -92,7 +99,7 @@ const Utilities = () => {
         title: "Vé máy bay",
         available: true,
         render: () => (
-          <div className="max-w-lg">
+          <div className="max-w-xl">
             <FlightSearchWidget />
           </div>
         ),
@@ -152,11 +159,14 @@ const Utilities = () => {
 
   return (
     <div className="min-h-[calc(100vh-88px)] bg-background">
-      <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr]">
-        {/* Sidebar */}
-        <aside className="bg-muted/50 border-r border-border/60 lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)] lg:overflow-hidden">
+      <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr]">
+        {/* Sidebar (desktop) */}
+        <aside className="hidden lg:block bg-muted/40 border-r border-border/60 lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-88px)] lg:overflow-hidden">
           <div className="px-3 py-6 h-full">
-            <nav className="flex flex-col gap-0.5">
+            <p className="px-4 pb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Tiện ích
+            </p>
+            <nav className="flex flex-col gap-1">
               {tools.map((tool) => {
                 const Icon = tool.icon;
                 const disabled = tool.available === false;
@@ -167,25 +177,22 @@ const Utilities = () => {
                     onClick={() => handleSelect(tool)}
                     disabled={disabled}
                     aria-disabled={disabled}
-                    className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-full text-left transition-all ${
+                    className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
                       disabled
-                        ? "text-muted-foreground cursor-not-allowed select-none"
+                        ? "text-muted-foreground/70 cursor-not-allowed select-none"
                         : isActive
-                          ? "bg-background text-foreground font-semibold shadow-sm"
-                          : "text-muted-foreground hover:bg-background/70 hover:text-foreground font-normal"
+                          ? "bg-background text-foreground font-semibold shadow-sm ring-1 ring-border/60"
+                          : "text-muted-foreground hover:bg-background/70 hover:text-foreground font-medium"
                     }`}
                   >
                     <Icon
-                      className={`h-[18px] w-[18px] shrink-0 ${
-                        disabled ? "text-muted-foreground" : isActive ? "text-foreground" : "text-muted-foreground"
-                      }`}
+                      className={`h-5 w-5 shrink-0 ${isActive ? "text-primary" : ""}`}
                       strokeWidth={isActive ? 2.25 : 1.75}
                     />
-                    <span className="flex-1 text-[14px] truncate">{tool.title}</span>
+                    <span className="flex-1 text-[16px] leading-tight truncate">{tool.title}</span>
                     {tool.external && !disabled && (
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ExternalLink className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
-
                   </button>
                 );
               })}
@@ -193,10 +200,40 @@ const Utilities = () => {
           </div>
         </aside>
 
+        {/* Mobile selector */}
+        <div className="lg:hidden sticky top-[64px] z-30 bg-background/95 backdrop-blur border-b border-border/60 px-4 py-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="w-full flex items-center gap-3 rounded-xl border border-border/70 bg-muted/40 px-4 py-3 text-left">
+              <active.icon className="h-5 w-5 text-primary shrink-0" />
+              <span className="flex-1 text-[17px] font-semibold truncate">{active.title}</span>
+              <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto">
+              {tools.map((tool) => {
+                const Icon = tool.icon;
+                const disabled = tool.available === false;
+                return (
+                  <DropdownMenuItem
+                    key={tool.id}
+                    disabled={disabled}
+                    onSelect={() => handleSelect(tool)}
+                    className="gap-3 py-3 text-[16px]"
+                  >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    <span className="flex-1 truncate">{tool.title}</span>
+                    {tool.external && !disabled && <ExternalLink className="h-4 w-4 opacity-60" />}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         {/* Main */}
         <section className="min-w-0">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-8">
-            <div className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 shadow-sm [&_.grid]:gap-3">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
+            <h1 className="hidden lg:block text-2xl font-bold mb-4">{active.title}</h1>
+            <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-6 lg:p-8 shadow-sm text-[16px] leading-relaxed [&_.grid]:gap-3">
               {active.render?.()}
             </div>
           </div>
