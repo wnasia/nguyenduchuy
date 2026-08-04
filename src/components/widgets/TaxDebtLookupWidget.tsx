@@ -184,7 +184,7 @@ const TaxDebtLookupWidget = ({ initialQuery = "", autoSearch = false }: TaxDebtL
         ) : (
           <div className={loading ? "opacity-60 transition-opacity" : "transition-opacity"}>
             {/* Desktop table */}
-            <div className="hidden md:block rounded-lg border overflow-auto max-h-[55vh]">
+            <div className="hidden md:block rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>
