@@ -26,6 +26,7 @@ import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
+import LearnaEnglishWidget from "@/components/widgets/LearnaEnglishWidget";
 import {
   DropdownMenu,
   DropdownMenuContent,
