@@ -27,7 +27,7 @@ import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
-import LearnaEnglishWidget from "@/components/widgets/LearnaEnglishWidget";
+import PronunciationPracticeWidget from "@/components/widgets/PronunciationPracticeWidget";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,9 +97,9 @@ const Utilities = () => {
       {
         id: "learn-english",
         icon: Languages,
-        title: "Học tiếng Anh (Learna AI)",
+        title: "Luyện phát âm tiếng Anh",
         available: true,
-        render: () => <LearnaEnglishWidget />,
+        render: () => <PronunciationPracticeWidget />,
       },
       { id: "jobs", icon: Briefcase, title: "Việc làm", available: false },
       {
