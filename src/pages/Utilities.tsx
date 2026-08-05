@@ -15,6 +15,7 @@ import {
   MessageCircle,
   ImagePlus,
   Video,
+  Languages,
   ChevronDown,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
@@ -26,6 +27,7 @@ import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
 import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
+import LearnaEnglishWidget from "@/components/widgets/LearnaEnglishWidget";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,6 +94,13 @@ const Utilities = () => {
         render: () => <GoldPriceWidget />,
       },
       { id: "homework", icon: GraduationCap, title: "Giải bài tập", available: false },
+      {
+        id: "learn-english",
+        icon: Languages,
+        title: "Học tiếng Anh (Learna AI)",
+        available: true,
+        render: () => <LearnaEnglishWidget />,
+      },
       { id: "jobs", icon: Briefcase, title: "Việc làm", available: false },
       {
         id: "flight-booking",
