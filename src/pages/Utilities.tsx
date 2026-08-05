@@ -93,6 +93,13 @@ const Utilities = () => {
         render: () => <GoldPriceWidget />,
       },
       { id: "homework", icon: GraduationCap, title: "Giải bài tập", available: false },
+      {
+        id: "learn-english",
+        icon: Languages,
+        title: "Học tiếng Anh (Learna AI)",
+        available: true,
+        render: () => <LearnaEnglishWidget />,
+      },
       { id: "jobs", icon: Briefcase, title: "Việc làm", available: false },
       {
         id: "flight-booking",
