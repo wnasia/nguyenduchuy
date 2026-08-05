@@ -25,6 +25,7 @@ const Navbar = () => {
 
   const utilityItems: { id: string; name: string; href?: string }[] = [
     { id: "tax-code", name: "Tra cứu mã số thuế" },
+    { id: "learn-english", name: "Học tiếng Anh (Learna AI)" },
     { id: "lunar-calendar", name: "Lịch âm" },
     { id: "horoscope", name: "Xem tử vi" },
     { id: "gold-price", name: "Giá vàng" },
