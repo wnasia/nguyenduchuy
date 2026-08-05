@@ -15,6 +15,7 @@ import {
   MessageCircle,
   ImagePlus,
   Video,
+  Languages,
   ChevronDown,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
