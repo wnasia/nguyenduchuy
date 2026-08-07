@@ -1,9 +1,8 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, Square, ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
+import { Mic, Square, ChevronLeft, ChevronRight, Volume2, Sparkles, Trophy, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { assessPronunciation, encodeWav, type Assessment } from "@/lib/pronunciation";
-import { Progress } from "@/components/ui/progress";
 
 const SENTENCES = [
   "What's the weather like today?",
@@ -17,8 +16,12 @@ const SENTENCES = [
 
 type Attempt = { transcript: string; result: Assessment };
 
-const scoreColor = (n: number) =>
-  n >= 80 ? "text-emerald-600" : n >= 60 ? "text-amber-600" : "text-destructive";
+const scoreTone = (n: number) =>
+  n >= 80
+    ? { text: "text-emerald-600", bg: "bg-emerald-500", soft: "bg-emerald-500/10", label: "Xịn xò!" }
+    : n >= 60
+      ? { text: "text-amber-600", bg: "bg-amber-500", soft: "bg-amber-500/10", label: "Ổn áp!" }
+      : { text: "text-destructive", bg: "bg-destructive", soft: "bg-destructive/10", label: "Thử lại nha!" };
 
 const PronunciationPracticeWidget = () => {
   const [index, setIndex] = useState(0);
@@ -35,7 +38,10 @@ const PronunciationPracticeWidget = () => {
 
   const reference = SENTENCES[index];
   const attempt = attempts[index];
-  const done = Object.keys(attempts).length;
+  const doneList = Object.values(attempts);
+  const done = doneList.length;
+  const avg = done ? Math.round(doneList.reduce((s, a) => s + a.result.overall, 0) / done) : 0;
+  const progressPct = (done / SENTENCES.length) * 100;
 
   const speak = () => {
     if (!("speechSynthesis" in window)) return;
@@ -116,143 +122,186 @@ const PronunciationPracticeWidget = () => {
     }
   };
 
-  return (
-    <div className="space-y-5">
-      <p className="text-[15px] text-muted-foreground">
-        Đọc to từng câu mẫu, hệ thống sẽ nhận dạng giọng nói và chấm điểm phát âm từng từ.
-      </p>
+  const tone = attempt ? scoreTone(attempt.result.overall) : null;
 
-      {/* Progress */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-[14px]">
-          <span className="font-semibold">
-            Câu {index + 1}/{SENTENCES.length}
+  return (
+    <div className="space-y-6">
+      {/* Hero */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary/70 p-6 text-primary-foreground">
+        <div className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-primary-foreground/10 blur-2xl" />
+        <div className="absolute -bottom-16 left-1/3 h-40 w-40 rounded-full bg-primary-foreground/10 blur-2xl" />
+        <div className="relative space-y-4">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/20 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.14em]">
+            <Sparkles className="h-3.5 w-3.5" />
+            Speak &amp; Score
           </span>
-          <span className="text-muted-foreground">Đã luyện {done}/{SENTENCES.length} câu</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight">
+            Nói to lên nào — điểm phát âm tính liền!
+          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3 py-1.5 text-[14px] font-semibold">
+              <Flame className="h-4 w-4" />
+              {done}/{SENTENCES.length} câu
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3 py-1.5 text-[14px] font-semibold">
+              <Trophy className="h-4 w-4" />
+              Điểm TB {avg}
+            </span>
+          </div>
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-primary-foreground/20">
+            <div
+              className="h-full rounded-full bg-primary-foreground transition-all duration-500"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
         </div>
-        <Progress value={((index + 1) / SENTENCES.length) * 100} className="h-1.5" />
       </div>
 
       {/* Current sentence */}
-      <div className="rounded-xl border border-border/60 bg-muted/30 p-4 space-y-3">
+      <div className="rounded-3xl border-2 border-dashed border-primary/30 bg-muted/30 p-5 sm:p-6 space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Câu mẫu
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.14em] text-primary">
+            Câu {index + 1}/{SENTENCES.length}
           </span>
-          <Button variant="outline" size="sm" onClick={speak}>
+          <Button variant="outline" size="sm" className="rounded-full font-semibold" onClick={speak}>
             <Volume2 className="h-4 w-4 mr-2" />
             Nghe mẫu
           </Button>
         </div>
-        <p className="text-[18px] leading-relaxed font-medium">{reference}</p>
-      </div>
+        <p className="text-[22px] sm:text-[26px] font-extrabold leading-snug tracking-tight">
+          {reference}
+        </p>
 
-      {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="outline" onClick={() => goto(index - 1)} disabled={recording || loading}>
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Câu trước
-        </Button>
-        {recording ? (
-          <Button onClick={stop} variant="destructive" size="lg">
-            <Square className="h-4 w-4 mr-2" />
-            Dừng & chấm điểm
+        <div className="flex flex-wrap items-center gap-3 pt-1">
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full h-11 w-11"
+            aria-label="Câu trước"
+            onClick={() => goto(index - 1)}
+            disabled={recording || loading}
+          >
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-        ) : (
-          <Button onClick={start} size="lg" disabled={loading}>
-            <Mic className="h-4 w-4 mr-2" />
-            {loading ? "Đang chấm điểm..." : attempt ? "Đọc lại" : "Bắt đầu đọc"}
+          {recording ? (
+            <Button onClick={stop} variant="destructive" size="lg" className="rounded-full font-bold px-6">
+              <Square className="h-4 w-4 mr-2" />
+              Dừng &amp; chấm điểm
+            </Button>
+          ) : (
+            <Button
+              onClick={start}
+              size="lg"
+              disabled={loading}
+              className="rounded-full font-bold px-7 shadow-lg shadow-primary/25 transition-transform hover:scale-[1.03]"
+            >
+              <Mic className="h-4 w-4 mr-2" />
+              {loading ? "Đang chấm điểm..." : attempt ? "Đọc lại" : "Bắt đầu đọc"}
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full h-11 w-11"
+            aria-label="Câu tiếp"
+            onClick={() => goto(index + 1)}
+            disabled={recording || loading}
+          >
+            <ChevronRight className="h-5 w-5" />
           </Button>
-        )}
-        <Button variant="outline" onClick={() => goto(index + 1)} disabled={recording || loading}>
-          Câu tiếp
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
-        {recording && (
-          <span className="flex items-center gap-2 text-[15px] text-destructive">
-            <span className="h-2.5 w-2.5 rounded-full bg-destructive animate-pulse" />
-            Đang thu âm...
-          </span>
-        )}
+          {recording && (
+            <span className="flex items-center gap-2 text-[15px] font-semibold text-destructive">
+              <span className="h-2.5 w-2.5 rounded-full bg-destructive animate-pulse" />
+              Đang thu âm...
+            </span>
+          )}
+        </div>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-[15px] text-destructive">
+        <div className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-[15px] font-medium text-destructive">
           {error}
         </div>
       )}
 
-      {attempt && (
-        <div className="space-y-4 rounded-xl border border-border/60 bg-background p-4">
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: "Tổng điểm", value: attempt.result.overall },
-              { label: "Chính xác", value: attempt.result.accuracy },
-              { label: "Đầy đủ", value: attempt.result.completeness },
-            ].map((s) => (
-              <div key={s.label} className="rounded-lg border border-border/60 p-3">
-                <div className="text-[12px] uppercase tracking-[0.12em] text-muted-foreground">
-                  {s.label}
-                </div>
-                <div className={`text-2xl font-bold ${scoreColor(s.value)}`}>{s.value}</div>
-                <Progress value={s.value} className="mt-2 h-1.5" />
+      {attempt && tone && (
+        <div className={`space-y-5 rounded-3xl border border-border/60 ${tone.soft} p-5 sm:p-6`}>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-background shadow-sm">
+              <span className={`text-3xl font-extrabold ${tone.text}`}>{attempt.result.overall}</span>
+            </div>
+            <div className="space-y-2">
+              <div className={`text-xl font-extrabold ${tone.text}`}>{tone.label}</div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { label: "Chính xác", value: attempt.result.accuracy },
+                  { label: "Đầy đủ", value: attempt.result.completeness },
+                ].map((s) => (
+                  <span
+                    key={s.label}
+                    className="rounded-full bg-background px-3 py-1.5 text-[14px] font-semibold"
+                  >
+                    {s.label} <span className={scoreTone(s.value).text}>{s.value}</span>
+                  </span>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
 
-          <div>
-            <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-muted-foreground mb-2">
+          <div className="rounded-2xl bg-background p-4 space-y-3">
+            <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
               Chi tiết từng từ
             </div>
-            <p className="flex flex-wrap gap-x-2 gap-y-1 text-[18px] leading-relaxed">
+            <p className="flex flex-wrap gap-2 text-[18px] leading-relaxed">
               {attempt.result.words.map((w, i) => (
                 <span
                   key={`${w.word}-${i}`}
                   className={
                     w.ok
-                      ? "text-emerald-600 font-medium"
-                      : "text-destructive font-semibold underline decoration-wavy decoration-destructive/60"
+                      ? "rounded-lg bg-emerald-500/10 px-2 py-0.5 font-semibold text-emerald-600"
+                      : "rounded-lg bg-destructive/10 px-2 py-0.5 font-bold text-destructive underline decoration-wavy decoration-destructive/60"
                   }
                 >
                   {w.word}
                 </span>
               ))}
             </p>
-          </div>
-
-          <div className="text-[15px] text-muted-foreground">
-            <span className="font-semibold text-foreground">Bạn đã đọc: </span>
-            {attempt.transcript.trim() || "(không nghe rõ)"}
+            <div className="text-[15px] text-muted-foreground">
+              <span className="font-bold text-foreground">Bạn đã đọc: </span>
+              {attempt.transcript.trim() || "(không nghe rõ)"}
+            </div>
           </div>
         </div>
       )}
 
       {/* Sentence list */}
-      <div className="space-y-2">
-        <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <div className="space-y-3">
+        <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
           Danh sách luyện tập
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="grid gap-2 sm:grid-cols-2">
           {SENTENCES.map((s, i) => {
             const a = attempts[i];
+            const at = a ? scoreTone(a.result.overall) : null;
             return (
               <button
                 key={i}
                 onClick={() => goto(i)}
                 disabled={recording || loading}
-                className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-[15px] transition-colors ${
+                className={`flex items-center gap-3 rounded-2xl border px-3 py-3 text-left text-[15px] transition-all hover:-translate-y-0.5 ${
                   i === index
-                    ? "border-primary/50 bg-muted/50 font-medium"
-                    : "border-border/60 hover:bg-muted/40"
+                    ? "border-primary bg-primary/5 font-semibold shadow-sm"
+                    : "border-border/60 hover:border-primary/40"
                 }`}
               >
-                <span className="text-muted-foreground w-6 shrink-0">{i + 1}.</span>
+                <span
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${
+                    at ? `${at.bg} text-background` : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {a ? a.result.overall : i + 1}
+                </span>
                 <span className="flex-1 truncate">{s}</span>
-                {a && (
-                  <span className={`shrink-0 font-semibold ${scoreColor(a.result.overall)}`}>
-                    {a.result.overall}
-                  </span>
-                )}
               </button>
             );
           })}
