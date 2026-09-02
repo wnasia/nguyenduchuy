@@ -276,16 +276,18 @@ const AdminTokenomics = () => {
       const data = await response.json();
 
       if (data.success) {
-        toast({
-          title: 'Settlement hoàn tất',
-          description: `Đã phân phối ${data.tokensDistributed.toFixed(4)} tokens cho ${data.uniqueUsers} users`,
-        });
+        if (data.message === 'no_pending_views') {
+          toast({
+            title: 'Không có lượt đọc chờ quyết toán',
+            description: 'Tất cả lượt đọc hợp lệ đã được phân phối token.',
+          });
+        } else {
+          toast({
+            title: 'Settlement hoàn tất',
+            description: `Đã quyết toán ${data.datesProcessed} ngày · ${data.totalViews} lượt đọc · ${Number(data.tokensDistributed).toFixed(4)} tokens`,
+          });
+        }
         fetchSettlements(); // Refresh settlements
-      } else if (data.error === 'already_settled') {
-        toast({
-          title: 'Đã settle',
-          description: data.message,
-        });
       } else {
         throw new Error(data.error);
       }
