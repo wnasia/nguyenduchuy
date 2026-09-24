@@ -270,6 +270,139 @@ export type Database = {
         }
         Relationships: []
       }
+      fb_conversations: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          customer_psid: string | null
+          id: string
+          is_resolved: boolean
+          last_message_at: string
+          last_message_text: string | null
+          page_ref: string
+          post_id: string | null
+          thread_key: string
+          thread_type: string
+          unread_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          customer_psid?: string | null
+          id?: string
+          is_resolved?: boolean
+          last_message_at?: string
+          last_message_text?: string | null
+          page_ref: string
+          post_id?: string | null
+          thread_key: string
+          thread_type?: string
+          unread_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          customer_psid?: string | null
+          id?: string
+          is_resolved?: boolean
+          last_message_at?: string
+          last_message_text?: string | null
+          page_ref?: string
+          post_id?: string | null
+          thread_key?: string
+          thread_type?: string
+          unread_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fb_conversations_page_ref_fkey"
+            columns: ["page_ref"]
+            isOneToOne: false
+            referencedRelation: "fb_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fb_messages: {
+        Row: {
+          attachments: Json
+          conversation_id: string
+          created_at: string
+          direction: string
+          external_id: string | null
+          id: string
+          message: string | null
+          sender_name: string | null
+          sent_at: string
+        }
+        Insert: {
+          attachments?: Json
+          conversation_id: string
+          created_at?: string
+          direction?: string
+          external_id?: string | null
+          id?: string
+          message?: string | null
+          sender_name?: string | null
+          sent_at?: string
+        }
+        Update: {
+          attachments?: Json
+          conversation_id?: string
+          created_at?: string
+          direction?: string
+          external_id?: string | null
+          id?: string
+          message?: string | null
+          sender_name?: string | null
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fb_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "fb_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fb_pages: {
+        Row: {
+          access_token: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          page_id: string
+          page_name: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          page_id: string
+          page_name: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          page_id?: string
+          page_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gallery_images: {
         Row: {
           created_at: string
