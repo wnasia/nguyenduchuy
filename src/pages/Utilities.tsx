@@ -136,8 +136,19 @@ const Utilities = () => {
         available: true,
         external: "/explorer",
       },
+      ...(isAdmin
+        ? [
+            {
+              id: "fanpage-inbox",
+              icon: MessagesSquare,
+              title: "Tin nhắn Fanpage",
+              available: true,
+              render: () => <FanpageInboxWidget />,
+            } as Tool,
+          ]
+        : []),
     ],
-    []
+    [isAdmin]
   );
 
   const [activeId, setActiveId] = useState<string>(tools[0].id);
