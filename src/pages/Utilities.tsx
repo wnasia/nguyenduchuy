@@ -28,6 +28,8 @@ import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
 import PronunciationPracticeWidget from "@/components/widgets/PronunciationPracticeWidget";
+import FanpageInboxWidget from "@/components/widgets/FanpageInboxWidget";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -134,8 +136,19 @@ const Utilities = () => {
         available: true,
         external: "/explorer",
       },
+      ...(isAdmin
+        ? [
+            {
+              id: "fanpage-inbox",
+              icon: MessagesSquare,
+              title: "Tin nhắn Fanpage",
+              available: true,
+              render: () => <FanpageInboxWidget />,
+            } as Tool,
+          ]
+        : []),
     ],
-    []
+    [isAdmin]
   );
 
   const [activeId, setActiveId] = useState<string>(tools[0].id);

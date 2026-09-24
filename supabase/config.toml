@@ -23,3 +23,9 @@ verify_jwt = false
 
 [functions.speech-assess]
 verify_jwt = false
+
+[functions.fb-webhook]
+verify_jwt = false
+
+[functions.fb-inbox]
+verify_jwt = false
