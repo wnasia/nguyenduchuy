@@ -28,6 +28,8 @@ import StockMarketWidget from "@/components/widgets/StockMarketWidget";
 import TaxDebtLookupWidget from "@/components/widgets/TaxDebtLookupWidget";
 import TaxCodeLookupWidget from "@/components/widgets/TaxCodeLookupWidget";
 import PronunciationPracticeWidget from "@/components/widgets/PronunciationPracticeWidget";
+import FanpageInboxWidget from "@/components/widgets/FanpageInboxWidget";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
