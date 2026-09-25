@@ -16,6 +16,7 @@ import {
   ImagePlus,
   Video,
   Languages,
+  MessagesSquare,
   ChevronDown,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
@@ -48,6 +49,8 @@ type Tool = {
 
 const Utilities = () => {
   const { t } = useI18n();
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === "admin";
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   usePageTitle(t("meta.utilities_title") || "Tiện ích - Huy's");
