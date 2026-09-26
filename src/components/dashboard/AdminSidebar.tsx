@@ -56,6 +56,7 @@ const menuSections = [
     items: [
       { id: "customers", title: "Customers" },
       { id: "reminders", title: "Reminders" },
+      { id: "fanpage-inbox", title: "Tin nhắn Fanpage" },
     ],
   },
   {
