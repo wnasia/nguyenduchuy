@@ -69,6 +69,7 @@ const FanpageInboxWidget = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [tokenInput, setTokenInput] = useState("");
   const [addingPage, setAddingPage] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -231,6 +232,34 @@ const FanpageInboxWidget = () => {
     }
   };
 
+  const handleDiagnose = async () => {
+    setChecking(true);
+    try {
+      const result = await callFn({ action: "diagnose" });
+      const failed = (result.results ?? []).find(
+        (item: { subscribed: boolean; token_valid: boolean; conversations_access: boolean }) =>
+          !item.subscribed || !item.token_valid || !item.conversations_access,
+      );
+      if (failed) {
+        throw new Error(
+          failed.subscribe_error || failed.conversations_error || "Token hoặc đăng ký sự kiện chưa hợp lệ.",
+        );
+      }
+      toast({
+        title: "Kết nối Facebook hoạt động",
+        description: "Token, đăng ký sự kiện và quyền đọc hội thoại đều hợp lệ.",
+      });
+    } catch (e) {
+      toast({
+        title: "Kết nối Facebook chưa hoàn tất",
+        description: e instanceof Error ? e.message : "Không thể kiểm tra kết nối.",
+        variant: "destructive",
+      });
+    } finally {
+      setChecking(false);
+    }
+  };
+
   const handleReply = async () => {
     if (!activeId || !reply.trim()) return;
     setSending(true);
@@ -299,6 +328,11 @@ const FanpageInboxWidget = () => {
         <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing || pages.length === 0}>
           {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           <span className="ml-2 hidden sm:inline">Tải tin nhắn</span>
+        </Button>
+
+        <Button variant="outline" size="sm" onClick={handleDiagnose} disabled={checking || pages.length === 0}>
+          {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Settings2 className="h-4 w-4" />}
+          <span className="ml-2 hidden sm:inline">Kiểm tra kết nối</span>
         </Button>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

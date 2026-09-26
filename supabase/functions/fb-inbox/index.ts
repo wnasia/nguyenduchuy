@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { z } from 'npm:zod@3.23.8';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 
@@ -13,6 +14,44 @@ const json = (body: unknown, status = 200) =>
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
+
+const PayloadSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('verify_page'), access_token: z.string().trim().min(20).max(2000) }),
+  z.object({ action: z.literal('reply'), conversation_id: z.string().uuid(), message: z.string().trim().min(1).max(2000) }),
+  z.object({ action: z.literal('sync'), page_ref: z.string().uuid().optional() }),
+  z.object({ action: z.literal('diagnose'), page_ref: z.string().uuid().optional() }),
+]);
+
+const SUBSCRIBED_FIELDS = 'messages,messaging_postbacks,message_echoes,feed';
+
+async function subscribePage(pageId: string, token: string) {
+  const response = await fetch(
+    `${GRAPH}/${pageId}/subscribed_apps?subscribed_fields=${SUBSCRIBED_FIELDS}&access_token=${encodeURIComponent(token)}`,
+    { method: 'POST' },
+  );
+  const data = await response.json();
+  return { ok: response.ok && data?.success === true, data };
+}
+
+async function inspectPage(pageId: string, token: string) {
+  const [identityResponse, subscriptionsResponse, conversationsResponse] = await Promise.all([
+    fetch(`${GRAPH}/${pageId}?fields=id,name&access_token=${encodeURIComponent(token)}`),
+    fetch(`${GRAPH}/${pageId}/subscribed_apps?fields=id,name,subscribed_fields&access_token=${encodeURIComponent(token)}`),
+    fetch(`${GRAPH}/${pageId}/conversations?limit=1&access_token=${encodeURIComponent(token)}`),
+  ]);
+  const [identity, subscriptions, conversations] = await Promise.all([
+    identityResponse.json(),
+    subscriptionsResponse.json(),
+    conversationsResponse.json(),
+  ]);
+  return {
+    token_valid: identityResponse.ok && !identity?.error,
+    identity,
+    subscriptions,
+    conversations_access: conversationsResponse.ok && !conversations?.error,
+    conversations_error: conversations?.error?.message ?? null,
+  };
+}
 
 async function requireAdmin(req: Request) {
   const authHeader = req.headers.get('Authorization');
@@ -31,35 +70,60 @@ Deno.serve(async (req) => {
   const user = await requireAdmin(req);
   if (!user) return json({ error: 'Chỉ admin mới sử dụng được tính năng này.' }, 403);
 
-  let payload: any;
+  let rawPayload: unknown;
   try {
-    payload = await req.json();
+    rawPayload = await req.json();
   } catch {
     return json({ error: 'Dữ liệu không hợp lệ.' }, 400);
   }
-
-  const action = String(payload?.action ?? '');
+  const parsed = PayloadSchema.safeParse(rawPayload);
+  if (!parsed.success) return json({ error: 'Dữ liệu yêu cầu không hợp lệ.' }, 400);
+  const payload = parsed.data;
+  const action = payload.action;
 
   try {
     if (action === 'verify_page') {
-      const token = String(payload?.access_token ?? '');
-      if (!token) return json({ error: 'Thiếu Page Access Token.' }, 400);
+      const token = payload.access_token;
       const res = await fetch(`${GRAPH}/me?fields=id,name&access_token=${encodeURIComponent(token)}`);
       const data = await res.json();
       if (data?.error) return json({ error: data.error.message }, 400);
       // subscribe page to messages + feed
-      const sub = await fetch(
-        `${GRAPH}/${data.id}/subscribed_apps?subscribed_fields=messages,messaging_postbacks,feed&access_token=${encodeURIComponent(token)}`,
-        { method: 'POST' },
-      );
-      const subData = await sub.json();
+      const subscription = await subscribePage(data.id, token);
       return json({
         success: true,
         page_id: data.id,
         page_name: data.name,
-        subscribed: subData?.success === true,
-        subscribe_error: subData?.error?.message ?? null,
+        subscribed: subscription.ok,
+        subscribe_error: subscription.data?.error?.message ?? null,
       });
+    }
+
+    if (action === 'diagnose') {
+      let query = admin.from('fb_pages').select('id, page_id, page_name, access_token').eq('is_active', true);
+      if (payload.page_ref) query = query.eq('id', payload.page_ref);
+      const { data: pages, error } = await query;
+      if (error) throw error;
+
+      const results = [];
+      for (const page of pages ?? []) {
+        const subscription = await subscribePage(page.page_id, page.access_token);
+        const inspection = await inspectPage(page.page_id, page.access_token);
+        console.log('fb-page-diagnostic', JSON.stringify({
+          page_id: page.page_id,
+          subscribed: subscription.ok,
+          token_valid: inspection.token_valid,
+          conversations_access: inspection.conversations_access,
+          subscriptions: inspection.subscriptions?.data?.map((item: { subscribed_fields?: string[] }) => item.subscribed_fields) ?? [],
+        }));
+        results.push({
+          page_ref: page.id,
+          page_name: page.page_name,
+          subscribed: subscription.ok,
+          subscribe_error: subscription.data?.error?.message ?? null,
+          ...inspection,
+        });
+      }
+      return json({ success: true, results });
     }
 
     if (action === 'reply') {
@@ -131,18 +195,22 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'sync') {
-      const pageRef = payload?.page_ref ? String(payload.page_ref) : null;
+      const pageRef = payload.page_ref ?? null;
       let query = admin.from('fb_pages').select('id, page_id, page_name, access_token').eq('is_active', true);
       if (pageRef) query = query.eq('id', pageRef);
       const { data: pages } = await query;
       let imported = 0;
+      const errors: Array<{ page_name: string; error: string }> = [];
 
       for (const page of pages ?? []) {
         const res = await fetch(
           `${GRAPH}/${page.page_id}/conversations?fields=participants,updated_time,messages.limit(20){id,message,from,created_time}&limit=25&access_token=${encodeURIComponent(page.access_token)}`,
         );
         const data = await res.json();
-        if (data?.error) continue;
+        if (data?.error) {
+          errors.push({ page_name: page.page_name, error: data.error.message ?? 'Facebook từ chối truy cập hội thoại.' });
+          continue;
+        }
 
         for (const conv of data?.data ?? []) {
           const participant = (conv.participants?.data ?? []).find((p: any) => p.id !== page.page_id);
@@ -204,7 +272,10 @@ Deno.serve(async (req) => {
         }
       }
 
-      return json({ success: true, imported });
+      if (errors.length > 0 && imported === 0) {
+        return json({ error: errors.map((item) => `${item.page_name}: ${item.error}`).join(' | '), errors }, 400);
+      }
+      return json({ success: true, imported, errors });
     }
 
     return json({ error: 'Hành động không hợp lệ.' }, 400);
