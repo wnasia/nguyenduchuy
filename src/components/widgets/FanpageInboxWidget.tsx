@@ -128,23 +128,88 @@ const FanpageInboxWidget = () => {
     })();
   }, [isAdmin, loadPages, loadConversations]);
 
+  const activeIdRef = useRef<string | null>(null);
+  activeIdRef.current = activeId;
+  const [live, setLive] = useState(false);
+  const [flashId, setFlashId] = useState<string | null>(null);
+
+  const notifyNew = useCallback(
+    (row: { conversation_id: string; sender_name: string | null; message: string | null }) => {
+      const who = row.sender_name || "Khách";
+      const text = row.message || "(tệp đính kèm)";
+      toast({ title: `Tin mới từ ${who}`, description: text.slice(0, 120) });
+      setFlashId(row.conversation_id);
+      setTimeout(() => setFlashId(null), 4000);
+      try {
+        const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const ctx = new Ctx();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.frequency.value = 880;
+        g.gain.setValueAtTime(0.15, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        o.connect(g).connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + 0.35);
+      } catch {
+        /* ignore */
+      }
+      if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
+        new Notification(`Tin mới từ ${who}`, { body: text.slice(0, 120) });
+      }
+    },
+    [toast],
+  );
+
   // realtime updates
   useEffect(() => {
     if (!isAdmin) return;
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => undefined);
+    }
     const channel = supabase
       .channel("fanpage-inbox")
       .on("postgres_changes", { event: "*", schema: "public", table: "fb_conversations" }, () => {
         loadConversations();
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "fb_messages" }, (payload) => {
-        const row = payload.new as { conversation_id: string };
-        if (row.conversation_id === activeId) loadMessages(activeId);
+        const row = payload.new as {
+          conversation_id: string;
+          direction: string;
+          sender_name: string | null;
+          message: string | null;
+          sent_at: string;
+        };
+        if (row.conversation_id === activeIdRef.current) loadMessages(row.conversation_id);
+        const fresh = Date.now() - new Date(row.sent_at).getTime() < 10 * 60 * 1000;
+        if (row.direction === "in" && fresh) notifyNew(row);
       })
-      .subscribe();
+      .subscribe((status) => setLive(status === "SUBSCRIBED"));
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, activeId, loadConversations, loadMessages]);
+  }, [isAdmin, loadConversations, loadMessages, notifyNew]);
+
+  // Background auto-sync (fallback when Facebook webhook is delayed)
+  useEffect(() => {
+    if (!isAdmin || pages.length === 0) return;
+    const tick = () => {
+      if (document.hidden) return;
+      callFn({ action: "sync" }).catch(() => undefined);
+    };
+    const id = window.setInterval(tick, 20000);
+    return () => window.clearInterval(id);
+  }, [isAdmin, pages.length, callFn]);
+
+  // Unread count in tab title
+  useEffect(() => {
+    const total = conversations.reduce((s, c) => s + (c.unread_count || 0), 0);
+    const base = document.title.replace(/^\(\d+\)\s*/, "");
+    document.title = total > 0 ? `(${total}) ${base}` : base;
+    return () => {
+      document.title = document.title.replace(/^\(\d+\)\s*/, "");
+    };
+  }, [conversations]);
 
   useEffect(() => {
     if (activeId) loadMessages(activeId);
