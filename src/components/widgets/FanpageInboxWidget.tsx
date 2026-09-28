@@ -75,6 +75,8 @@ const FanpageInboxWidget = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [visibleMessages, setVisibleMessages] = useState(30);
+  const [visibleConversations, setVisibleConversations] = useState(12);
+  const chatRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<AudioContext | null>(null);
   const seenIds = useRef<Set<string>>(new Set());
   const initialized = useRef(false);
@@ -256,6 +258,7 @@ const FanpageInboxWidget = () => {
     enableAlerts();
     setVisibleMessages(30);
     setActiveId(conv.id);
+    requestAnimationFrame(() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
     if (conv.unread_count > 0) {
       await supabase.from("fb_conversations").update({ unread_count: 0 }).eq("id", conv.id);
       loadConversations();
@@ -459,12 +462,13 @@ const FanpageInboxWidget = () => {
           const count = p.id === "all" ? totalUnread : conversations.filter((c) => c.page_ref === p.id).reduce((s, c) => s + c.unread_count, 0);
           const on = activePageFilter === p.id;
           return (
-            <button
+            <Button
+              type="button"
+              variant={on ? "default" : "ghost"}
+              size="sm"
               key={p.id}
               onClick={() => setActivePageFilter(p.id)}
-              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all max-w-[220px] ${
-                on ? "bg-foreground text-background shadow" : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
+              className="max-w-[220px] gap-2"
             >
               <span className="truncate">{p.page_name}</span>
               {count > 0 && (
@@ -472,36 +476,39 @@ const FanpageInboxWidget = () => {
                   {count}
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
 
       {pages.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border py-14 text-center">
+        <div className="border border-dashed border-border rounded-md py-14 text-center">
           <MessagesSquare className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
           <p className="font-semibold">Chưa có fanpage nào</p>
           <p className="text-sm text-muted-foreground mt-1">Bấm “Thêm fanpage” và dán Page Access Token để bắt đầu.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4">
-          <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)] gap-0 border border-border rounded-md bg-card items-start">
+          <div className={`min-w-0 lg:border-r border-border ${active ? "hidden lg:block" : "block"}`}>
+            <div className="px-4 py-3 border-b border-border font-semibold text-sm">Hội thoại <span className="text-muted-foreground font-normal">({filtered.length})</span></div>
             {filtered.length === 0 ? (
               <div className="p-8 text-sm text-muted-foreground text-center">Chưa có hội thoại nào.</div>
             ) : (
-              filtered.map((c) => {
+              filtered.slice(0, visibleConversations).map((c) => {
                 const unread = c.unread_count > 0;
                 const sel = c.id === activeId;
                 return (
-                  <button
+                  <Button
+                    type="button"
+                    variant="ghost"
                     key={c.id}
                     onClick={() => handleSelect(c)}
-                    className={`w-full text-left px-4 py-3 flex gap-3 border-b border-border/50 last:border-0 border-l-4 transition-all ${
+                    className={`h-auto w-full justify-start text-left rounded-none px-3 py-3 flex gap-3 border-b border-border/50 border-l-2 transition-colors ${
                       sel ? "bg-primary/10 border-l-primary" : unread ? "border-l-primary/60 hover:bg-muted/60" : "border-l-transparent hover:bg-muted/60"
                     } ${flashId === c.id ? "animate-pulse bg-primary/15" : ""}`}
                   >
                     <div className="relative shrink-0">
-                      <div className="h-11 w-11 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-bold text-sm">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                         {initials(c.customer_name)}
                       </div>
                       {c.thread_type === "comment" && (
@@ -529,42 +536,67 @@ const FanpageInboxWidget = () => {
                         {pageName(c.page_ref)} · {c.thread_type === "comment" ? "Bình luận" : "Messenger"}
                       </p>
                     </div>
-                  </button>
+                  </Button>
                 );
               })
             )}
+            {filtered.length > visibleConversations && <Button variant="ghost" className="w-full rounded-none" onClick={() => setVisibleConversations((n) => n + 12)}>Xem thêm hội thoại</Button>}
           </div>
 
-          <div className="rounded-2xl border border-border/60 bg-card flex flex-col min-h-[460px] shadow-sm">
+          <div ref={chatRef} className={`min-w-0 scroll-mt-20 ${active ? "block" : "hidden lg:block"}`}>
             {!active ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-3 py-16">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center text-muted-foreground gap-3 min-h-[400px]">
+                <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center">
                   <MessagesSquare className="h-7 w-7 text-primary" />
                 </div>
                 <p className="text-sm">Chọn một hội thoại để trả lời</p>
               </div>
             ) : (
               <>
-                <div className="px-4 py-3 border-b border-border/60 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-bold text-sm">
+                <div className="px-3 sm:px-5 py-3 border-b border-border flex items-center gap-3 bg-card">
+                  <Button variant="ghost" size="icon" className="lg:hidden shrink-0" aria-label="Quay lại hội thoại" onClick={() => setActiveId(null)}><ArrowLeft className="h-5 w-5" /></Button>
+                  <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
                     {initials(active.customer_name)}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold truncate">{active.customer_name || "Khách"}</p>
+                    <p className="font-semibold truncate text-sm">{active.customer_name || "Khách"}</p>
                     <p className="text-[11px] text-muted-foreground">
                       {pageName(active.page_ref)} · {active.thread_type === "comment" ? "Bình luận bài viết" : "Messenger"}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex-1 p-4 space-y-2 bg-muted/30">
-                  {messages.map((m) => (
-                    <div key={m.id} className={`flex animate-fade-in ${m.direction === "out" ? "justify-end" : "justify-start"}`}>
+                <form className="p-3 sm:p-4 border-b border-border bg-card flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); void handleReply(); }}>
+                  <Textarea
+                    aria-label="Nhập câu trả lời"
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                        e.preventDefault();
+                        void handleReply();
+                      }
+                    }}
+                    placeholder="Nhập câu trả lời..."
+                    rows={2}
+                    className="resize-none text-sm rounded-md min-w-0"
+                  />
+                  <Button type="submit" title="Gửi tin nhắn" aria-label="Gửi tin nhắn" disabled={sending || !reply.trim()} className="h-10 w-10 p-0 shrink-0">
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </form>
+
+                <div className="p-3 sm:p-5 space-y-3 bg-muted/20 min-h-[260px]">
+                  {messages.length > visibleMessages && (
+                    <div className="text-center"><Button variant="outline" size="sm" onClick={() => setVisibleMessages((n) => n + 30)}>Xem tin cũ hơn</Button></div>
+                  )}
+                  {messages.slice(-visibleMessages).map((m) => (
+                    <div key={m.id} className={`flex ${m.direction === "out" ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed shadow-sm ${
+                        className={`max-w-[88%] sm:max-w-[75%] rounded-md px-3 py-2 text-sm leading-relaxed ${
                           m.direction === "out"
-                            ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-br-md"
-                            : "bg-background text-foreground border border-border/60 rounded-bl-md"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card text-foreground border border-border"
                         }`}
                       >
                         <div className="whitespace-pre-wrap break-words">{m.message}</div>
@@ -574,26 +606,6 @@ const FanpageInboxWidget = () => {
                       </div>
                     </div>
                   ))}
-                  <div ref={bottomRef} />
-                </div>
-
-                <div className="p-3 border-t border-border/60 flex items-end gap-2">
-                  <Textarea
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleReply();
-                      }
-                    }}
-                    placeholder="Nhập câu trả lời... (Enter để gửi, Shift+Enter xuống dòng)"
-                    rows={2}
-                    className="resize-none text-[15px] rounded-xl"
-                  />
-                  <Button onClick={handleReply} disabled={sending || !reply.trim()} className="h-11 w-11 rounded-full p-0 shrink-0">
-                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  </Button>
                 </div>
               </>
             )}
