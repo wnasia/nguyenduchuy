@@ -244,8 +244,9 @@ const FanpageInboxWidget = () => {
       }).catch(() => undefined);
     };
     const id = window.setInterval(tick, 20000);
-    document.addEventListener("visibilitychange", tick);
-    return () => { window.clearInterval(id); document.removeEventListener("visibilitychange", tick); };
+    const onVisible = () => { if (!document.hidden) tick(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { window.clearInterval(id); document.removeEventListener("visibilitychange", onVisible); };
   }, [isAdmin, pages.length, callFn, loadConversations, loadMessages, checkRecentMessages]);
 
   // Unread count in tab title
