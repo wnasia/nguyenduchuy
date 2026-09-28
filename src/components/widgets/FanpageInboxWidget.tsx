@@ -80,6 +80,7 @@ const FanpageInboxWidget = () => {
   const audioRef = useRef<AudioContext | null>(null);
   const seenIds = useRef<Set<string>>(new Set());
   const initialized = useRef(false);
+  const alertsActivated = useRef(false);
 
   const callFn = useCallback(async (body: Record<string, unknown>) => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -165,6 +166,8 @@ const FanpageInboxWidget = () => {
   );
 
   const enableAlerts = () => {
+    if (alertsActivated.current) return;
+    alertsActivated.current = true;
     if (soundEnabled) {
       try {
         audioRef.current ??= new AudioContext();
@@ -178,9 +181,24 @@ const FanpageInboxWidget = () => {
 
   useEffect(() => () => { void audioRef.current?.close(); }, []);
 
+  const checkRecentMessages = useCallback(async (announce: boolean) => {
+    const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data } = await supabase.from("fb_messages")
+      .select("id, conversation_id, sender_name, message, sent_at")
+      .eq("direction", "in").gte("sent_at", since)
+      .order("sent_at", { ascending: true }).limit(100);
+    for (const row of data ?? []) {
+      if (seenIds.current.has(row.id)) continue;
+      seenIds.current.add(row.id);
+      if (announce && initialized.current) notifyNew(row);
+    }
+    if (seenIds.current.size > 500) seenIds.current.clear();
+  }, [notifyNew]);
+
   // realtime updates
   useEffect(() => {
     if (!isAdmin) return;
+    void checkRecentMessages(false);
     const channel = supabase
       .channel("fanpage-inbox")
       .on("postgres_changes", { event: "*", schema: "public", table: "fb_conversations" }, () => {
@@ -213,7 +231,7 @@ const FanpageInboxWidget = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, loadConversations, loadMessages, notifyNew]);
+  }, [isAdmin, loadConversations, loadMessages, notifyNew, checkRecentMessages]);
 
   // Reconcile gaps after reconnect and while the webhook is delayed.
   useEffect(() => {
@@ -222,12 +240,13 @@ const FanpageInboxWidget = () => {
       callFn({ action: "sync" }).then(() => {
         loadConversations();
         if (activeIdRef.current) loadMessages(activeIdRef.current);
+        void checkRecentMessages(true);
       }).catch(() => undefined);
     };
     const id = window.setInterval(tick, 20000);
     document.addEventListener("visibilitychange", tick);
     return () => { window.clearInterval(id); document.removeEventListener("visibilitychange", tick); };
-  }, [isAdmin, pages.length, callFn, loadConversations, loadMessages]);
+  }, [isAdmin, pages.length, callFn, loadConversations, loadMessages, checkRecentMessages]);
 
   // Unread count in tab title
   useEffect(() => {
