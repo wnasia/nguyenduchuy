@@ -272,6 +272,10 @@ const FanpageInboxWidget = () => {
 
   const active = filtered.find((c) => c.id === activeId) ?? null;
   const pageName = (ref: string) => pages.find((p) => p.id === ref)?.page_name ?? "Fanpage";
+  const lastIncoming = [...messages].reverse().find((m) => m.direction === "in");
+  const messageAge = lastIncoming ? Date.now() - new Date(lastIncoming.sent_at).getTime() : 0;
+  const pastSevenDays = active?.thread_type === "message" && messageAge >= 7 * 24 * 60 * 60 * 1000;
+  const needsHumanAgent = active?.thread_type === "message" && messageAge >= 24 * 60 * 60 * 1000 && !pastSevenDays;
 
   const handleSelect = async (conv: Conversation) => {
     enableAlerts();
@@ -372,7 +376,7 @@ const FanpageInboxWidget = () => {
   };
 
   const handleReply = async () => {
-    if (!activeId || !reply.trim()) return;
+    if (!activeId || !reply.trim() || pastSevenDays || sending) return;
     setSending(true);
     try {
       await callFn({ action: "reply", conversation_id: activeId, message: reply.trim() });
@@ -596,14 +600,17 @@ const FanpageInboxWidget = () => {
                         void handleReply();
                       }
                     }}
-                    placeholder="Nhập câu trả lời..."
+                    placeholder={pastSevenDays ? "Đã quá hạn trả lời qua Facebook" : "Nhập câu trả lời..."}
+                    disabled={pastSevenDays}
                     rows={2}
                     className="resize-none text-sm rounded-md min-w-0"
                   />
-                  <Button type="submit" title="Gửi tin nhắn" aria-label="Gửi tin nhắn" disabled={sending || !reply.trim()} className="h-10 w-10 p-0 shrink-0">
+                  <Button type="submit" title="Gửi tin nhắn" aria-label="Gửi tin nhắn" disabled={sending || !reply.trim() || pastSevenDays} className="h-10 w-10 p-0 shrink-0">
                     {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </form>
+                {pastSevenDays && <p className="px-4 py-2 text-sm text-muted-foreground border-b border-border">Tin cuối của khách đã quá 7 ngày; cần chờ khách nhắn lại để tiếp tục trò chuyện.</p>}
+                {needsHumanAgent && <p className="px-4 py-2 text-sm text-muted-foreground border-b border-border">Tin cuối đã quá 24 giờ. Chỉ gửi được nếu trang có quyền HUMAN_AGENT từ Meta.</p>}
 
                 <div className="p-3 sm:p-5 space-y-3 bg-muted/20 min-h-[260px]">
                   {messages.length > visibleMessages && (
