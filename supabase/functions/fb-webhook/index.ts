@@ -49,10 +49,19 @@ async function upsertThread(opts: {
     .eq('thread_key', opts.threadKey)
     .maybeSingle();
 
+  // Facebook retries failed deliveries. Do not increment unread counts twice.
+  if (existing?.id && opts.externalId) {
+    const { data: recorded, error: lookupError } = await admin.from('fb_messages')
+      .select('id').eq('conversation_id', existing.id).eq('external_id', opts.externalId)
+      .maybeSingle();
+    if (lookupError) throw lookupError;
+    if (recorded) return;
+  }
+
   let conversationId = existing?.id as string | undefined;
 
   if (conversationId) {
-    await admin
+    const { error } = await admin
       .from('fb_conversations')
       .update({
         customer_name: opts.customerName ?? undefined,
@@ -65,6 +74,7 @@ async function upsertThread(opts: {
         is_resolved: opts.direction === 'in' ? false : undefined,
       })
       .eq('id', conversationId);
+    if (error) throw error;
   } else {
     const { data: created, error } = await admin
       .from('fb_conversations')
@@ -85,7 +95,7 @@ async function upsertThread(opts: {
     conversationId = created.id;
   }
 
-  await admin.from('fb_messages').upsert(
+  const { error: messageError } = await admin.from('fb_messages').upsert(
     {
       conversation_id: conversationId,
       external_id: opts.externalId ?? null,
@@ -97,6 +107,7 @@ async function upsertThread(opts: {
     },
     { onConflict: 'conversation_id,external_id', ignoreDuplicates: true },
   );
+  if (messageError) throw messageError;
 }
 
 Deno.serve(async (req) => {
@@ -111,9 +122,9 @@ Deno.serve(async (req) => {
     const challenge = url.searchParams.get('hub.challenge') ?? '';
     const expected = Deno.env.get('FB_VERIFY_TOKEN');
     if (mode === 'subscribe' && expected && token === expected) {
-      return new Response(challenge, { status: 200, headers: { 'Content-Type': 'text/plain' } });
+      return new Response(challenge, { status: 200, headers: { ...corsHeaders, 'Content-Type': 'text/plain' } });
     }
-    return new Response('forbidden', { status: 403 });
+    return new Response('forbidden', { status: 403, headers: corsHeaders });
   }
 
   try {
@@ -177,9 +188,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response('EVENT_RECEIVED', { status: 200 });
+    return new Response('EVENT_RECEIVED', { status: 200, headers: corsHeaders });
   } catch (e) {
     console.error('fb-webhook error', e);
-    return new Response('EVENT_RECEIVED', { status: 200 });
+    return new Response('Delivery failed', { status: 500, headers: corsHeaders });
   }
 });
