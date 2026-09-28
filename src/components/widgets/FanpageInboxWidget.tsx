@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, RefreshCw, Send, Plus, Settings2, Trash2, MessageSquare, MessagesSquare } from "lucide-react";
+import { Loader2, RefreshCw, Send, Plus, Settings2, Trash2, MessageSquare, MessagesSquare, ArrowLeft, Bell, BellOff } from "lucide-react";
 
 type Page = {
   id: string;
@@ -73,7 +73,14 @@ const FanpageInboxWidget = () => {
   const [tokenInput, setTokenInput] = useState("");
   const [addingPage, setAddingPage] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [visibleMessages, setVisibleMessages] = useState(30);
+  const [visibleConversations, setVisibleConversations] = useState(12);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<AudioContext | null>(null);
+  const seenIds = useRef<Set<string>>(new Set());
+  const initialized = useRef(false);
+  const alertsActivated = useRef(false);
 
   const callFn = useCallback(async (body: Record<string, unknown>) => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -112,9 +119,9 @@ const FanpageInboxWidget = () => {
       .from("fb_messages")
       .select("id, direction, sender_name, message, sent_at")
       .eq("conversation_id", conversationId)
-      .order("sent_at", { ascending: true })
-      .limit(200);
-    setMessages((data as Message[]) ?? []);
+      .order("sent_at", { ascending: false })
+      .limit(100);
+    setMessages(((data as Message[]) ?? []).reverse());
   }, []);
 
   useEffect(() => {
@@ -140,33 +147,58 @@ const FanpageInboxWidget = () => {
       toast({ title: `Tin mới từ ${who}`, description: text.slice(0, 120) });
       setFlashId(row.conversation_id);
       setTimeout(() => setFlashId(null), 4000);
-      try {
-        const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        const ctx = new Ctx();
+      if (soundEnabled && audioRef.current?.state === "running") {
+        const ctx = audioRef.current;
         const o = ctx.createOscillator();
         const g = ctx.createGain();
         o.frequency.value = 880;
-        g.gain.setValueAtTime(0.15, ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        g.gain.setValueAtTime(0.12, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
         o.connect(g).connect(ctx.destination);
         o.start();
-        o.stop(ctx.currentTime + 0.35);
-      } catch {
-        /* ignore */
+        o.stop(ctx.currentTime + 0.3);
       }
       if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
         new Notification(`Tin mới từ ${who}`, { body: text.slice(0, 120) });
       }
     },
-    [toast],
+    [toast, soundEnabled],
   );
+
+  const enableAlerts = () => {
+    if (alertsActivated.current) return;
+    alertsActivated.current = true;
+    if (soundEnabled) {
+      try {
+        audioRef.current ??= new AudioContext();
+        void audioRef.current.resume();
+      } catch { /* browser does not support audio */ }
+    }
+    if ("Notification" in window && Notification.permission === "default") {
+      void Notification.requestPermission();
+    }
+  };
+
+  useEffect(() => () => { void audioRef.current?.close(); }, []);
+
+  const checkRecentMessages = useCallback(async (announce: boolean) => {
+    const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data } = await supabase.from("fb_messages")
+      .select("id, conversation_id, sender_name, message, sent_at")
+      .eq("direction", "in").gte("sent_at", since)
+      .order("sent_at", { ascending: true }).limit(100);
+    for (const row of data ?? []) {
+      if (seenIds.current.has(row.id)) continue;
+      seenIds.current.add(row.id);
+      if (announce && initialized.current) notifyNew(row);
+    }
+    if (seenIds.current.size > 500) seenIds.current.clear();
+  }, [notifyNew]);
 
   // realtime updates
   useEffect(() => {
     if (!isAdmin) return;
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => undefined);
-    }
+    void checkRecentMessages(false);
     const channel = supabase
       .channel("fanpage-inbox")
       .on("postgres_changes", { event: "*", schema: "public", table: "fb_conversations" }, () => {
@@ -180,26 +212,42 @@ const FanpageInboxWidget = () => {
           message: string | null;
           sent_at: string;
         };
+        const id = String(payload.new.id ?? "");
+        if (seenIds.current.has(id)) return;
+        seenIds.current.add(id);
+        if (seenIds.current.size > 500) seenIds.current.clear();
+        loadConversations();
         if (row.conversation_id === activeIdRef.current) loadMessages(row.conversation_id);
         const fresh = Date.now() - new Date(row.sent_at).getTime() < 10 * 60 * 1000;
-        if (row.direction === "in" && fresh) notifyNew(row);
+        if (row.direction === "in" && fresh && initialized.current) notifyNew(row);
       })
-      .subscribe((status) => setLive(status === "SUBSCRIBED"));
+      .subscribe((status) => {
+        setLive(status === "SUBSCRIBED");
+        if (status === "SUBSCRIBED") {
+          initialized.current = true;
+          loadConversations();
+        }
+      });
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, loadConversations, loadMessages, notifyNew]);
+  }, [isAdmin, loadConversations, loadMessages, notifyNew, checkRecentMessages]);
 
-  // Background auto-sync (fallback when Facebook webhook is delayed)
+  // Reconcile gaps after reconnect and while the webhook is delayed.
   useEffect(() => {
     if (!isAdmin || pages.length === 0) return;
     const tick = () => {
-      if (document.hidden) return;
-      callFn({ action: "sync" }).catch(() => undefined);
+      callFn({ action: "sync" }).then(() => {
+        loadConversations();
+        if (activeIdRef.current) loadMessages(activeIdRef.current);
+        void checkRecentMessages(true);
+      }).catch(() => undefined);
     };
     const id = window.setInterval(tick, 20000);
-    return () => window.clearInterval(id);
-  }, [isAdmin, pages.length, callFn]);
+    const onVisible = () => { if (!document.hidden) tick(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { window.clearInterval(id); document.removeEventListener("visibilitychange", onVisible); };
+  }, [isAdmin, pages.length, callFn, loadConversations, loadMessages, checkRecentMessages]);
 
   // Unread count in tab title
   useEffect(() => {
@@ -215,10 +263,6 @@ const FanpageInboxWidget = () => {
     if (activeId) loadMessages(activeId);
   }, [activeId, loadMessages]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "nearest" });
-  }, [messages.length]);
-
   const filtered = useMemo(
     () =>
       activePageFilter === "all"
@@ -229,9 +273,16 @@ const FanpageInboxWidget = () => {
 
   const active = filtered.find((c) => c.id === activeId) ?? null;
   const pageName = (ref: string) => pages.find((p) => p.id === ref)?.page_name ?? "Fanpage";
+  const lastIncoming = [...messages].reverse().find((m) => m.direction === "in");
+  const messageAge = lastIncoming ? Date.now() - new Date(lastIncoming.sent_at).getTime() : 0;
+  const pastSevenDays = active?.thread_type === "message" && messageAge >= 7 * 24 * 60 * 60 * 1000;
+  const needsHumanAgent = active?.thread_type === "message" && messageAge >= 24 * 60 * 60 * 1000 && !pastSevenDays;
 
   const handleSelect = async (conv: Conversation) => {
+    enableAlerts();
+    setVisibleMessages(30);
     setActiveId(conv.id);
+    requestAnimationFrame(() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
     if (conv.unread_count > 0) {
       await supabase.from("fb_conversations").update({ unread_count: 0 }).eq("id", conv.id);
       loadConversations();
@@ -326,7 +377,7 @@ const FanpageInboxWidget = () => {
   };
 
   const handleReply = async () => {
-    if (!activeId || !reply.trim()) return;
+    if (!activeId || !reply.trim() || pastSevenDays || sending) return;
     setSending(true);
     try {
       await callFn({ action: "reply", conversation_id: activeId, message: reply.trim() });
@@ -365,34 +416,36 @@ const FanpageInboxWidget = () => {
     (n || "K").split(" ").filter(Boolean).slice(-2).map((w) => w[0]).join("").toUpperCase();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 min-w-0" onPointerDown={enableAlerts}>
       {/* Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-primary to-primary/70 text-primary-foreground p-5 flex flex-wrap items-center gap-4 shadow-lg">
+      <div className="border-b border-border pb-4 flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold">Hộp thư Fanpage</h2>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-2.5 py-0.5 text-[11px] font-semibold">
-              <span className={`h-2 w-2 rounded-full ${live ? "bg-primary-foreground animate-pulse" : "bg-primary-foreground/40"}`} />
+            <h2 className="text-xl font-semibold font-sans">Hộp thư Fanpage</h2>
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className={`h-2 w-2 rounded-full ${live ? "bg-primary" : "bg-muted-foreground"}`} />
               {live ? "Trực tiếp" : "Đang kết nối..."}
             </span>
           </div>
-          <p className="text-sm text-primary-foreground/80 mt-1">
-            {pages.length} fanpage · {conversations.length} hội thoại ·{" "}
-            <b>{totalUnread}</b> chưa đọc — tin mới tự hiện và báo chuông.
+          <p className="text-sm text-muted-foreground mt-1">
+            {pages.length} fanpage · {conversations.length} hội thoại · <strong className="text-foreground">{totalUnread} chưa đọc</strong>
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm" onClick={handleSync} disabled={syncing || pages.length === 0}>
+          <Button variant="ghost" size="icon" title={soundEnabled ? "Tắt âm báo" : "Bật âm báo"} aria-label={soundEnabled ? "Tắt âm báo" : "Bật âm báo"} onClick={() => setSoundEnabled(!soundEnabled)}>
+            {soundEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+          </Button>
+          <Button variant="outline" size="sm" title="Tải tin nhắn" onClick={handleSync} disabled={syncing || pages.length === 0}>
             {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             <span className="ml-2 hidden sm:inline">Làm mới</span>
           </Button>
-          <Button variant="secondary" size="sm" onClick={handleDiagnose} disabled={checking || pages.length === 0}>
+          <Button variant="outline" size="sm" title="Kiểm tra kết nối" onClick={handleDiagnose} disabled={checking || pages.length === 0}>
             {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Settings2 className="h-4 w-4" />}
             <span className="ml-2 hidden sm:inline">Kiểm tra</span>
           </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="secondary">
+              <Button size="sm" variant="outline" title="Thêm fanpage">
                 <Plus className="h-4 w-4" />
                 <span className="ml-2 hidden sm:inline">Thêm fanpage</span>
               </Button>
@@ -433,12 +486,13 @@ const FanpageInboxWidget = () => {
           const count = p.id === "all" ? totalUnread : conversations.filter((c) => c.page_ref === p.id).reduce((s, c) => s + c.unread_count, 0);
           const on = activePageFilter === p.id;
           return (
-            <button
+            <Button
+              type="button"
+              variant={on ? "default" : "ghost"}
+              size="sm"
               key={p.id}
               onClick={() => setActivePageFilter(p.id)}
-              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all max-w-[220px] ${
-                on ? "bg-foreground text-background shadow" : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
+              className="max-w-[220px] gap-2"
             >
               <span className="truncate">{p.page_name}</span>
               {count > 0 && (
@@ -446,36 +500,39 @@ const FanpageInboxWidget = () => {
                   {count}
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
 
       {pages.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border py-14 text-center">
+        <div className="border border-dashed border-border rounded-md py-14 text-center">
           <MessagesSquare className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
           <p className="font-semibold">Chưa có fanpage nào</p>
           <p className="text-sm text-muted-foreground mt-1">Bấm “Thêm fanpage” và dán Page Access Token để bắt đầu.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4">
-          <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)] gap-0 border border-border rounded-md bg-card items-start">
+          <div className={`min-w-0 lg:border-r border-border ${active ? "hidden lg:block" : "block"}`}>
+            <div className="px-4 py-3 border-b border-border font-semibold text-sm">Hội thoại <span className="text-muted-foreground font-normal">({filtered.length})</span></div>
             {filtered.length === 0 ? (
               <div className="p-8 text-sm text-muted-foreground text-center">Chưa có hội thoại nào.</div>
             ) : (
-              filtered.map((c) => {
+              filtered.slice(0, visibleConversations).map((c) => {
                 const unread = c.unread_count > 0;
                 const sel = c.id === activeId;
                 return (
-                  <button
+                  <Button
+                    type="button"
+                    variant="ghost"
                     key={c.id}
                     onClick={() => handleSelect(c)}
-                    className={`w-full text-left px-4 py-3 flex gap-3 border-b border-border/50 last:border-0 border-l-4 transition-all ${
+                    className={`h-auto w-full justify-start text-left rounded-none px-3 py-3 flex gap-3 border-b border-border/50 border-l-2 transition-colors ${
                       sel ? "bg-primary/10 border-l-primary" : unread ? "border-l-primary/60 hover:bg-muted/60" : "border-l-transparent hover:bg-muted/60"
                     } ${flashId === c.id ? "animate-pulse bg-primary/15" : ""}`}
                   >
                     <div className="relative shrink-0">
-                      <div className="h-11 w-11 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-bold text-sm">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                         {initials(c.customer_name)}
                       </div>
                       {c.thread_type === "comment" && (
@@ -503,42 +560,70 @@ const FanpageInboxWidget = () => {
                         {pageName(c.page_ref)} · {c.thread_type === "comment" ? "Bình luận" : "Messenger"}
                       </p>
                     </div>
-                  </button>
+                  </Button>
                 );
               })
             )}
+            {filtered.length > visibleConversations && <Button variant="ghost" className="w-full rounded-none" onClick={() => setVisibleConversations((n) => n + 12)}>Xem thêm hội thoại</Button>}
           </div>
 
-          <div className="rounded-2xl border border-border/60 bg-card flex flex-col min-h-[460px] shadow-sm">
+          <div ref={chatRef} className={`min-w-0 scroll-mt-20 ${active ? "block" : "hidden lg:block"}`}>
             {!active ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-3 py-16">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center text-muted-foreground gap-3 min-h-[400px]">
+                <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center">
                   <MessagesSquare className="h-7 w-7 text-primary" />
                 </div>
                 <p className="text-sm">Chọn một hội thoại để trả lời</p>
               </div>
             ) : (
               <>
-                <div className="px-4 py-3 border-b border-border/60 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-bold text-sm">
+                <div className="px-3 sm:px-5 py-3 border-b border-border flex items-center gap-3 bg-card">
+                  <Button variant="ghost" size="icon" className="lg:hidden shrink-0" aria-label="Quay lại hội thoại" onClick={() => setActiveId(null)}><ArrowLeft className="h-5 w-5" /></Button>
+                  <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
                     {initials(active.customer_name)}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold truncate">{active.customer_name || "Khách"}</p>
+                    <p className="font-semibold truncate text-sm">{active.customer_name || "Khách"}</p>
                     <p className="text-[11px] text-muted-foreground">
                       {pageName(active.page_ref)} · {active.thread_type === "comment" ? "Bình luận bài viết" : "Messenger"}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex-1 p-4 space-y-2 bg-muted/30">
-                  {messages.map((m) => (
-                    <div key={m.id} className={`flex animate-fade-in ${m.direction === "out" ? "justify-end" : "justify-start"}`}>
+                <form className="p-3 sm:p-4 border-b border-border bg-card flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); void handleReply(); }}>
+                  <Textarea
+                    aria-label="Nhập câu trả lời"
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                        e.preventDefault();
+                        void handleReply();
+                      }
+                    }}
+                    placeholder={pastSevenDays ? "Đã quá hạn trả lời qua Facebook" : "Nhập câu trả lời..."}
+                    disabled={pastSevenDays}
+                    rows={2}
+                    className="resize-none text-sm rounded-md min-w-0"
+                  />
+                  <Button type="submit" title="Gửi tin nhắn" aria-label="Gửi tin nhắn" disabled={sending || !reply.trim() || pastSevenDays} className="h-10 w-10 p-0 shrink-0">
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </form>
+                {pastSevenDays && <p className="px-4 py-2 text-sm text-muted-foreground border-b border-border">Tin cuối của khách đã quá 7 ngày; cần chờ khách nhắn lại để tiếp tục trò chuyện.</p>}
+                {needsHumanAgent && <p className="px-4 py-2 text-sm text-muted-foreground border-b border-border">Tin cuối đã quá 24 giờ. Chỉ gửi được nếu trang có quyền HUMAN_AGENT từ Meta.</p>}
+
+                <div className="p-3 sm:p-5 space-y-3 bg-muted/20 min-h-[260px]">
+                  {messages.length > visibleMessages && (
+                    <div className="text-center"><Button variant="outline" size="sm" onClick={() => setVisibleMessages((n) => n + 30)}>Xem tin cũ hơn</Button></div>
+                  )}
+                  {messages.slice(-visibleMessages).map((m) => (
+                    <div key={m.id} className={`flex ${m.direction === "out" ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed shadow-sm ${
+                        className={`max-w-[88%] sm:max-w-[75%] rounded-md px-3 py-2 text-sm leading-relaxed ${
                           m.direction === "out"
-                            ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-br-md"
-                            : "bg-background text-foreground border border-border/60 rounded-bl-md"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card text-foreground border border-border"
                         }`}
                       >
                         <div className="whitespace-pre-wrap break-words">{m.message}</div>
@@ -548,26 +633,6 @@ const FanpageInboxWidget = () => {
                       </div>
                     </div>
                   ))}
-                  <div ref={bottomRef} />
-                </div>
-
-                <div className="p-3 border-t border-border/60 flex items-end gap-2">
-                  <Textarea
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleReply();
-                      }
-                    }}
-                    placeholder="Nhập câu trả lời... (Enter để gửi, Shift+Enter xuống dòng)"
-                    rows={2}
-                    className="resize-none text-[15px] rounded-xl"
-                  />
-                  <Button onClick={handleReply} disabled={sending || !reply.trim()} className="h-11 w-11 rounded-full p-0 shrink-0">
-                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  </Button>
                 </div>
               </>
             )}

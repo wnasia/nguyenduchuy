@@ -143,18 +143,41 @@ Deno.serve(async (req) => {
       let external_id: string | null = null;
 
       if (conv.thread_type === 'message') {
-        res = await fetch(`${GRAPH}/me/messages?access_token=${encodeURIComponent(page.access_token)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recipient: { id: conv.customer_psid ?? conv.thread_key },
-            messaging_type: 'RESPONSE',
-            message: { text: message },
-          }),
-        });
-        const data = await res.json();
-        if (data?.error) return json({ error: data.error.message }, 400);
-        external_id = data?.message_id ?? null;
+        const { data: lastIncoming } = await admin.from('fb_messages')
+          .select('sent_at').eq('conversation_id', conversationId).eq('direction', 'in')
+          .order('sent_at', { ascending: false }).limit(1).maybeSingle();
+        const elapsed = lastIncoming ? Date.now() - new Date(lastIncoming.sent_at).getTime() : null;
+        const hours24 = 24 * 60 * 60 * 1000;
+        const days7 = 7 * hours24;
+        if (elapsed !== null && elapsed >= days7) {
+          return json({ error: 'Tin nhắn cuối của khách đã quá 7 ngày. Facebook không cho phép trả lời hội thoại này qua ứng dụng; hãy liên hệ qua kênh khác hoặc chờ khách nhắn lại.' }, 400);
+        }
+        const sendMessage = async (humanAgent: boolean) => {
+          const response = await fetch(`${GRAPH}/me/messages?access_token=${encodeURIComponent(page.access_token)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              recipient: { id: conv.customer_psid ?? conv.thread_key },
+              messaging_type: humanAgent ? 'MESSAGE_TAG' : 'RESPONSE',
+              ...(humanAgent ? { tag: 'HUMAN_AGENT' } : {}),
+              message: { text: message },
+            }),
+          });
+          return { response, data: await response.json() };
+        };
+        const outsideWindow = elapsed !== null && elapsed >= hours24;
+        let sent = await sendMessage(outsideWindow);
+        // A fresh message can be missed by sync; let Meta decide before trying the human-agent tag.
+        if (sent.data?.error && !outsideWindow && elapsed !== null && elapsed < days7 &&
+            (sent.data.error.code === 10 || sent.data.error.error_subcode === 2018278)) {
+          sent = await sendMessage(true);
+        }
+        if (!sent.response.ok || sent.data?.error) {
+          return json({ error: outsideWindow || sent.data?.error?.code === 10
+            ? 'Facebook không cho phép trả lời tin cũ. Trang cần được Meta cấp quyền HUMAN_AGENT (tối đa 7 ngày); quá hạn này phải chờ khách nhắn lại.'
+            : sent.data?.error?.message ?? 'Facebook không nhận được tin nhắn.' }, 400);
+        }
+        external_id = sent.data?.message_id ?? null;
       } else {
         // reply to the latest incoming comment of this post
         const { data: lastIn } = await admin
