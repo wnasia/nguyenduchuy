@@ -1,73 +1,25 @@
-# Chào mừng đến với dự án Lovable của bạn
+# Huy's
 
-## Thông tin dự án
+Ứng dụng React/Vite dùng Supabase cho đăng nhập, dữ liệu và Edge Functions. Mã nguồn có thể triển khai độc lập với Lovable.
 
-**URL**: https://lovable.dev/projects/3aa74b60-3a28-44ab-a5a0-54e70f4b2746
+## Chạy và build
 
-## Làm thế nào để chỉnh sửa mã này?
-
-Có một số cách để chỉnh sửa ứng dụng của bạn.
-
-**Sử dụng Lovable**
-
-Chỉ cần truy cập [Dự án Lovable](https://lovable.dev/projects/3aa74b60-3a28-44ab-a5a0-54e70f4b2746) và bắt đầu nhắc nhở.
-
-Các thay đổi được thực hiện qua Lovable sẽ được commit tự động vào repo này.
-
-**Sử dụng IDE ưa thích của bạn**
-
-Nếu bạn muốn làm việc cục bộ bằng IDE của riêng mình, bạn có thể clone repo này và push các thay đổi. Các thay đổi được push cũng sẽ được phản ánh trong Lovable.
-
-Yêu cầu duy nhất là có Node.js & npm được cài đặt - [cài đặt với nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Làm theo các bước sau:
+Yêu cầu Node.js 20+ và npm.
 
 ```sh
-# Bước 1: Clone repository bằng Git URL của dự án.
-git clone <YOUR_GIT_URL>
-
-# Bước 2: Điều hướng đến thư mục dự án.
-cd <YOUR_PROJECT_NAME>
-
-# Bước 3: Cài đặt các dependencies cần thiết.
-npm i
-
-# Bước 4: Khởi động máy chủ phát triển với tự động tải lại và xem trước tức thì.
+npm ci
 npm run dev
+npm run build
 ```
 
-**Chỉnh sửa tệp trực tiếp trên GitHub**
+Bản tĩnh được tạo trong `dist/`. Khi triển khai trên Vercel, import repository này, chọn Vite, dùng `npm run build` và output directory `dist`. `vercel.json` đã chuyển các đường dẫn của React Router về `index.html`. Nếu dùng một host khác, cấu hình fallback tương đương cho các đường dẫn như `/story/:id` và `/dashboard`.
 
-- Điều hướng đến tệp(s) mong muốn.
-- Nhấp vào nút "Edit" (biểu tượng bút chì) ở trên cùng bên phải của chế độ xem tệp.
-- Thực hiện thay đổi của bạn và commit các thay đổi.
+## Kết nối domain mới
 
-**Sử dụng GitHub Codespaces**
+- Trỏ domain tới host của ứng dụng và bật HTTPS.
+- Trong Supabase Authentication → URL Configuration, thêm `https://DOMAIN/` và `https://DOMAIN/dashboard` vào danh sách Redirect URLs. Nếu domain mới là site chính, đặt Site URL tương ứng.
+- Google One Tap sử dụng OAuth client trong `src/components/GoogleOneTap.tsx`. Thêm origin `https://DOMAIN` vào Authorized JavaScript origins trong Google Cloud. Kiểm tra cấu hình Google/Facebook OAuth provider nếu bạn sử dụng các nút đăng nhập đó.
+- Frontend hiện kết nối với Supabase project `onihezlpgofqzutuxahv`; site mới dùng chung nội dung, tài khoản và dữ liệu với site hiện tại. Ảnh gallery/banner tải từ `cdn.nguyenduchuy.io.vn`. Đảm bảo Supabase project và CDN thuộc quyền quản lý của bạn.
+- Edge Function `speech-assess` dùng trực tiếp OpenAI Audio Transcriptions. Cấu hình `OPENAI_API_KEY` trong Supabase Edge Function Secrets rồi deploy lại function này. Không đưa API key vào frontend hay GitHub.
 
-- Điều hướng đến trang chính của repository.
-- Nhấp vào nút "Code" (nút màu xanh lục) gần trên cùng bên phải.
-- Chọn tab "Codespaces".
-- Nhấp vào "New codespace" để khởi chạy môi trường Codespace mới.
-- Chỉnh sửa tệp trực tiếp trong Codespace và commit và push thay đổi của bạn khi hoàn thành.
-
-## Công nghệ nào được sử dụng cho dự án này?
-
-Dự án này được xây dựng với:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## Làm thế nào để triển khai dự án này?
-
-Chỉ cần mở [Lovable](https://lovable.dev/projects/3aa74b60-3a28-44ab-a5a0-54e70f4b2746) và nhấp vào Share -> Publish.
-
-## Tôi có thể kết nối tên miền tùy chỉnh với dự án Lovable của mình không?
-
-Có, bạn có thể!
-
-Để kết nối tên miền, điều hướng đến Project > Settings > Domains và nhấp Connect Domain.
-
-Đọc thêm ở đây: [Thiết lập tên miền tùy chỉnh](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Các Edge Functions, cron, webhook và dữ liệu đang chạy trong Supabase project hiện tại. Triển khai frontend trên domain mới không tự sao chép hoặc chuyển chúng sang project khác.
