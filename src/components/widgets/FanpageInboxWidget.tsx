@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, RefreshCw, Send, Plus, Settings2, Trash2, MessageSquare, MessagesSquare } from "lucide-react";
+import { Loader2, RefreshCw, Send, Plus, Settings2, Trash2, MessageSquare, MessagesSquare, ArrowLeft, Bell, BellOff } from "lucide-react";
 
 type Page = {
   id: string;
@@ -73,7 +73,11 @@ const FanpageInboxWidget = () => {
   const [tokenInput, setTokenInput] = useState("");
   const [addingPage, setAddingPage] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [visibleMessages, setVisibleMessages] = useState(30);
+  const audioRef = useRef<AudioContext | null>(null);
+  const seenIds = useRef<Set<string>>(new Set());
+  const initialized = useRef(false);
 
   const callFn = useCallback(async (body: Record<string, unknown>) => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -112,9 +116,9 @@ const FanpageInboxWidget = () => {
       .from("fb_messages")
       .select("id, direction, sender_name, message, sent_at")
       .eq("conversation_id", conversationId)
-      .order("sent_at", { ascending: true })
-      .limit(200);
-    setMessages((data as Message[]) ?? []);
+      .order("sent_at", { ascending: false })
+      .limit(100);
+    setMessages(((data as Message[]) ?? []).reverse());
   }, []);
 
   useEffect(() => {
@@ -140,33 +144,41 @@ const FanpageInboxWidget = () => {
       toast({ title: `Tin mới từ ${who}`, description: text.slice(0, 120) });
       setFlashId(row.conversation_id);
       setTimeout(() => setFlashId(null), 4000);
-      try {
-        const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        const ctx = new Ctx();
+      if (soundEnabled && audioRef.current?.state === "running") {
+        const ctx = audioRef.current;
         const o = ctx.createOscillator();
         const g = ctx.createGain();
         o.frequency.value = 880;
-        g.gain.setValueAtTime(0.15, ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        g.gain.setValueAtTime(0.12, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
         o.connect(g).connect(ctx.destination);
         o.start();
-        o.stop(ctx.currentTime + 0.35);
-      } catch {
-        /* ignore */
+        o.stop(ctx.currentTime + 0.3);
       }
       if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
         new Notification(`Tin mới từ ${who}`, { body: text.slice(0, 120) });
       }
     },
-    [toast],
+    [toast, soundEnabled],
   );
+
+  const enableAlerts = () => {
+    if (soundEnabled) {
+      try {
+        audioRef.current ??= new AudioContext();
+        void audioRef.current.resume();
+      } catch { /* browser does not support audio */ }
+    }
+    if ("Notification" in window && Notification.permission === "default") {
+      void Notification.requestPermission();
+    }
+  };
+
+  useEffect(() => () => { void audioRef.current?.close(); }, []);
 
   // realtime updates
   useEffect(() => {
     if (!isAdmin) return;
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => undefined);
-    }
     const channel = supabase
       .channel("fanpage-inbox")
       .on("postgres_changes", { event: "*", schema: "public", table: "fb_conversations" }, () => {
@@ -180,26 +192,40 @@ const FanpageInboxWidget = () => {
           message: string | null;
           sent_at: string;
         };
+        const id = String(payload.new.id ?? "");
+        if (seenIds.current.has(id)) return;
+        seenIds.current.add(id);
+        if (seenIds.current.size > 500) seenIds.current.clear();
+        loadConversations();
         if (row.conversation_id === activeIdRef.current) loadMessages(row.conversation_id);
         const fresh = Date.now() - new Date(row.sent_at).getTime() < 10 * 60 * 1000;
-        if (row.direction === "in" && fresh) notifyNew(row);
+        if (row.direction === "in" && fresh && initialized.current) notifyNew(row);
       })
-      .subscribe((status) => setLive(status === "SUBSCRIBED"));
+      .subscribe((status) => {
+        setLive(status === "SUBSCRIBED");
+        if (status === "SUBSCRIBED") {
+          initialized.current = true;
+          loadConversations();
+        }
+      });
     return () => {
       supabase.removeChannel(channel);
     };
   }, [isAdmin, loadConversations, loadMessages, notifyNew]);
 
-  // Background auto-sync (fallback when Facebook webhook is delayed)
+  // Reconcile gaps after reconnect and while the webhook is delayed.
   useEffect(() => {
     if (!isAdmin || pages.length === 0) return;
     const tick = () => {
-      if (document.hidden) return;
-      callFn({ action: "sync" }).catch(() => undefined);
+      callFn({ action: "sync" }).then(() => {
+        loadConversations();
+        if (activeIdRef.current) loadMessages(activeIdRef.current);
+      }).catch(() => undefined);
     };
     const id = window.setInterval(tick, 20000);
-    return () => window.clearInterval(id);
-  }, [isAdmin, pages.length, callFn]);
+    document.addEventListener("visibilitychange", tick);
+    return () => { window.clearInterval(id); document.removeEventListener("visibilitychange", tick); };
+  }, [isAdmin, pages.length, callFn, loadConversations, loadMessages]);
 
   // Unread count in tab title
   useEffect(() => {
@@ -215,10 +241,6 @@ const FanpageInboxWidget = () => {
     if (activeId) loadMessages(activeId);
   }, [activeId, loadMessages]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "nearest" });
-  }, [messages.length]);
-
   const filtered = useMemo(
     () =>
       activePageFilter === "all"
@@ -231,6 +253,8 @@ const FanpageInboxWidget = () => {
   const pageName = (ref: string) => pages.find((p) => p.id === ref)?.page_name ?? "Fanpage";
 
   const handleSelect = async (conv: Conversation) => {
+    enableAlerts();
+    setVisibleMessages(30);
     setActiveId(conv.id);
     if (conv.unread_count > 0) {
       await supabase.from("fb_conversations").update({ unread_count: 0 }).eq("id", conv.id);
@@ -365,34 +389,36 @@ const FanpageInboxWidget = () => {
     (n || "K").split(" ").filter(Boolean).slice(-2).map((w) => w[0]).join("").toUpperCase();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 min-w-0" onPointerDown={enableAlerts}>
       {/* Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-primary to-primary/70 text-primary-foreground p-5 flex flex-wrap items-center gap-4 shadow-lg">
+      <div className="border-b border-border pb-4 flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold">Hộp thư Fanpage</h2>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-2.5 py-0.5 text-[11px] font-semibold">
-              <span className={`h-2 w-2 rounded-full ${live ? "bg-primary-foreground animate-pulse" : "bg-primary-foreground/40"}`} />
+            <h2 className="text-xl font-semibold font-sans">Hộp thư Fanpage</h2>
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className={`h-2 w-2 rounded-full ${live ? "bg-primary" : "bg-muted-foreground"}`} />
               {live ? "Trực tiếp" : "Đang kết nối..."}
             </span>
           </div>
-          <p className="text-sm text-primary-foreground/80 mt-1">
-            {pages.length} fanpage · {conversations.length} hội thoại ·{" "}
-            <b>{totalUnread}</b> chưa đọc — tin mới tự hiện và báo chuông.
+          <p className="text-sm text-muted-foreground mt-1">
+            {pages.length} fanpage · {conversations.length} hội thoại · <strong className="text-foreground">{totalUnread} chưa đọc</strong>
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm" onClick={handleSync} disabled={syncing || pages.length === 0}>
+          <Button variant="ghost" size="icon" title={soundEnabled ? "Tắt âm báo" : "Bật âm báo"} aria-label={soundEnabled ? "Tắt âm báo" : "Bật âm báo"} onClick={() => setSoundEnabled(!soundEnabled)}>
+            {soundEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+          </Button>
+          <Button variant="outline" size="sm" title="Tải tin nhắn" onClick={handleSync} disabled={syncing || pages.length === 0}>
             {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             <span className="ml-2 hidden sm:inline">Làm mới</span>
           </Button>
-          <Button variant="secondary" size="sm" onClick={handleDiagnose} disabled={checking || pages.length === 0}>
+          <Button variant="outline" size="sm" title="Kiểm tra kết nối" onClick={handleDiagnose} disabled={checking || pages.length === 0}>
             {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Settings2 className="h-4 w-4" />}
             <span className="ml-2 hidden sm:inline">Kiểm tra</span>
           </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="secondary">
+              <Button size="sm" variant="outline" title="Thêm fanpage">
                 <Plus className="h-4 w-4" />
                 <span className="ml-2 hidden sm:inline">Thêm fanpage</span>
               </Button>
