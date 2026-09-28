@@ -8,9 +8,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    const apiKey = Deno.env.get("OPENAI_API_KEY");
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY chưa được cấu hình" }), {
+      return new Response(JSON.stringify({ error: "OPENAI_API_KEY chưa được cấu hình" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -32,11 +32,11 @@ Deno.serve(async (req) => {
     }
 
     const upstream = new FormData();
-    upstream.append("model", "openai/gpt-4o-transcribe");
+    upstream.append("model", "gpt-4o-transcribe");
     upstream.append("file", audio, "recording.wav");
     upstream.append("language", "en");
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
+    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: upstream,
