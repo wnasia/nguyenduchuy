@@ -156,15 +156,11 @@ const FanpageInboxWidget = () => {
   }, []);
 
   useEffect(() => {
-    if (!isAdmin) {
-      setLoading(false);
-      return;
-    }
     (async () => {
-      await Promise.all([loadPages(), loadConversations()]);
+      await Promise.all([loadPages(), loadConversations(), ...(isAdmin ? [loadStaff()] : [])]);
       setLoading(false);
     })();
-  }, [isAdmin, loadPages, loadConversations]);
+  }, [isAdmin, loadPages, loadConversations, loadStaff]);
 
   const activeIdRef = useRef<string | null>(null);
   activeIdRef.current = activeId;
@@ -228,7 +224,7 @@ const FanpageInboxWidget = () => {
 
   // realtime updates
   useEffect(() => {
-    if (!isAdmin) return;
+    if (pages.length === 0) return;
     void checkRecentMessages(false);
     const channel = supabase
       .channel("fanpage-inbox")
