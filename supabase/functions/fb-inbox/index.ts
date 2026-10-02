@@ -239,8 +239,12 @@ Deno.serve(async (req) => {
 
     if (action === 'sync') {
       const pageRef = payload.page_ref ?? null;
+      if (pageRef && !(await canAccessPage(user.id, isAdmin, pageRef))) {
+        return json({ error: 'Bạn không được phân bổ quản lý fanpage này.' }, 403);
+      }
       let query = admin.from('fb_pages').select('id, page_id, page_name, access_token').eq('is_active', true);
       if (pageRef) query = query.eq('id', pageRef);
+      if (!isAdmin) query = query.eq('assigned_user_id', user.id);
       const { data: pages } = await query;
       let imported = 0;
       const errors: Array<{ page_name: string; error: string }> = [];
