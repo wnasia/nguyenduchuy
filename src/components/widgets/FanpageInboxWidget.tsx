@@ -76,7 +76,7 @@ const FanpageInboxWidget = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [visibleMessages, setVisibleMessages] = useState(30);
   const [visibleConversations, setVisibleConversations] = useState(12);
-  const chatRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<AudioContext | null>(null);
   const seenIds = useRef<Set<string>>(new Set());
   const initialized = useRef(false);
@@ -263,6 +263,13 @@ const FanpageInboxWidget = () => {
     if (activeId) loadMessages(activeId);
   }, [activeId, loadMessages]);
 
+  // Messenger-style: keep the newest message in view, composer stays pinned at the bottom.
+  useEffect(() => {
+    const el = messagesScrollRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight, behavior: "smooth" }));
+  }, [messages, activeId, visibleMessages]);
+
   const filtered = useMemo(
     () =>
       activePageFilter === "all"
@@ -282,7 +289,6 @@ const FanpageInboxWidget = () => {
     enableAlerts();
     setVisibleMessages(30);
     setActiveId(conv.id);
-    requestAnimationFrame(() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
     if (conv.unread_count > 0) {
       await supabase.from("fb_conversations").update({ unread_count: 0 }).eq("id", conv.id);
       loadConversations();
