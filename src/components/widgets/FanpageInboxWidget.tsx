@@ -21,6 +21,13 @@ type Page = {
   page_id: string;
   page_name: string;
   is_active: boolean;
+  assigned_user_id: string | null;
+};
+
+type StaffOption = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
 };
 
 type Conversation = {
@@ -97,13 +104,37 @@ const FanpageInboxWidget = () => {
     return json;
   }, []);
 
+  const [staffList, setStaffList] = useState<StaffOption[]>([]);
+
   const loadPages = useCallback(async () => {
     const { data } = await supabase
       .from("fb_pages")
-      .select("id, page_id, page_name, is_active")
+      .select("id, page_id, page_name, is_active, assigned_user_id")
       .order("created_at", { ascending: true });
     setPages((data as Page[]) ?? []);
   }, []);
+
+  const loadStaff = useCallback(async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .eq("account_status", "active")
+      .order("full_name", { ascending: true });
+    setStaffList((data as StaffOption[]) ?? []);
+  }, []);
+
+  const handleAssign = async (pageId: string, userId: string) => {
+    const { error } = await supabase
+      .from("fb_pages")
+      .update({ assigned_user_id: userId || null })
+      .eq("id", pageId);
+    if (error) {
+      toast({ title: "Không phân bổ được", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Đã cập nhật phân bổ" });
+    loadPages();
+  };
 
   const loadConversations = useCallback(async () => {
     const { data } = await supabase
