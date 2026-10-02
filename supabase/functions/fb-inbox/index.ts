@@ -98,6 +98,7 @@ Deno.serve(async (req) => {
 
   try {
     if (action === 'verify_page') {
+      if (!isAdmin) return json({ error: 'Chỉ admin mới thêm được fanpage.' }, 403);
       const token = payload.access_token;
       const res = await fetch(`${GRAPH}/me?fields=id,name&access_token=${encodeURIComponent(token)}`);
       const data = await res.json();
@@ -114,6 +115,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'diagnose') {
+      if (!isAdmin) return json({ error: 'Chỉ admin mới dùng được chẩn đoán.' }, 403);
       let query = admin.from('fb_pages').select('id, page_id, page_name, access_token').eq('is_active', true);
       if (payload.page_ref) query = query.eq('id', payload.page_ref);
       const { data: pages, error } = await query;
