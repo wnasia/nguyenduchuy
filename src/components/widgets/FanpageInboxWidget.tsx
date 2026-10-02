@@ -21,6 +21,13 @@ type Page = {
   page_id: string;
   page_name: string;
   is_active: boolean;
+  assigned_user_id: string | null;
+};
+
+type StaffOption = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
 };
 
 type Conversation = {
@@ -97,13 +104,37 @@ const FanpageInboxWidget = () => {
     return json;
   }, []);
 
+  const [staffList, setStaffList] = useState<StaffOption[]>([]);
+
   const loadPages = useCallback(async () => {
     const { data } = await supabase
       .from("fb_pages")
-      .select("id, page_id, page_name, is_active")
+      .select("id, page_id, page_name, is_active, assigned_user_id")
       .order("created_at", { ascending: true });
     setPages((data as Page[]) ?? []);
   }, []);
+
+  const loadStaff = useCallback(async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .eq("account_status", "active")
+      .order("full_name", { ascending: true });
+    setStaffList((data as StaffOption[]) ?? []);
+  }, []);
+
+  const handleAssign = async (pageId: string, userId: string) => {
+    const { error } = await supabase
+      .from("fb_pages")
+      .update({ assigned_user_id: userId || null })
+      .eq("id", pageId);
+    if (error) {
+      toast({ title: "Không phân bổ được", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Đã cập nhật phân bổ" });
+    loadPages();
+  };
 
   const loadConversations = useCallback(async () => {
     const { data } = await supabase
@@ -125,15 +156,11 @@ const FanpageInboxWidget = () => {
   }, []);
 
   useEffect(() => {
-    if (!isAdmin) {
-      setLoading(false);
-      return;
-    }
     (async () => {
-      await Promise.all([loadPages(), loadConversations()]);
+      await Promise.all([loadPages(), loadConversations(), ...(isAdmin ? [loadStaff()] : [])]);
       setLoading(false);
     })();
-  }, [isAdmin, loadPages, loadConversations]);
+  }, [isAdmin, loadPages, loadConversations, loadStaff]);
 
   const activeIdRef = useRef<string | null>(null);
   activeIdRef.current = activeId;
@@ -197,7 +224,7 @@ const FanpageInboxWidget = () => {
 
   // realtime updates
   useEffect(() => {
-    if (!isAdmin) return;
+    if (pages.length === 0) return;
     void checkRecentMessages(false);
     const channel = supabase
       .channel("fanpage-inbox")
@@ -231,11 +258,11 @@ const FanpageInboxWidget = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, loadConversations, loadMessages, notifyNew, checkRecentMessages]);
+  }, [pages.length, loadConversations, loadMessages, notifyNew, checkRecentMessages]);
 
   // Reconcile gaps after reconnect and while the webhook is delayed.
   useEffect(() => {
-    if (!isAdmin || pages.length === 0) return;
+    if (pages.length === 0) return;
     const tick = () => {
       callFn({ action: "sync" }).then(() => {
         loadConversations();
@@ -401,18 +428,18 @@ const FanpageInboxWidget = () => {
     }
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="py-10 text-center text-muted-foreground">
-        Tính năng này chỉ dành cho quản trị viên.
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="py-16 flex justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin && pages.length === 0) {
+    return (
+      <div className="py-10 text-center text-muted-foreground">
+        Bạn chưa được phân bổ quản lý fanpage nào. Hãy liên hệ quản trị viên.
       </div>
     );
   }
