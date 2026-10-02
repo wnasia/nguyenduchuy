@@ -147,6 +147,9 @@ Deno.serve(async (req) => {
       const conversationId = String(payload?.conversation_id ?? '');
       const message = String(payload?.message ?? '').trim();
       if (!conversationId || !message) return json({ error: 'Thiếu nội dung trả lời.' }, 400);
+      if (!(await canAccessPage(user.id, isAdmin, null, conversationId))) {
+        return json({ error: 'Bạn không được phân bổ quản lý fanpage này.' }, 403);
+      }
 
       const { data: conv } = await admin
         .from('fb_conversations')
