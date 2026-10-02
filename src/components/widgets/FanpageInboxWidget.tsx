@@ -258,11 +258,11 @@ const FanpageInboxWidget = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, loadConversations, loadMessages, notifyNew, checkRecentMessages]);
+  }, [pages.length, loadConversations, loadMessages, notifyNew, checkRecentMessages]);
 
   // Reconcile gaps after reconnect and while the webhook is delayed.
   useEffect(() => {
-    if (!isAdmin || pages.length === 0) return;
+    if (pages.length === 0) return;
     const tick = () => {
       callFn({ action: "sync" }).then(() => {
         loadConversations();
@@ -428,18 +428,18 @@ const FanpageInboxWidget = () => {
     }
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="py-10 text-center text-muted-foreground">
-        Tính năng này chỉ dành cho quản trị viên.
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="py-16 flex justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin && pages.length === 0) {
+    return (
+      <div className="py-10 text-center text-muted-foreground">
+        Bạn chưa được phân bổ quản lý fanpage nào. Hãy liên hệ quản trị viên.
       </div>
     );
   }
