@@ -373,6 +373,7 @@ export type Database = {
       fb_pages: {
         Row: {
           access_token: string
+          assigned_user_id: string | null
           created_at: string
           created_by: string | null
           id: string
@@ -383,6 +384,7 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          assigned_user_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -393,6 +395,7 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          assigned_user_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
