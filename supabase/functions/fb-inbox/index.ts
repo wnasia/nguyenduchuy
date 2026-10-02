@@ -53,7 +53,7 @@ async function inspectPage(pageId: string, token: string) {
   };
 }
 
-async function requireAdmin(req: Request) {
+async function requireStaff(req: Request) {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) return null;
   const token = authHeader.replace('Bearer ', '');
@@ -61,14 +61,29 @@ async function requireAdmin(req: Request) {
   const user = data?.user;
   if (!user) return null;
   const { data: isAdmin } = await admin.rpc('has_role', { _user_id: user.id, _role: 'admin' });
-  return isAdmin ? user : null;
+  return { user, isAdmin: !!isAdmin };
+}
+
+// Staff (non-admin) may only touch pages assigned to them.
+async function canAccessPage(userId: string, isAdmin: boolean, pageRef?: string | null, conversationId?: string | null) {
+  if (isAdmin) return true;
+  if (pageRef) {
+    const { data } = await admin.from('fb_pages').select('id').eq('id', pageRef).eq('assigned_user_id', userId).maybeSingle();
+    return !!data;
+  }
+  if (conversationId) {
+    const { data } = await admin.from('fb_conversations').select('id, fb_pages!inner(assigned_user_id)').eq('id', conversationId).maybeSingle();
+    return (data as any)?.fb_pages?.assigned_user_id === userId;
+  }
+  return false;
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
-  const user = await requireAdmin(req);
-  if (!user) return json({ error: 'Chỉ admin mới sử dụng được tính năng này.' }, 403);
+  const auth = await requireStaff(req);
+  if (!auth) return json({ error: 'Bạn cần đăng nhập để sử dụng tính năng này.' }, 403);
+  const { user, isAdmin } = auth;
 
   let rawPayload: unknown;
   try {
