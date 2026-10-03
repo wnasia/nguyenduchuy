@@ -357,8 +357,19 @@ const FanpageInboxWidget = () => {
     }
   };
 
-  const handleRemovePage = async (id: string) => {
-    await supabase.from("fb_pages").delete().eq("id", id);
+  const handleRemovePage = async (id: string, name: string) => {
+    if (!window.confirm(`Gỡ fanpage "${name}" khỏi hệ thống? Toàn bộ hội thoại và tin nhắn của trang này cũng bị xóa.`)) return;
+    const { error } = await supabase.from("fb_pages").delete().eq("id", id);
+    if (error) {
+      toast({
+        title: "Không gỡ được fanpage",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({ title: `Đã gỡ fanpage ${name}` });
+    if (activePageFilter === id) setActivePageFilter("all");
     loadPages();
     loadConversations();
   };
@@ -513,7 +524,7 @@ const FanpageInboxWidget = () => {
                           <option key={s.id} value={s.id}>{s.full_name || s.email || s.id.slice(0, 8)}</option>
                         ))}
                       </select>
-                      <Button variant="ghost" size="icon" onClick={() => handleRemovePage(p.id)} aria-label="Gỡ fanpage">
+                      <Button variant="ghost" size="icon" onClick={() => handleRemovePage(p.id, p.page_name)} aria-label="Gỡ fanpage">
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
