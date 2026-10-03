@@ -255,7 +255,11 @@ Deno.serve(async (req) => {
         );
         const data = await res.json();
         if (data?.error) {
-          errors.push({ page_name: page.page_name, error: data.error.message ?? 'Facebook từ chối truy cập hội thoại.' });
+          const code = data.error.code;
+          const friendly = code === 190
+            ? 'Mã truy cập đã hết hạn hoặc bị thu hồi — hãy gỡ fanpage này và kết nối lại bằng token mới.'
+            : (data.error.message ?? 'Facebook từ chối truy cập hội thoại.');
+          errors.push({ page_name: page.page_name, error: friendly });
           continue;
         }
 
