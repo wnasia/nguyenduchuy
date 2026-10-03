@@ -472,6 +472,7 @@ const FanpageInboxWidget = () => {
             {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             <span className="ml-2 hidden sm:inline">Làm mới</span>
           </Button>
+          {isAdmin && (<>
           <Button variant="outline" size="sm" title="Kiểm tra kết nối" onClick={handleDiagnose} disabled={checking || pages.length === 0}>
             {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Settings2 className="h-4 w-4" />}
             <span className="ml-2 hidden sm:inline">Kiểm tra</span>
@@ -496,12 +497,23 @@ const FanpageInboxWidget = () => {
                 Kết nối
               </Button>
               {pages.length > 0 && (
-                <div className="pt-2 border-t space-y-2">
-                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Fanpage đã kết nối</div>
+                <div className="pt-2 border-t space-y-3">
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Fanpage đã kết nối · Nhân viên phụ trách</div>
                   {pages.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between gap-2 text-sm">
-                      <span className="truncate">{p.page_name}</span>
-                      <Button variant="ghost" size="icon" onClick={() => handleRemovePage(p.id)}>
+                    <div key={p.id} className="flex items-center gap-2 text-sm">
+                      <span className="truncate flex-1 min-w-0 font-medium">{p.page_name}</span>
+                      <select
+                        aria-label={`Nhân viên phụ trách ${p.page_name}`}
+                        value={p.assigned_user_id ?? ""}
+                        onChange={(e) => handleAssign(p.id, e.target.value)}
+                        className="h-9 w-44 rounded-md border border-input bg-background px-2 text-sm"
+                      >
+                        <option value="">Chưa phân bổ</option>
+                        {staffList.map((s) => (
+                          <option key={s.id} value={s.id}>{s.full_name || s.email || s.id.slice(0, 8)}</option>
+                        ))}
+                      </select>
+                      <Button variant="ghost" size="icon" onClick={() => handleRemovePage(p.id)} aria-label="Gỡ fanpage">
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -510,6 +522,7 @@ const FanpageInboxWidget = () => {
               )}
             </DialogContent>
           </Dialog>
+          </>)}
         </div>
       </div>
 
