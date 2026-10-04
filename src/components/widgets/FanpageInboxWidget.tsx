@@ -14,6 +14,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Loader2, RefreshCw, Send, Plus, Settings2, Trash2, MessageSquare, MessagesSquare, ArrowLeft, Bell, BellOff } from "lucide-react";
 
 type Page = {
@@ -80,6 +90,8 @@ const FanpageInboxWidget = () => {
   const [tokenInput, setTokenInput] = useState("");
   const [addingPage, setAddingPage] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Page | null>(null);
+  const [deletingPage, setDeletingPage] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [visibleMessages, setVisibleMessages] = useState(30);
   const [visibleConversations, setVisibleConversations] = useState(12);
@@ -357,21 +369,25 @@ const FanpageInboxWidget = () => {
     }
   };
 
-  const handleRemovePage = async (id: string, name: string) => {
-    if (!window.confirm(`Gỡ fanpage "${name}" khỏi hệ thống? Toàn bộ hội thoại và tin nhắn của trang này cũng bị xóa.`)) return;
-    const { error } = await supabase.from("fb_pages").delete().eq("id", id);
+  const handleRemovePage = async () => {
+    if (!deleteTarget || deletingPage) return;
+    setDeletingPage(true);
+    const { error } = await supabase.from("fb_pages").delete().eq("id", deleteTarget.id);
     if (error) {
       toast({
         title: "Không gỡ được fanpage",
         description: error.message,
         variant: "destructive",
       });
+      setDeletingPage(false);
       return;
     }
-    toast({ title: `Đã gỡ fanpage ${name}` });
-    if (activePageFilter === id) setActivePageFilter("all");
-    loadPages();
-    loadConversations();
+    toast({ title: `Đã gỡ fanpage ${deleteTarget.page_name}` });
+    if (activePageFilter === deleteTarget.id) setActivePageFilter("all");
+    if (active && active.page_ref === deleteTarget.id) setActiveId(null);
+    setDeleteTarget(null);
+    setDeletingPage(false);
+    await Promise.all([loadPages(), loadConversations()]);
   };
 
   const handleSync = async () => {
@@ -460,85 +476,78 @@ const FanpageInboxWidget = () => {
     (n || "K").split(" ").filter(Boolean).slice(-2).map((w) => w[0]).join("").toUpperCase();
 
   return (
-    <div className="space-y-3 min-w-0" onPointerDown={enableAlerts}>
-      {/* Header */}
-      <div className="border-b border-border pb-4 flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-0">
+    <div className="flex h-[calc(100dvh-7.5rem)] min-h-[520px] max-h-[860px] min-w-0 flex-col overflow-hidden rounded-md border border-border bg-card" onPointerDown={enableAlerts}>
+      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-3 sm:px-4">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold font-sans">Hộp thư Fanpage</h2>
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <h2 className="truncate font-sans text-base font-semibold">Hộp thư Fanpage</h2>
+            <span className="inline-flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground">
               <span className={`h-2 w-2 rounded-full ${live ? "bg-primary" : "bg-muted-foreground"}`} />
-              {live ? "Trực tiếp" : "Đang kết nối..."}
+              {live ? "Trực tiếp" : "Đang kết nối"}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            {pages.length} fanpage · {conversations.length} hội thoại · <strong className="text-foreground">{totalUnread} chưa đọc</strong>
-          </p>
+          <p className="truncate text-xs text-muted-foreground">{conversations.length} hội thoại · {totalUnread} chưa đọc</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" title={soundEnabled ? "Tắt âm báo" : "Bật âm báo"} aria-label={soundEnabled ? "Tắt âm báo" : "Bật âm báo"} onClick={() => setSoundEnabled(!soundEnabled)}>
-            {soundEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
-          </Button>
-          <Button variant="outline" size="sm" title="Tải tin nhắn" onClick={handleSync} disabled={syncing || pages.length === 0}>
-            {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            <span className="ml-2 hidden sm:inline">Làm mới</span>
-          </Button>
-          {isAdmin && (<>
-          <Button variant="outline" size="sm" title="Kiểm tra kết nối" onClick={handleDiagnose} disabled={checking || pages.length === 0}>
-            {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Settings2 className="h-4 w-4" />}
-            <span className="ml-2 hidden sm:inline">Kiểm tra</span>
-          </Button>
+        <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" title={soundEnabled ? "Tắt âm báo" : "Bật âm báo"} aria-label={soundEnabled ? "Tắt âm báo" : "Bật âm báo"} onClick={() => setSoundEnabled(!soundEnabled)}>
+          {soundEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+        </Button>
+        <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" title="Làm mới" aria-label="Làm mới" onClick={handleSync} disabled={syncing || pages.length === 0}>
+          {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+        </Button>
+        {isAdmin && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="outline" title="Thêm fanpage">
-                <Plus className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">Thêm fanpage</span>
+              <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" title="Quản lý fanpage" aria-label="Quản lý fanpage">
+                <Settings2 className="h-4 w-4" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Kết nối fanpage</DialogTitle>
-                <DialogDescription>
-                  Dán Page Access Token của fanpage. Hệ thống sẽ tự nhận tên trang và bật nhận tin nhắn, bình luận mới.
-                </DialogDescription>
+            <DialogContent className="flex max-h-[85dvh] max-w-2xl flex-col overflow-hidden p-0">
+              <DialogHeader className="shrink-0 border-b border-border p-5">
+                <DialogTitle>Quản lý fanpage</DialogTitle>
+                <DialogDescription>Kết nối trang và phân công nhân viên phụ trách.</DialogDescription>
               </DialogHeader>
-              <Input value={tokenInput} onChange={(e) => setTokenInput(e.target.value)} placeholder="EAAG..." className="font-mono text-xs" />
-              <Button onClick={handleAddPage} disabled={addingPage || !tokenInput.trim()}>
-                {addingPage && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Kết nối
-              </Button>
-              {pages.length > 0 && (
-                <div className="pt-2 border-t space-y-3">
-                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Fanpage đã kết nối · Nhân viên phụ trách</div>
-                  {pages.map((p) => (
-                    <div key={p.id} className="flex items-center gap-2 text-sm">
-                      <span className="truncate flex-1 min-w-0 font-medium">{p.page_name}</span>
-                      <select
-                        aria-label={`Nhân viên phụ trách ${p.page_name}`}
-                        value={p.assigned_user_id ?? ""}
-                        onChange={(e) => handleAssign(p.id, e.target.value)}
-                        className="h-9 w-44 rounded-md border border-input bg-background px-2 text-sm"
-                      >
+              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold">Kết nối fanpage mới</p>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Input value={tokenInput} onChange={(e) => setTokenInput(e.target.value)} placeholder="Dán Page Access Token" className="min-w-0 flex-1 font-mono text-xs" />
+                    <Button onClick={handleAddPage} disabled={addingPage || !tokenInput.trim()} className="shrink-0">
+                      {addingPage ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                      Kết nối
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2 border-t border-border pt-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold">Fanpage đã kết nối</p>
+                    <Button variant="outline" size="sm" onClick={handleDiagnose} disabled={checking || pages.length === 0}>
+                      {checking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                      Kiểm tra kết nối
+                    </Button>
+                  </div>
+                  {pages.length === 0 ? <p className="py-6 text-center text-sm text-muted-foreground">Chưa có fanpage nào.</p> : pages.map((p) => (
+                    <div key={p.id} className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[minmax(0,1fr)_220px_36px] sm:items-center">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">{p.page_name}</p>
+                        <p className="truncate text-xs text-muted-foreground">ID {p.page_id}</p>
+                      </div>
+                      <select aria-label={`Nhân viên phụ trách ${p.page_name}`} value={p.assigned_user_id ?? ""} onChange={(e) => handleAssign(p.id, e.target.value)} className="h-9 min-w-0 rounded-md border border-input bg-background px-2 text-sm">
                         <option value="">Chưa phân bổ</option>
-                        {staffList.map((s) => (
-                          <option key={s.id} value={s.id}>{s.full_name || s.email || s.id.slice(0, 8)}</option>
-                        ))}
+                        {staffList.map((s) => <option key={s.id} value={s.id}>{s.full_name || s.email || s.id.slice(0, 8)}</option>)}
                       </select>
-                      <Button variant="ghost" size="icon" onClick={() => handleRemovePage(p.id, p.page_name)} aria-label="Gỡ fanpage">
+                      <Button variant="ghost" size="icon" className="h-9 w-9 justify-self-end" onClick={() => setDeleteTarget(p)} aria-label={`Gỡ ${p.page_name}`}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
                   ))}
                 </div>
-              )}
+              </div>
             </DialogContent>
           </Dialog>
-          </>)}
-        </div>
+        )}
       </div>
 
-      {/* Page filter */}
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex h-11 shrink-0 items-center gap-1 overflow-x-auto border-b border-border px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {[{ id: "all", page_name: "Tất cả" }, ...pages].map((p) => {
           const count = p.id === "all" ? totalUnread : conversations.filter((c) => c.page_ref === p.id).reduce((s, c) => s + c.unread_count, 0);
           const on = activePageFilter === p.id;
@@ -549,7 +558,7 @@ const FanpageInboxWidget = () => {
               size="sm"
               key={p.id}
               onClick={() => setActivePageFilter(p.id)}
-              className="max-w-[220px] gap-2"
+              className="h-8 max-w-[200px] shrink-0 gap-2 px-3 text-xs"
             >
               <span className="truncate">{p.page_name}</span>
               {count > 0 && (
@@ -563,15 +572,15 @@ const FanpageInboxWidget = () => {
       </div>
 
       {pages.length === 0 ? (
-        <div className="border border-dashed border-border rounded-md py-14 text-center">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-5 text-center">
           <MessagesSquare className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
           <p className="font-semibold">Chưa có fanpage nào</p>
-          <p className="text-sm text-muted-foreground mt-1">Bấm “Thêm fanpage” và dán Page Access Token để bắt đầu.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Mở phần quản lý fanpage để kết nối trang đầu tiên.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)] gap-0 border border-border rounded-md bg-card overflow-hidden h-[72vh] min-h-[520px]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">
           <div className={`min-w-0 lg:border-r border-border flex flex-col ${active ? "hidden lg:flex" : "flex"}`}>
-            <div className="px-4 py-3 border-b border-border font-semibold text-sm shrink-0">Hội thoại <span className="text-muted-foreground font-normal">({filtered.length})</span></div>
+            <div className="flex h-11 shrink-0 items-center border-b border-border px-4 text-sm font-semibold">Hội thoại <span className="ml-1 font-normal text-muted-foreground">({filtered.length})</span></div>
             <div className="flex-1 overflow-y-auto min-h-0">
               {filtered.length === 0 ? (
                 <div className="p-8 text-sm text-muted-foreground text-center">Chưa có hội thoại nào.</div>
@@ -638,7 +647,7 @@ const FanpageInboxWidget = () => {
               </div>
             ) : (
               <>
-                <div className="px-3 sm:px-5 py-3 border-b border-border flex items-center gap-3 bg-card shrink-0">
+                <div className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-3 sm:px-5">
                   <Button variant="ghost" size="icon" className="lg:hidden shrink-0" aria-label="Quay lại hội thoại" onClick={() => setActiveId(null)}><ArrowLeft className="h-5 w-5" /></Button>
                   <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
                     {initials(active.customer_name)}
@@ -651,7 +660,7 @@ const FanpageInboxWidget = () => {
                   </div>
                 </div>
 
-                <div ref={messagesScrollRef} className="flex-1 overflow-y-auto min-h-0 p-3 sm:p-5 space-y-3 bg-muted/20">
+                <div ref={messagesScrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-muted/20 p-3 sm:p-5">
                   {messages.length > visibleMessages && (
                     <div className="text-center"><Button variant="outline" size="sm" onClick={() => setVisibleMessages((n) => n + 30)}>Xem tin cũ hơn</Button></div>
                   )}
@@ -673,9 +682,9 @@ const FanpageInboxWidget = () => {
                   ))}
                 </div>
 
-                <div className="shrink-0 border-t border-border bg-card p-3 sm:p-4">
-                  {pastSevenDays && <p className="text-xs text-muted-foreground mb-2">Tin cuối của khách đã quá 7 ngày; cần chờ khách nhắn lại để tiếp tục trò chuyện.</p>}
-                  {needsHumanAgent && <p className="text-xs text-muted-foreground mb-2">Tin cuối đã quá 24 giờ. Chỉ gửi được nếu trang có quyền HUMAN_AGENT từ Meta.</p>}
+                <div className="shrink-0 border-t border-border bg-card p-2.5 sm:p-3">
+                  {pastSevenDays && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 7 ngày. Cần chờ khách nhắn lại.</p>}
+                  {needsHumanAgent && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 24 giờ. Meta chỉ cho phép gửi khi trang có quyền HUMAN_AGENT.</p>}
                   <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); void handleReply(); }}>
                     <Textarea
                       aria-label="Nhập câu trả lời"
@@ -689,10 +698,10 @@ const FanpageInboxWidget = () => {
                       }}
                       placeholder={pastSevenDays ? "Đã quá hạn trả lời qua Facebook" : "Nhập câu trả lời..."}
                       disabled={pastSevenDays}
-                      rows={2}
-                      className="resize-none text-sm rounded-2xl min-w-0"
+                      rows={1}
+                      className="max-h-28 min-h-10 min-w-0 resize-none rounded-md py-2.5 text-sm"
                     />
-                    <Button type="submit" title="Gửi tin nhắn" aria-label="Gửi tin nhắn" disabled={sending || !reply.trim() || pastSevenDays} className="h-10 w-10 p-0 shrink-0 rounded-full">
+                    <Button type="submit" title="Gửi tin nhắn" aria-label="Gửi tin nhắn" disabled={sending || !reply.trim() || pastSevenDays} className="h-10 w-10 shrink-0 p-0">
                       {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     </Button>
                   </form>
@@ -702,6 +711,24 @@ const FanpageInboxWidget = () => {
           </div>
         </div>
       )}
+
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => { if (!open && !deletingPage) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Gỡ fanpage?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Fanpage “{deleteTarget?.page_name}” cùng toàn bộ hội thoại và tin nhắn đã lưu sẽ bị xóa khỏi hệ thống.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingPage}>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={(event) => { event.preventDefault(); void handleRemovePage(); }} disabled={deletingPage} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deletingPage && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Gỡ fanpage
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
