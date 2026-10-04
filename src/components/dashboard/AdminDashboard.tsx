@@ -84,7 +84,10 @@ const AdminDashboard = () => {
 
           {/* Main Content */}
           <main className={cn("flex-1 overflow-x-hidden", activeModule === "fanpage-inbox" ? "min-h-0 p-2 sm:p-3" : "p-3 sm:p-6 lg:p-8")}>
-            <div className={cn("max-w-7xl mx-auto", activeModule === "fanpage-inbox" && "h-full min-h-0")}>
+            <div className={cn(
+              "max-w-7xl mx-auto",
+              activeModule === "fanpage-inbox" && "h-full min-h-0 [&>div]:!h-full [&>div]:!min-h-0 [&>div]:!max-h-none",
+            )}>
               <CurrentComponent />
             </div>
           </main>
