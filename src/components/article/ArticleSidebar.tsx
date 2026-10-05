@@ -123,8 +123,6 @@ const ArticleSidebar = ({ contentHtml, currentPostId }: ArticleSidebarProps) => 
 
   return (
     <div ref={sidebarRef} className="space-y-6 sticky" style={{ top: stickyTop }}>
-      {/* Table of Contents - FIRST (Article page only) */}
-      <TableOfContents contentHtml={contentHtml} />
 
       {/* Top Stories */}
       <div className="bg-card rounded-lg border border-border p-5">
@@ -193,6 +191,9 @@ const ArticleSidebar = ({ contentHtml, currentPostId }: ArticleSidebarProps) => 
           })}
         </div>
       </div>
+
+      {/* Table of Contents - last so it stays visible while the sidebar is pinned */}
+      <TableOfContents contentHtml={contentHtml} />
     </div>
   );
 };
