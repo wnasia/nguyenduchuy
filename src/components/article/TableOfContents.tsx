@@ -66,9 +66,17 @@ const TableOfContents = ({ contentHtml }: TableOfContentsProps) => {
   }, [headings]);
 
   const handleClick = (id: string) => {
-    const element = document.getElementById(id);
+    const target = headings.find((h) => h.id === id);
+    let element = document.getElementById(id);
+    // Fallback: locate heading by its text inside article content
+    if (!element || element.textContent?.trim() !== target?.text) {
+      const all = Array.from(document.querySelectorAll<HTMLElement>(".prose h1, .prose h2, .prose h3, .prose h4"));
+      element = all.find((el) => el.textContent?.trim() === target?.text) || element;
+    }
     if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      const top = element.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top, behavior: "smooth" });
+      setActiveId(id);
     }
   };
 
