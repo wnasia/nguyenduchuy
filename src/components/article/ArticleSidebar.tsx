@@ -5,12 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { parsePostContent, decodeHtmlEntities } from "@/lib/htmlUtils";
 import TableOfContents from "./TableOfContents";
-import GoldPriceWidget from "@/components/widgets/GoldPriceWidget";
-import WeatherWidget from "@/components/widgets/WeatherWidget";
-import LunarCalendarWidget from "@/components/LunarCalendarWidget";
-import FlightSearchWidget from "@/components/flight/FlightSearchWidget";
-import ExchangeRateWidget from "@/components/widgets/ExchangeRateWidget";
-import CommunityStatsWidget from "@/components/widgets/CommunityStatsWidget";
 
 interface Post {
   id: string;
@@ -129,45 +123,6 @@ const ArticleSidebar = ({ contentHtml, currentPostId }: ArticleSidebarProps) => 
 
   return (
     <div ref={sidebarRef} className="space-y-6 sticky" style={{ top: stickyTop }}>
-      {/* Table of Contents - FIRST (Article page only) */}
-      <TableOfContents contentHtml={contentHtml} />
-
-      {/* 1. Vietnam Gold Price */}
-      <GoldPriceWidget />
-
-      {/* 2. Weather */}
-      <WeatherWidget />
-
-      {/* 3. Lunar / Solar Calendar */}
-      <LunarCalendarWidget />
-
-      {/* 4. Flight Booking */}
-      <FlightSearchWidget />
-
-      {/* 5. Exchange Rates */}
-      <ExchangeRateWidget />
-
-      {/* 6. Popular Topics */}
-      <div className="bg-card rounded-lg border border-border p-5">
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Tag className="h-5 w-5 text-primary" />
-          Chủ đề phổ biến
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {popularTags.map((tag, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              #{tag}
-            </Badge>
-          ))}
-        </div>
-      </div>
-
-      {/* 7. Community Stats */}
-      <CommunityStatsWidget />
 
       {/* Top Stories */}
       <div className="bg-card rounded-lg border border-border p-5">
@@ -236,6 +191,9 @@ const ArticleSidebar = ({ contentHtml, currentPostId }: ArticleSidebarProps) => 
           })}
         </div>
       </div>
+
+      {/* Table of Contents - last so it stays visible while the sidebar is pinned */}
+      <TableOfContents contentHtml={contentHtml} />
     </div>
   );
 };
