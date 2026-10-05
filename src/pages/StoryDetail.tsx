@@ -267,7 +267,7 @@ const StoryDetail = () => {
           </div>
 
           {/* Sidebar - Right Column */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block relative">
             <ArticleSidebar 
               contentHtml={parsedContent.story || ""} 
               currentPostId={story.id} 

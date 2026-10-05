@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { TrendingUp, Eye, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -100,6 +100,24 @@ const ArticleSidebar = ({ contentHtml, currentPostId }: ArticleSidebarProps) => 
     fetchPopularTags();
   }, [fetchTopPosts, fetchRelatedPosts, fetchPopularTags]);
 
+  // Sticky that pins by bottom edge when sidebar is taller than viewport
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [stickyTop, setStickyTop] = useState(96);
+  useEffect(() => {
+    const el = sidebarRef.current;
+    if (!el) return;
+    const update = () => {
+      const h = el.offsetHeight;
+      const vh = window.innerHeight;
+      setStickyTop(h + 96 + 24 > vh ? vh - h - 24 : 96);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => { ro.disconnect(); window.removeEventListener("resize", update); };
+  }, []);
+
   const handleReadStory = (slug: string | undefined, id: string) => {
     navigate(`/story/${slug || id}`);
   };
@@ -110,7 +128,7 @@ const ArticleSidebar = ({ contentHtml, currentPostId }: ArticleSidebarProps) => 
   };
 
   return (
-    <div className="space-y-6 sticky top-24">
+    <div ref={sidebarRef} className="space-y-6 sticky" style={{ top: stickyTop }}>
       {/* Table of Contents - FIRST (Article page only) */}
       <TableOfContents contentHtml={contentHtml} />
 
