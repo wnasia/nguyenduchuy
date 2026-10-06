@@ -18,6 +18,7 @@ const json = (body: unknown, status = 200) =>
 const PayloadSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('verify_page'), access_token: z.string().trim().min(20).max(2000) }),
   z.object({ action: z.literal('reply'), conversation_id: z.string().uuid(), message: z.string().trim().min(1).max(2000) }),
+  z.object({ action: z.literal('delete_message'), message_id: z.string().uuid() }),
   z.object({ action: z.literal('sync'), page_ref: z.string().uuid().optional() }),
   z.object({ action: z.literal('diagnose'), page_ref: z.string().uuid().optional() }),
 ]);
@@ -170,7 +171,7 @@ Deno.serve(async (req) => {
         const hours24 = 24 * 60 * 60 * 1000;
         const days7 = 7 * hours24;
         if (elapsed !== null && elapsed >= days7) {
-          return json({ error: 'Tin nhắn cuối của khách đã quá 7 ngày. Facebook không cho phép trả lời hội thoại này qua ứng dụng; hãy liên hệ qua kênh khác hoặc chờ khách nhắn lại.' }, 400);
+          return json({ error: 'Tin cuối của khách đã quá 7 ngày. Meta giới hạn trả lời Messenger tối đa 7 ngày (kể cả khi có quyền HUMAN_AGENT); quá hạn phải chờ khách nhắn lại.' }, 400);
         }
         const sendMessage = async (humanAgent: boolean) => {
           const response = await fetch(`${GRAPH}/me/messages?access_token=${encodeURIComponent(page.access_token)}`, {
@@ -193,9 +194,31 @@ Deno.serve(async (req) => {
           sent = await sendMessage(true);
         }
         if (!sent.response.ok || sent.data?.error) {
-          return json({ error: outsideWindow || sent.data?.error?.code === 10
-            ? 'Facebook không cho phép trả lời tin cũ. Trang cần được Meta cấp quyền HUMAN_AGENT (tối đa 7 ngày); quá hạn này phải chờ khách nhắn lại.'
-            : sent.data?.error?.message ?? 'Facebook không nhận được tin nhắn.' }, 400);
+          const metaCode = sent.data?.error?.code;
+          if (outsideWindow || metaCode === 10) {
+            // Check whether the page actually holds the HUMAN_AGENT feature so the
+            // guidance points at the real fix instead of a generic window error.
+            let humanAgentGranted: boolean | null = null;
+            try {
+              const review = await fetch(
+                `${GRAPH}/me/messaging_feature_review?access_token=${encodeURIComponent(page.access_token)}`,
+              );
+              const reviewData = await review.json();
+              const features = reviewData?.data ?? [];
+              humanAgentGranted = features.some(
+                (f: { feature?: string; status?: string; allowed?: boolean }) =>
+                  f?.feature === 'HUMAN_AGENT' && (f?.status === 'granted' || f?.allowed === true),
+              );
+            } catch {
+              humanAgentGranted = null;
+            }
+            return json({
+              error: humanAgentGranted === false
+                ? 'Trang chưa có quyền HUMAN_AGENT. Facebook chỉ cho phép trả lời trong 24 giờ; để trả lời tới 7 ngày, hãy đăng ký quyền HUMAN_AGENT cho ứng dụng trong Meta App Review (developers.facebook.com).'
+                : 'Facebook không cho phép trả lời tin cũ. Trang cần quyền HUMAN_AGENT (tối đa 7 ngày, đăng ký trong Meta App Review); quá 7 ngày phải chờ khách nhắn lại.',
+            }, 400);
+          }
+          return json({ error: sent.data?.error?.message ?? 'Facebook không nhận được tin nhắn.' }, 400);
         }
         external_id = sent.data?.message_id ?? null;
       } else {
@@ -235,6 +258,60 @@ Deno.serve(async (req) => {
         .eq('id', conversationId);
 
       return json({ success: true });
+    }
+
+    if (action === 'delete_message') {
+      const { data: msg } = await admin
+        .from('fb_messages')
+        .select('id, external_id, direction, conversation_id, fb_conversations(thread_type, fb_pages(page_id, access_token, page_name))')
+        .eq('id', payload.message_id)
+        .maybeSingle();
+      if (!msg) return json({ error: 'Không tìm thấy tin nhắn.' }, 404);
+      if (!(await canAccessPage(user.id, isAdmin, null, msg.conversation_id))) {
+        return json({ error: 'Bạn không được phân bổ quản lý fanpage này.' }, 403);
+      }
+
+      const conv: any = msg.fb_conversations;
+      const page: any = conv?.fb_pages;
+      let facebookDeleted = false;
+      let note: string | null = null;
+
+      if (msg.external_id && conv?.thread_type === 'comment' && page?.access_token) {
+        // Comments are moderated by the page — delete on Facebook too.
+        const res = await fetch(
+          `${GRAPH}/${msg.external_id}?access_token=${encodeURIComponent(page.access_token)}`,
+          { method: 'DELETE' },
+        );
+        const data = await res.json();
+        if (data?.error) {
+          return json({ error: `Facebook không cho phép xóa bình luận này: ${data.error.message ?? 'lỗi không xác định'}` }, 400);
+        }
+        facebookDeleted = true;
+      } else if (conv?.thread_type === 'message') {
+        // Meta's Messenger API has no message-delete endpoint; removal stays local.
+        note = 'Facebook không cho phép xóa tin Messenger qua ứng dụng. Tin đã được xóa khỏi hộp thư tại đây, nhưng vẫn còn trên Messenger.';
+      }
+
+      const { error: delError } = await admin.from('fb_messages').delete().eq('id', msg.id);
+      if (delError) throw delError;
+
+      // Keep the conversation preview in sync with what is left.
+      const { data: remaining } = await admin
+        .from('fb_messages')
+        .select('message, sent_at')
+        .eq('conversation_id', msg.conversation_id)
+        .order('sent_at', { ascending: false })
+        .limit(1);
+      const lastRow = remaining?.[0];
+      if (lastRow) {
+        await admin.from('fb_conversations')
+          .update({ last_message_text: lastRow.message ?? '', last_message_at: lastRow.sent_at })
+          .eq('id', msg.conversation_id);
+      } else {
+        await admin.from('fb_conversations').delete().eq('id', msg.conversation_id);
+      }
+
+      return json({ success: true, facebook_deleted: facebookDeleted, note });
     }
 
     if (action === 'sync') {

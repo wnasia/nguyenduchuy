@@ -92,6 +92,8 @@ const FanpageInboxWidget = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Page | null>(null);
   const [deletingPage, setDeletingPage] = useState(false);
+  const [deleteMsg, setDeleteMsg] = useState<Message | null>(null);
+  const [deletingMsg, setDeletingMsg] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [visibleMessages, setVisibleMessages] = useState(30);
   const [visibleConversations, setVisibleConversations] = useState(12);
@@ -455,6 +457,29 @@ const FanpageInboxWidget = () => {
     }
   };
 
+  const handleDeleteMessage = async () => {
+    if (!deleteMsg || deletingMsg) return;
+    setDeletingMsg(true);
+    try {
+      const res = await callFn({ action: "delete_message", message_id: deleteMsg.id });
+      toast({
+        title: res.facebook_deleted ? "Đã xóa trên Facebook" : "Đã xóa tin nhắn",
+        ...(res.note ? { description: res.note } : {}),
+      });
+      setDeleteMsg(null);
+      await loadConversations();
+      if (activeIdRef.current) loadMessages(activeIdRef.current);
+    } catch (e) {
+      toast({
+        title: "Không xóa được",
+        description: e instanceof Error ? e.message : "Lỗi không xác định",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingMsg(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="py-16 flex justify-center">
@@ -665,7 +690,18 @@ const FanpageInboxWidget = () => {
                     <div className="text-center"><Button variant="outline" size="sm" onClick={() => setVisibleMessages((n) => n + 30)}>Xem tin cũ hơn</Button></div>
                   )}
                   {messages.slice(-visibleMessages).map((m) => (
-                    <div key={m.id} className={`flex ${m.direction === "out" ? "justify-end" : "justify-start"}`}>
+                    <div key={m.id} className={`group flex items-end gap-1 ${m.direction === "out" ? "justify-end" : "justify-start"}`}>
+                      {m.direction === "out" && (
+                        <button
+                          type="button"
+                          title="Xóa tin nhắn"
+                          aria-label="Xóa tin nhắn"
+                          onClick={() => setDeleteMsg(m)}
+                          className="shrink-0 rounded-full p-1.5 text-muted-foreground transition-opacity hover:bg-muted hover:text-destructive opacity-60 md:opacity-0 md:group-hover:opacity-60"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                       <div
                         className={`max-w-[88%] sm:max-w-[75%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
                           m.direction === "out"
@@ -678,13 +714,24 @@ const FanpageInboxWidget = () => {
                           {new Date(m.sent_at).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
                         </div>
                       </div>
+                      {m.direction === "in" && (
+                        <button
+                          type="button"
+                          title="Xóa tin nhắn"
+                          aria-label="Xóa tin nhắn"
+                          onClick={() => setDeleteMsg(m)}
+                          className="shrink-0 rounded-full p-1.5 text-muted-foreground transition-opacity hover:bg-muted hover:text-destructive opacity-60 md:opacity-0 md:group-hover:opacity-60"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
 
                 <div className="shrink-0 border-t border-border bg-card p-2.5 sm:p-3">
-                  {pastSevenDays && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 7 ngày. Cần chờ khách nhắn lại.</p>}
-                  {needsHumanAgent && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 24 giờ. Meta chỉ cho phép gửi khi trang có quyền HUMAN_AGENT.</p>}
+                  {pastSevenDays && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 7 ngày. Meta giới hạn trả lời tối đa 7 ngày (kể cả khi có quyền HUMAN_AGENT); phải chờ khách nhắn lại.</p>}
+                  {needsHumanAgent && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 24 giờ. Facebook chỉ cho trả lời khi trang có quyền HUMAN_AGENT (đăng ký trong Meta App Review).</p>}
                   <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); void handleReply(); }}>
                     <Textarea
                       aria-label="Nhập câu trả lời"
@@ -725,6 +772,26 @@ const FanpageInboxWidget = () => {
             <AlertDialogAction onClick={(event) => { event.preventDefault(); void handleRemovePage(); }} disabled={deletingPage} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {deletingPage && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Gỡ fanpage
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={Boolean(deleteMsg)} onOpenChange={(open) => { if (!open && !deletingMsg) setDeleteMsg(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa tin nhắn?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {active?.thread_type === "comment"
+                ? "Bình luận này sẽ bị xóa khỏi bài viết trên Facebook."
+                : "Tin nhắn sẽ bị xóa khỏi hộp thư tại đây. Facebook không cho phép xóa tin Messenger qua ứng dụng, nên tin vẫn còn trên Messenger."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingMsg}>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={(event) => { event.preventDefault(); void handleDeleteMessage(); }} disabled={deletingMsg} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deletingMsg && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Xóa tin nhắn
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
