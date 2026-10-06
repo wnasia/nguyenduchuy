@@ -730,8 +730,8 @@ const FanpageInboxWidget = () => {
                 </div>
 
                 <div className="shrink-0 border-t border-border bg-card p-2.5 sm:p-3">
-                  {pastSevenDays && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 7 ngày. Cần chờ khách nhắn lại.</p>}
-                  {needsHumanAgent && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 24 giờ. Meta chỉ cho phép gửi khi trang có quyền HUMAN_AGENT.</p>}
+                  {pastSevenDays && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 7 ngày. Meta giới hạn trả lời tối đa 7 ngày (kể cả khi có quyền HUMAN_AGENT); phải chờ khách nhắn lại.</p>}
+                  {needsHumanAgent && <p className="mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Tin cuối đã quá 24 giờ. Facebook chỉ cho trả lời khi trang có quyền HUMAN_AGENT (đăng ký trong Meta App Review).</p>}
                   <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); void handleReply(); }}>
                     <Textarea
                       aria-label="Nhập câu trả lời"

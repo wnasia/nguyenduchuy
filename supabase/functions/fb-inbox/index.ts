@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
         const hours24 = 24 * 60 * 60 * 1000;
         const days7 = 7 * hours24;
         if (elapsed !== null && elapsed >= days7) {
-          return json({ error: 'Tin nhắn cuối của khách đã quá 7 ngày. Facebook không cho phép trả lời hội thoại này qua ứng dụng; hãy liên hệ qua kênh khác hoặc chờ khách nhắn lại.' }, 400);
+          return json({ error: 'Tin cuối của khách đã quá 7 ngày. Meta giới hạn trả lời Messenger tối đa 7 ngày (kể cả khi có quyền HUMAN_AGENT); quá hạn phải chờ khách nhắn lại.' }, 400);
         }
         const sendMessage = async (humanAgent: boolean) => {
           const response = await fetch(`${GRAPH}/me/messages?access_token=${encodeURIComponent(page.access_token)}`, {
