@@ -1,3 +1,4 @@
+import ChatbotWidget from "@/components/chatbot/ChatbotWidget";
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -72,6 +73,7 @@ const AppLayout = () => {
         </main>
       </div>
       {!isDashboard && <Footer />}
+      {!isDashboard && <ChatbotWidget />}
     </div>
   );
 };
