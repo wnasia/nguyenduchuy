@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          session_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_chat_sessions: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          contact_telegram: string | null
+          created_at: string
+          email_sent_at: string | null
+          id: string
+          last_message: string | null
+          last_message_at: string
+          unread_count: number
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_telegram?: string | null
+          created_at?: string
+          email_sent_at?: string | null
+          id: string
+          last_message?: string | null
+          last_message_at?: string
+          unread_count?: number
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_telegram?: string | null
+          created_at?: string
+          email_sent_at?: string | null
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+          unread_count?: number
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
