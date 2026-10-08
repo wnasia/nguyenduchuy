@@ -2,6 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { chatConfig, type ChatMessage } from "./chatConfig";
 
 const uid = () => Math.random().toString(36).slice(2);
+const SID_KEY = "huy-chatbot-session";
+const getSessionId = () => {
+  let s = localStorage.getItem(SID_KEY);
+  if (!s) { s = crypto.randomUUID(); localStorage.setItem(SID_KEY, s); }
+  return s;
+};
 
 const load = (): ChatMessage[] => {
   if (typeof window === "undefined") return [];
@@ -37,6 +43,7 @@ export function useChatApi() {
           ...(chatConfig.apiKey ? { Authorization: `Bearer ${chatConfig.apiKey}`, apikey: chatConfig.apiKey } : {}),
         },
         body: JSON.stringify({
+          sessionId: getSessionId(),
           messages: history.filter((m) => !m.error && m.content).slice(-20).map(({ role, content }) => ({ role, content })),
           stream: true,
         }),
