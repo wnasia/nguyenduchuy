@@ -125,9 +125,7 @@ const AIChatInboxWidget = () => {
 
   // Realtime: new AI chat messages and session updates
   useEffect(() => {
-    if (!isAdmin || sessions.length === 0 && !initialized.current) {
-      if (!isAdmin) return;
-    }
+    if (!isAdmin) return;
     const channel = supabase
       .channel("ai-chat-inbox")
       .on(
@@ -255,7 +253,7 @@ const AIChatInboxWidget = () => {
       {/* Body: session list + chat panel */}
       <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)]">
         {/* Session list */}
-        <div className="hidden min-h-0 flex-col border-r border-border lg:flex">
+        <div className={`flex min-h-0 flex-col border-r border-border ${activeId ? "hidden lg:flex" : "flex"}`}>
           <div className="flex h-11 shrink-0 items-center border-b border-border px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Khách chat
           </div>
@@ -309,7 +307,7 @@ const AIChatInboxWidget = () => {
         </div>
 
         {/* Chat panel */}
-        <div className="flex min-h-0 flex-col">
+        <div className={`flex min-h-0 flex-col ${activeId ? "flex" : "hidden lg:flex"}`}>
           {active ? (
             <>
               {/* Chat header */}
