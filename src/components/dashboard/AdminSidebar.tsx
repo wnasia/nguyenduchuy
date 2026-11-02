@@ -57,6 +57,7 @@ const menuSections = [
       { id: "customers", title: "Customers" },
       { id: "reminders", title: "Reminders" },
       { id: "fanpage-inbox", title: "Tin nhắn Fanpage" },
+      { id: "ai-chat", title: "Chat AI" },
     ],
   },
   {
