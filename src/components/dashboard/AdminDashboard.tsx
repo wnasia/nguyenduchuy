@@ -54,7 +54,7 @@ const AdminDashboard = () => {
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen flex w-full bg-muted/30">
         <AdminSidebar activeModule={activeModule} onModuleChange={setActiveModule} />
-        <SidebarInset className={cn("flex-1 flex flex-col", activeModule === "fanpage-inbox" && "h-dvh overflow-hidden")}>
+        <SidebarInset className={cn("flex-1 flex flex-col", ["fanpage-inbox", "ai-chat"].includes(activeModule) && "h-dvh overflow-hidden")}>
           {/* Premium Header */}
           <header className={cn(
             "sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 sm:gap-4",
@@ -85,17 +85,17 @@ const AdminDashboard = () => {
           </header>
 
           {/* Main Content */}
-          <main className={cn("flex-1 overflow-x-hidden", activeModule === "fanpage-inbox" ? "min-h-0 p-2 sm:p-3" : "p-3 sm:p-6 lg:p-8")}>
+          <main className={cn("flex-1 overflow-x-hidden", ["fanpage-inbox", "ai-chat"].includes(activeModule) ? "min-h-0 p-2 sm:p-3" : "p-3 sm:p-6 lg:p-8")}>
             <div className={cn(
               "max-w-7xl mx-auto",
-              activeModule === "fanpage-inbox" && "h-full min-h-0 [&>div]:!h-full [&>div]:!min-h-0 [&>div]:!max-h-none",
+              ["fanpage-inbox", "ai-chat"].includes(activeModule) && "h-full min-h-0 [&>div]:!h-full [&>div]:!min-h-0 [&>div]:!max-h-none",
             )}>
               <CurrentComponent />
             </div>
           </main>
 
           {/* Footer inside SidebarInset so it respects sidebar width */}
-          {activeModule !== "fanpage-inbox" && <Footer />}
+          {!["fanpage-inbox", "ai-chat"].includes(activeModule) && <Footer />}
         </SidebarInset>
       </div>
     </SidebarProvider>
