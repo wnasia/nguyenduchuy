@@ -18,6 +18,7 @@ import AdminTopics from "./AdminTopics";
 import AdminCustomers from "./AdminCustomers";
 import AdminReminderSettings from "./AdminReminderSettings";
 import FanpageInboxWidget from "@/components/widgets/FanpageInboxWidget";
+import AIChatInboxWidget from "@/components/widgets/AIChatInboxWidget";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import Footer from "@/components/Footer";
@@ -39,6 +40,7 @@ const moduleConfig: Record<string, { title: string; subtitle: string; component:
   customers: { title: "Customers", subtitle: "Customer management & renewals", component: AdminCustomers },
   reminders: { title: "Reminders", subtitle: "Renewal reminder settings", component: AdminReminderSettings },
   "fanpage-inbox": { title: "Tin nhắn Fanpage", subtitle: "Quản lý Messenger và bình luận", component: FanpageInboxWidget },
+  "ai-chat": { title: "Chat AI", subtitle: "Các phiên khách chat với trợ lý AI", component: AIChatInboxWidget },
 };
 
 const AdminDashboard = () => {
