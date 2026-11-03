@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
                 taxRate: String(taxRate),
                 taxAmount: formatVND(taxAmount),
                 totalAmount: formatVND(totalAmount),
-              });
+              } });
               const result = await sendEmailViaSmtp(customer.email, title, htmlBody);
 
               if (result.success) {
