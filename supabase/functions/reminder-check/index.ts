@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
 
             // For email: send via Resend
             if (channel === "email" && customer.email) {
-              const htmlBody = buildEmailHtml(title, message, {
+              const htmlBody = buildRenewalEmail({ title, message, pricing: {
                 serviceName: expiry.serviceName,
                 expiryDate: expiry.date || "",
                 unitPrice: formatVND(unitPrice),
