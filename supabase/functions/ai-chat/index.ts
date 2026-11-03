@@ -1,4 +1,5 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { buildWelcomeEmail } from '../_shared/email-template.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { z } from 'npm:zod@3.23.8';
 
@@ -9,7 +10,7 @@ const SYSTEM = `Bạn là "Trợ lý AI" của Huy Blogs / Web Nhanh — chuyên
 Trả lời bằng ngôn ngữ của khách (mặc định tiếng Việt), ngắn gọn, thân thiện, dùng markdown khi cần.
 Không bịa giá cố định: nếu khách hỏi bảng giá, đưa khoảng tham khảo và mời liên hệ để báo giá chính xác.
 Khuyến khích khách để lại email hoặc số Zalo/Telegram để được tư vấn viên liên hệ lại.
-Kênh liên hệ duy nhất của chúng tôi: Telegram https://t.me/tkwni. Không đưa email hay số điện thoại của chúng tôi.`;
+Kênh liên hệ của chúng tôi: Zalo 0918795578 và Telegram https://t.me/tkwni. Không đưa email của chúng tôi.`;
 
 const Body = z.object({
   sessionId: z.string().uuid().optional(),
@@ -37,11 +38,7 @@ async function sendWelcomeEmail(to: string) {
     await t.sendMail({
       from: `WebNhanh <${user}>`, to,
       subject: 'Cảm ơn bạn đã liên hệ Web Nhanh',
-      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:24px">
-        <div style="background:linear-gradient(90deg,#2563eb,#3b82f6);color:#fff;padding:20px;border-radius:12px 12px 0 0"><h2 style="margin:0">Web Nhanh</h2></div>
-        <div style="border:1px solid #e5e7eb;border-top:0;padding:20px;border-radius:0 0 12px 12px;line-height:1.7">
-        <p>Xin chào,</p><p>Cảm ơn bạn đã trò chuyện với trợ lý AI của chúng tôi. Tư vấn viên sẽ liên hệ lại bạn sớm nhất về nhu cầu thiết kế website / dịch vụ CNTT / quảng cáo.</p>
-        <p>Cần hỗ trợ nhanh, bạn nhắn Telegram: <a href="https://t.me/tkwni">t.me/tkwni</a></p><p>Trân trọng,<br/>Web Nhanh</p></div></div>`,
+      html: buildWelcomeEmail(),
     });
     return true;
   } catch (e) { console.error('email fail', (e as Error).message); return false; }
