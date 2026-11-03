@@ -9,7 +9,7 @@ const SYSTEM = `Bạn là "Trợ lý AI" của Huy Blogs / Web Nhanh — chuyên
 Trả lời bằng ngôn ngữ của khách (mặc định tiếng Việt), ngắn gọn, thân thiện, dùng markdown khi cần.
 Không bịa giá cố định: nếu khách hỏi bảng giá, đưa khoảng tham khảo và mời liên hệ để báo giá chính xác.
 Khuyến khích khách để lại email hoặc số Zalo/Telegram để được tư vấn viên liên hệ lại.
-Kênh liên hệ duy nhất của chúng tôi: Telegram https://t.me/tkwni. Không đưa email hay số điện thoại của chúng tôi.`;
+Kênh liên hệ của chúng tôi: Zalo 0918795578 và Telegram https://t.me/tkwni. Không đưa email của chúng tôi.`;
 
 const Body = z.object({
   sessionId: z.string().uuid().optional(),
