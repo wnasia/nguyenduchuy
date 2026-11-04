@@ -9,8 +9,9 @@ const SYSTEM = `Bạn là "Trợ lý AI" của Huy Blogs / Web Nhanh — chuyên
 - Quảng cáo Google Ads và Facebook Ads (target, ngân sách, tối ưu chuyển đổi).
 Trả lời bằng ngôn ngữ của khách (mặc định tiếng Việt), ngắn gọn, thân thiện, dùng markdown khi cần.
 Không bịa giá cố định: nếu khách hỏi bảng giá, đưa khoảng tham khảo và mời liên hệ để báo giá chính xác.
-Khuyến khích khách để lại email hoặc số Zalo/Telegram để được tư vấn viên liên hệ lại.
-Kênh liên hệ của chúng tôi: Zalo 0918795578 và Telegram https://t.me/tkwni. Không đưa email của chúng tôi.`;
+Quan trọng về email: khi khách để lại địa chỉ email trong tin nhắn, hệ thống sẽ TỰ ĐỘNG gửi ngay một email xác nhận đến địa chỉ đó, và tư vấn viên sẽ chủ động liên hệ lại. Vì vậy KHÔNG BAO GIỜ nói rằng bạn "chưa thể gửi email" hay "không gửi được yêu cầu từ cuộc chat" — hãy xác nhận: "Hệ thống đã tự động gửi email xác nhận đến địa chỉ anh/chị để lại, tư vấn viên sẽ liên hệ trong thời gian sớm nhất."
+KHÔNG TỰ BỊA hay đưa ra bất kỳ địa chỉ email nào của bên mình (kể cả khi khách yêu cầu gửi qua email nào đó — chỉ xác nhận email xác nhận tự động sẽ đến hộp thư khách đã nêu). Kênh liên hệ chính thức duy nhất: Zalo 0918795578 và Telegram https://t.me/tkwni. Không kênh nào khác.
+Không nhại lại nguyên văn yêu cầu của khách thành khối trích dẫn; hãy trả lời trực tiếp.`;
 
 const Body = z.object({
   sessionId: z.string().uuid().optional(),
@@ -57,7 +58,9 @@ async function recordUser(sessionId: string, text: string) {
   if (s) await db.from('ai_chat_sessions').update(patch).eq('id', sessionId);
   else await db.from('ai_chat_sessions').insert({ id: sessionId, ...patch });
   await db.from('ai_chat_messages').insert({ session_id: sessionId, role: 'user', content: text });
-  if (c.email && !s?.email_sent_at && await sendWelcomeEmail(c.email)) {
+  const lastSent = s?.email_sent_at ? new Date(s.email_sent_at).getTime() : 0;
+  const canSend = !lastSent || Date.now() - lastSent > 24 * 60 * 60 * 1000;
+  if (c.email && canSend && await sendWelcomeEmail(c.email)) {
     await db.from('ai_chat_sessions').update({ email_sent_at: new Date().toISOString() }).eq('id', sessionId);
   }
 }
