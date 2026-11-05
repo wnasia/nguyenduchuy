@@ -1,334 +1,472 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, RefreshCw, Clock, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCw, ArrowUpRight, ArrowDownRight, Minus, Search, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { useI18n } from "@/hooks/useI18n";
+import { createChart, CandlestickSeries, HistogramSeries, ColorType, type IChartApi, type UTCTimestamp } from "lightweight-charts";
+import {
+  fetchHistory,
+  fetchQuotes,
+  fetchIntraday,
+  fetchFinancials,
+  ProxyUnavailableError,
+  type Quote,
+  type Candle,
+  type MatchOrder,
+} from "@/services/marketData";
 
-interface StockIndex {
-  name: string;
-  code: string;
-  value: number;
-  change: number;
-  changePercent: number;
-  volume: string;
-  lastUpdate: string;
-}
+const UP_COLOR = "#16a34a";
+const DOWN_COLOR = "#dc2626";
 
-interface Stock {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  changePercent: number;
-  volume: string;
-  ceiling: number;
-  floor: number;
-  reference: number;
-}
+const INDEX_SYMBOLS = [
+  { code: "VNINDEX", name: "VN-Index" },
+  { code: "VN30", name: "VN30" },
+  { code: "HNX", name: "HNX-Index" },
+  { code: "UPCOM", name: "UPCOM" },
+];
 
-// Simulated real-time data generator based on market hours
-const generateMarketData = () => {
-  const now = new Date();
-  const hour = now.getHours();
-  const isMarketOpen = hour >= 9 && hour < 15;
-  
-  // Base values with slight variations
-  const seed = now.getMinutes() + now.getSeconds();
-  const variation = (seed % 100) / 1000; // Small variation 0-0.1
-  
-  const indices: StockIndex[] = [
-    {
-      name: "VN-Index",
-      code: "VNINDEX",
-      value: 1245.67 + (variation * 50 - 25),
-      change: 12.34 + (variation * 10 - 5),
-      changePercent: 1.0 + (variation * 2 - 1),
-      volume: `${(2.5 + variation).toFixed(1)}B`,
-      lastUpdate: now.toLocaleTimeString('vi-VN'),
-    },
-    {
-      name: "HNX-Index",
-      code: "HNX",
-      value: 234.56 + (variation * 10 - 5),
-      change: 2.34 + (variation * 2 - 1),
-      changePercent: 1.01 + (variation - 0.5),
-      volume: `${(450 + variation * 100).toFixed(0)}M`,
-      lastUpdate: now.toLocaleTimeString('vi-VN'),
-    },
-    {
-      name: "UPCOM-Index",
-      code: "UPCOM",
-      value: 92.34 + (variation * 5 - 2.5),
-      change: -0.45 + (variation - 0.5),
-      changePercent: -0.49 + (variation - 0.5),
-      volume: `${(120 + variation * 50).toFixed(0)}M`,
-      lastUpdate: now.toLocaleTimeString('vi-VN'),
-    },
-    {
-      name: "VN30",
-      code: "VN30",
-      value: 1287.45 + (variation * 30 - 15),
-      change: 8.92 + (variation * 5 - 2.5),
-      changePercent: 0.70 + (variation - 0.5),
-      volume: `${(1.8 + variation).toFixed(1)}B`,
-      lastUpdate: now.toLocaleTimeString('vi-VN'),
-    },
-  ];
-  
-  return { indices, isMarketOpen };
+const QUICK_STOCKS = ["FPT", "TCB", "HPG", "VCB", "VNM", "SSI"];
+
+const isMarketOpen = () => {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    minute: "2-digit",
+    weekday: "short",
+    hour12: false,
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  const hour = parseInt(get("hour"), 10);
+  const weekday = get("weekday");
+  if (weekday === "Sat" || weekday === "Sun") return false;
+  return hour >= 9 && hour < 15;
 };
 
-const generateTopStocks = () => {
-  const now = new Date();
-  const seed = now.getMinutes();
-  const variation = (seed % 60) / 600;
-  
-  const gainers: Stock[] = [
-    { symbol: "FPT", name: "FPT Corporation", price: 125.5 + variation * 5, change: 7.5, changePercent: 6.36, volume: "5.2M", ceiling: 132.0, floor: 115.0, reference: 118.0 },
-    { symbol: "VNM", name: "Vinamilk", price: 74.2 + variation * 3, change: 4.2, changePercent: 6.0, volume: "3.8M", ceiling: 77.5, floor: 68.5, reference: 70.0 },
-    { symbol: "HPG", name: "Hoa Phat Group", price: 28.9 + variation * 2, change: 1.9, changePercent: 7.0, volume: "15.6M", ceiling: 29.5, floor: 25.5, reference: 27.0 },
-    { symbol: "MWG", name: "Mobile World", price: 56.3 + variation * 2, change: 3.3, changePercent: 6.2, volume: "2.1M", ceiling: 58.0, floor: 50.0, reference: 53.0 },
-    { symbol: "VIC", name: "Vingroup", price: 45.8 + variation * 2, change: 2.8, changePercent: 6.5, volume: "4.5M", ceiling: 48.0, floor: 42.0, reference: 43.0 },
-  ];
-  
-  const losers: Stock[] = [
-    { symbol: "SSI", name: "SSI Securities", price: 32.5 - variation * 2, change: -2.0, changePercent: -5.8, volume: "8.2M", ceiling: 36.0, floor: 31.0, reference: 34.5 },
-    { symbol: "VCB", name: "Vietcombank", price: 92.3 - variation * 3, change: -5.7, changePercent: -5.8, volume: "2.4M", ceiling: 102.0, floor: 90.0, reference: 98.0 },
-    { symbol: "TCB", name: "Techcombank", price: 35.6 - variation * 2, change: -2.1, changePercent: -5.6, volume: "6.8M", ceiling: 40.0, floor: 34.0, reference: 37.7 },
-    { symbol: "VHM", name: "Vinhomes", price: 42.1 - variation * 2, change: -2.4, changePercent: -5.4, volume: "3.2M", ceiling: 46.0, floor: 40.0, reference: 44.5 },
-    { symbol: "CTG", name: "VietinBank", price: 33.8 - variation * 1.5, change: -1.8, changePercent: -5.1, volume: "4.1M", ceiling: 37.0, floor: 32.0, reference: 35.6 },
-  ];
-  
-  const active: Stock[] = [
-    { symbol: "STB", name: "Sacombank", price: 32.4 + variation, change: 0.4, changePercent: 1.25, volume: "25.8M", ceiling: 34.0, floor: 30.0, reference: 32.0 },
-    { symbol: "HPG", name: "Hoa Phat", price: 28.9 + variation, change: 1.9, changePercent: 7.0, volume: "18.2M", ceiling: 29.5, floor: 25.5, reference: 27.0 },
-    { symbol: "SHB", name: "SHB Bank", price: 12.8 + variation * 0.5, change: 0.3, changePercent: 2.4, volume: "16.5M", ceiling: 13.5, floor: 11.5, reference: 12.5 },
-    { symbol: "VND", name: "VNDirect", price: 18.9 - variation * 0.5, change: -0.6, changePercent: -3.1, volume: "14.2M", ceiling: 20.5, floor: 17.5, reference: 19.5 },
-    { symbol: "SSI", name: "SSI Securities", price: 32.5 - variation, change: -2.0, changePercent: -5.8, volume: "12.8M", ceiling: 36.0, floor: 31.0, reference: 34.5 },
-  ];
-  
-  return { gainers, losers, active };
+const formatVolume = (v: number) => {
+  if (v >= 1_000_000_000) return `${(v / 1_000_000_000).toFixed(1)}B`;
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
+  return `${v}`;
+};
+
+const formatMatchTime = (t: string | number) => {
+  if (typeof t === "string") return t;
+  return new Date(t * 1000).toLocaleTimeString("vi-VN", { hour12: false });
 };
 
 const StockMarketWidget = () => {
   const { t } = useI18n();
-  const [marketData, setMarketData] = useState(generateMarketData());
-  const [stockData, setStockData] = useState(generateTopStocks());
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [symbol, setSymbol] = useState("VNINDEX");
+  const [symbolInput, setSymbolInput] = useState("");
+  const [rangeDays, setRangeDays] = useState(90);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<string>("");
 
+  const chartContainerRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const candleSeriesRef = useRef<ReturnType<IChartApi["addSeries"]> | null>(null);
+  const volumeSeriesRef = useRef<ReturnType<IChartApi["addSeries"]> | null>(null);
+
+  // Candlestick history (1-minute cache)
+  const historyQuery = useQuery({
+    queryKey: ["stock-history", symbol, rangeDays],
+    queryFn: () => fetchHistory(symbol, rangeDays),
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  // Live quote for the selected symbol (polls every 5s when auto-refresh is on)
+  const quoteQuery = useQuery({
+    queryKey: ["stock-quote", symbol],
+    queryFn: () => fetchQuotes([symbol]),
+    staleTime: 4_000,
+    refetchInterval: autoRefresh ? 5_000 : false,
+    retry: 1,
+  });
+
+  // Index watchlist strip
+  const indexQuery = useQuery({
+    queryKey: ["stock-index-strip"],
+    queryFn: () => fetchQuotes(INDEX_SYMBOLS.map((i) => i.code)),
+    staleTime: 30_000,
+    refetchInterval: autoRefresh ? 30_000 : false,
+    retry: 1,
+  });
+
+  // Intraday matched orders (polls every 5s when auto-refresh is on)
+  const intradayQuery = useQuery({
+    queryKey: ["stock-intraday", symbol],
+    queryFn: () => fetchIntraday(symbol),
+    staleTime: 4_000,
+    refetchInterval: autoRefresh ? 5_000 : false,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  // Financial overview (1-day cache)
+  const financialsQuery = useQuery({
+    queryKey: ["stock-financials", symbol],
+    queryFn: () => fetchFinancials(symbol),
+    staleTime: 86_400_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const quote: Quote | null = quoteQuery.data?.quotes?.[0] ?? null;
+
+  // Track last successful update time
   useEffect(() => {
-    // Auto refresh every 30 seconds during market hours
-    const interval = setInterval(() => {
-      const data = generateMarketData();
-      if (data.isMarketOpen) {
-        setMarketData(data);
-        setStockData(generateTopStocks());
-        setLastRefresh(new Date());
-      }
-    }, 30000);
+    if (quote) setLastUpdate(new Date().toLocaleTimeString("vi-VN", { hour12: false }));
+  }, [quote?.price]);
 
-    return () => clearInterval(interval);
+  // Chart lifecycle
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+    const chart = createChart(chartContainerRef.current, {
+      layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: "hsl(var(--muted-foreground))" },
+      grid: { vertLines: { visible: false }, horzLines: { color: "hsl(var(--border))" } },
+      height: 320,
+      rightPriceScale: { borderVisible: false },
+      timeScale: { borderVisible: false, timeVisible: false },
+    });
+    chartRef.current = chart;
+    candleSeriesRef.current = chart.addSeries(CandlestickSeries, {
+      upColor: UP_COLOR,
+      downColor: DOWN_COLOR,
+      borderUpColor: UP_COLOR,
+      borderDownColor: DOWN_COLOR,
+      wickUpColor: UP_COLOR,
+      wickDownColor: DOWN_COLOR,
+    });
+    volumeSeriesRef.current = chart.addSeries(HistogramSeries, {
+      priceFormat: { type: "volume" },
+      priceScaleId: "",
+    });
+    volumeSeriesRef.current.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+    return () => {
+      chart.remove();
+      chartRef.current = null;
+      candleSeriesRef.current = null;
+      volumeSeriesRef.current = null;
+    };
   }, []);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setMarketData(generateMarketData());
-    setStockData(generateTopStocks());
-    setLastRefresh(new Date());
-    setIsRefreshing(false);
-  };
+  // Feed history data into the chart
+  useEffect(() => {
+    const candles: Candle[] = historyQuery.data?.data ?? [];
+    const candleSeries = candleSeriesRef.current;
+    const volumeSeries = volumeSeriesRef.current;
+    if (!candleSeries || !volumeSeries) return;
+    candleSeries.setData(
+      candles.map((c) => ({
+        time: c.time as UTCTimestamp,
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+      })),
+    );
+    volumeSeries.setData(
+      candles.map((c) => ({
+        time: c.time as UTCTimestamp,
+        value: c.volume,
+        color: c.close >= c.open ? `${UP_COLOR}44` : `${DOWN_COLOR}44`,
+      })),
+    );
+    if (candles.length > 0) {
+      chartRef.current?.timeScale().fitContent();
+    }
+  }, [historyQuery.data]);
 
-  const renderChangeIndicator = (change: number, changePercent: number) => {
+  const orderFlow = useMemo(() => {
+    const matches: MatchOrder[] = intradayQuery.data?.matches ?? [];
+    const buy = matches.filter((m) => m.matchType === "BU").reduce((s, m) => s + m.volume, 0);
+    const sell = matches.filter((m) => m.matchType === "SD").reduce((s, m) => s + m.volume, 0);
+    const total = buy + sell;
+    return {
+      matches: matches.slice(0, 8),
+      buy,
+      sell,
+      buyPct: total > 0 ? (buy / total) * 100 : 0,
+    };
+  }, [intradayQuery.data]);
+
+  const financials = financialsQuery.data?.data ?? null;
+  const fNum = (v: unknown) => (typeof v === "number" ? v.toLocaleString("vi-VN", { maximumFractionDigits: 2 }) : "—");
+  const marketOpen = isMarketOpen();
+
+  const changeView = (change: number, changePercent: number) => {
     if (change > 0) {
       return (
-        <div className="flex items-center gap-1 text-green-600">
+        <span className="inline-flex items-center gap-1 text-green-600">
           <ArrowUpRight className="h-4 w-4" />
-          <span>+{change.toFixed(2)}</span>
-          <span className="text-xs">({changePercent.toFixed(2)}%)</span>
-        </div>
+          +{change.toFixed(2)} ({changePercent.toFixed(2)}%)
+        </span>
       );
-    } else if (change < 0) {
+    }
+    if (change < 0) {
       return (
-        <div className="flex items-center gap-1 text-red-600">
+        <span className="inline-flex items-center gap-1 text-red-600">
           <ArrowDownRight className="h-4 w-4" />
-          <span>{change.toFixed(2)}</span>
-          <span className="text-xs">({changePercent.toFixed(2)}%)</span>
-        </div>
+          {change.toFixed(2)} ({changePercent.toFixed(2)}%)
+        </span>
       );
     }
     return (
-      <div className="flex items-center gap-1 text-yellow-600">
-        <Minus className="h-4 w-4" />
-        <span>0.00</span>
-        <span className="text-xs">(0.00%)</span>
+      <span className="inline-flex items-center gap-1 text-yellow-600">
+        <Minus className="h-4 w-4" />0.00 (0.00%)
+      </span>
+    );
+  };
+
+  const isUnavailable = (err: unknown) => err instanceof ProxyUnavailableError;
+
+  const renderUnavailable = (key: "order_flow_unavailable" | "financials_unavailable") => (
+    <div className="flex items-center gap-2 text-sm text-muted-foreground py-4 justify-center">
+      <WifiOff className="h-4 w-4" />
+      {t(`utilities.stock_${key}`)}
+    </div>
+  );
+
+  const submitSymbol = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = symbolInput.trim().toUpperCase();
+    if (/^[A-Z0-9_]{1,15}$/.test(code)) {
+      setSymbol(code);
+      setSymbolInput("");
+    }
+  };
+
+  const renderIndexStrip = () => {
+    if (indexQuery.isLoading) {
+      return <div className="h-[68px]" />;
+    }
+    if (isUnavailable(indexQuery.error)) {
+      return (
+        <p className="text-xs text-muted-foreground">{t("utilities.stock_data_error")}</p>
+      );
+    }
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {INDEX_SYMBOLS.map((idx) => {
+          const q = indexQuery.data?.quotes?.find((x) => x?.symbol === idx.code);
+          if (!q) return (
+            <Card key={idx.code} className="border-0 shadow-md opacity-50">
+              <CardContent className="p-4">
+                <div className="text-xs font-medium text-muted-foreground">{idx.name}</div>
+                <div className="text-sm text-muted-foreground mt-1">—</div>
+              </CardContent>
+            </Card>
+          );
+          return (
+            <Card key={idx.code} className="border-0 shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSymbol(idx.code)}>
+              <div className={`h-1 ${q.change >= 0 ? "bg-green-500" : "bg-red-500"}`} />
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-muted-foreground">{idx.name}</span>
+                  {q.change >= 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
+                </div>
+                <div className="text-lg font-bold">{q.price.toFixed(2)}</div>
+                <div className="text-xs mt-1">{changeView(q.change, q.changePercent)}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     );
   };
 
-  const getPriceColor = (price: number, reference: number, ceiling: number, floor: number) => {
-    if (price >= ceiling) return "text-purple-600 bg-purple-100";
-    if (price <= floor) return "text-cyan-600 bg-cyan-100";
-    if (price > reference) return "text-green-600 bg-green-50";
-    if (price < reference) return "text-red-600 bg-red-50";
-    return "text-yellow-600 bg-yellow-50";
-  };
-
-  const renderStockRow = (stock: Stock) => (
-    <div 
-      key={stock.symbol} 
-      className="flex items-center justify-between py-3 border-b border-border/50 last:border-0 hover:bg-muted/50 px-2 -mx-2 rounded transition-colors"
-    >
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-foreground">{stock.symbol}</span>
-          <span className="text-xs text-muted-foreground hidden sm:inline">{stock.name}</span>
-        </div>
-        <div className="text-xs text-muted-foreground mt-0.5">
-          KL: {stock.volume}
-        </div>
-      </div>
-      <div className="text-right">
-        <div className={`font-semibold px-2 py-0.5 rounded ${getPriceColor(stock.price, stock.reference, stock.ceiling, stock.floor)}`}>
-          {stock.price.toFixed(1)}
-        </div>
-        <div className={`text-xs mt-0.5 ${stock.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(1)} ({stock.changePercent.toFixed(2)}%)
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
-      {/* Market Status */}
-      <div className="flex items-center justify-between">
+      {/* Market status + refresh controls */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${marketData.isMarketOpen ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+          <div className={`w-2 h-2 rounded-full ${marketOpen ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
           <span className="text-sm text-muted-foreground">
-            {marketData.isMarketOpen ? 'Thị trường đang mở' : 'Thị trường đã đóng'}
+            {marketOpen ? t("utilities.stock_market_open") : t("utilities.stock_market_closed")}
           </span>
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Làm mới
-        </Button>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+            {autoRefresh ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+            {t("utilities.stock_auto_refresh")}
+            <Switch checked={autoRefresh} onCheckedChange={setAutoRefresh} />
+          </label>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              historyQuery.refetch();
+              quoteQuery.refetch();
+            }}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${(historyQuery.isFetching || quoteQuery.isFetching) ? "animate-spin" : ""}`} />
+            {t("utilities.stock_refresh")}
+          </Button>
+        </div>
       </div>
 
-      {/* Index Cards */}
-      <div className="grid grid-cols-2 gap-3">
-        {marketData.indices.map((index) => (
-          <Card key={index.code} className="border-0 shadow-md overflow-hidden">
-            <div className={`h-1 ${index.change >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-muted-foreground">{index.code}</span>
-                {index.change >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-500" />
-                )}
-              </div>
-              <div className="text-xl font-bold text-foreground mb-1">
-                {index.value.toFixed(2)}
-              </div>
-              {renderChangeIndicator(index.change, index.changePercent)}
-              <div className="text-xs text-muted-foreground mt-2">
-                KL: {index.volume}
-              </div>
-            </CardContent>
-          </Card>
+      {/* Index strip */}
+      {renderIndexStrip()}
+
+      {/* Symbol picker */}
+      <form onSubmit={submitSymbol} className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={symbolInput}
+            onChange={(e) => setSymbolInput(e.target.value)}
+            placeholder={t("utilities.stock_symbol_placeholder")}
+            className="pl-9 bg-muted/50 border-0 h-10"
+          />
+        </div>
+        <Button type="submit" size="sm" className="h-10">
+          {t("utilities.stock_view")}
+        </Button>
+      </form>
+      <div className="flex flex-wrap gap-2">
+        {QUICK_STOCKS.map((code) => (
+          <Badge
+            key={code}
+            variant={symbol === code ? "default" : "secondary"}
+            className="cursor-pointer"
+            onClick={() => setSymbol(code)}
+          >
+            {code}
+          </Badge>
         ))}
       </div>
 
-      {/* Top Stocks Tabs */}
-      <Tabs defaultValue="gainers" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="gainers" className="text-xs sm:text-sm">
-            <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-            Tăng giá
-          </TabsTrigger>
-          <TabsTrigger value="losers" className="text-xs sm:text-sm">
-            <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
-            Giảm giá
-          </TabsTrigger>
-          <TabsTrigger value="active" className="text-xs sm:text-sm">
-            <RefreshCw className="h-3 w-3 mr-1" />
-            Thanh khoản
-          </TabsTrigger>
-        </TabsList>
+      {/* Quote strip */}
+      {quote ? (
+        <Card className="border-0 shadow-md">
+          <CardContent className="p-4 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div className="text-xs font-medium text-muted-foreground">{quote.symbol}</div>
+              <div className="text-2xl font-bold">{quote.price.toFixed(2)}</div>
+            </div>
+            <div className="text-sm">{changeView(quote.change, quote.changePercent)}</div>
+            <div className="text-xs text-muted-foreground space-y-0.5 text-right">
+              <div>{t("utilities.stock_volume")}: {formatVolume(quote.volume)}</div>
+              <div>{t("utilities.stock_reference")}: {quote.reference.toFixed(2)}</div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : quoteQuery.isError ? (
+        <p className="text-sm text-muted-foreground">{t("utilities.stock_data_error")}</p>
+      ) : null}
 
-        <TabsContent value="gainers" className="mt-4">
-          <Card className="border-0 shadow-md">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2 text-green-600">
-                <TrendingUp className="h-4 w-4" />
-                Top tăng giá
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {stockData.gainers.map(renderStockRow)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="losers" className="mt-4">
-          <Card className="border-0 shadow-md">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2 text-red-600">
-                <TrendingDown className="h-4 w-4" />
-                Top giảm giá
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {stockData.losers.map(renderStockRow)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="active" className="mt-4">
-          <Card className="border-0 shadow-md">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <RefreshCw className="h-4 w-4" />
-                Thanh khoản cao nhất
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {stockData.active.map(renderStockRow)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Last update info */}
-      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <Clock className="h-3 w-3" />
-        <span>Cập nhật lúc: {lastRefresh.toLocaleTimeString('vi-VN')}</span>
-      </div>
-
-      {/* Legend */}
-      <Card className="border-0 shadow-sm bg-muted/30">
-        <CardContent className="p-3">
-          <p className="text-xs text-muted-foreground mb-2 font-medium">Chú thích màu giá:</p>
-          <div className="flex flex-wrap gap-2 text-xs">
-            <Badge variant="secondary" className="bg-purple-100 text-purple-600">Trần</Badge>
-            <Badge variant="secondary" className="bg-green-50 text-green-600">Tăng</Badge>
-            <Badge variant="secondary" className="bg-yellow-50 text-yellow-600">Tham chiếu</Badge>
-            <Badge variant="secondary" className="bg-red-50 text-red-600">Giảm</Badge>
-            <Badge variant="secondary" className="bg-cyan-100 text-cyan-600">Sàn</Badge>
+      {/* Candlestick chart */}
+      <Card className="border-0 shadow-md">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            {([30, 90, 180] as const).map((d) => (
+              <Badge
+                key={d}
+                variant={rangeDays === d ? "default" : "secondary"}
+                className="cursor-pointer"
+                onClick={() => setRangeDays(d)}
+              >
+                {d === 30 ? "1M" : d === 90 ? "3M" : "6M"}
+              </Badge>
+            ))}
+            <span className="text-xs text-muted-foreground ml-auto">{symbol}</span>
           </div>
+          {historyQuery.isPending ? (
+            <div className="h-[320px] flex items-center justify-center text-sm text-muted-foreground">
+              {t("common.loading")}
+            </div>
+          ) : historyQuery.isError ? (
+            <div className="h-[320px] flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
+              {t("utilities.stock_data_error")}
+              <Button variant="outline" size="sm" onClick={() => historyQuery.refetch()}>
+                {t("utilities.stock_retry")}
+              </Button>
+            </div>
+          ) : (
+            <div ref={chartContainerRef} className="w-full" />
+          )}
         </CardContent>
       </Card>
+
+      {/* Order flow panel */}
+      <Card className="border-0 shadow-md">
+        <CardContent className="p-4">
+          <div className="text-sm font-semibold mb-3">{t("utilities.stock_order_flow")}</div>
+          {intradayQuery.isPending ? (
+            <div className="h-16" />
+          ) : intradayQuery.isError ? (
+            isUnavailable(intradayQuery.error)
+              ? renderUnavailable("order_flow_unavailable")
+              : <p className="text-sm text-muted-foreground">{t("utilities.stock_data_error")}</p>
+          ) : (
+            <>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-green-600 font-medium">{t("utilities.stock_active_buy")} {formatVolume(orderFlow.buy)}</span>
+                <span className="text-red-600 font-medium">{t("utilities.stock_active_sell")} {formatVolume(orderFlow.sell)}</span>
+              </div>
+              <div className="h-2 rounded-full bg-muted overflow-hidden flex">
+                <div className="bg-green-500 h-full" style={{ width: `${orderFlow.buyPct}%` }} />
+                <div className="bg-red-500 h-full" style={{ width: `${100 - orderFlow.buyPct}%` }} />
+              </div>
+              <div className="mt-3 space-y-1">
+                {orderFlow.matches.map((m, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs py-1.5 border-b border-border/40 last:border-0">
+                    <span className="text-muted-foreground">{formatMatchTime(m.time)}</span>
+                    <span className={`font-semibold ${m.matchType === "BU" ? "text-green-600" : "text-red-600"}`}>
+                      {m.price.toFixed(2)}
+                    </span>
+                    <span className="text-muted-foreground">{formatVolume(m.volume)}</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${m.matchType === "BU" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      {m.matchType === "BU" ? t("utilities.stock_active_buy") : t("utilities.stock_active_sell")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Financial snapshot */}
+      <Card className="border-0 shadow-md">
+        <CardContent className="p-4">
+          <div className="text-sm font-semibold mb-3">{t("utilities.stock_financials")}</div>
+          {financialsQuery.isPending ? (
+            <div className="h-16" />
+          ) : financialsQuery.isError ? (
+            isUnavailable(financialsQuery.error)
+              ? renderUnavailable("financials_unavailable")
+              : <p className="text-sm text-muted-foreground">{t("utilities.stock_data_error")}</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {[
+                { label: "P/E", value: fNum(financials?.pe ?? financials?.priceToEarning) },
+                { label: "P/B", value: fNum(financials?.pb ?? financials?.priceToBook) },
+                { label: "EPS", value: fNum(financials?.eps ?? financials?.earningPerShare) },
+                { label: "ROE", value: financials?.roe != null ? `${fNum(financials.roe)}%` : "—" },
+                { label: t("utilities.stock_market_cap"), value: financials?.marketCap != null ? formatVolume(Number(financials.marketCap)) : "—" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-lg bg-muted/50 p-3">
+                  <div className="text-xs text-muted-foreground">{item.label}</div>
+                  <div className="text-base font-semibold mt-1">{item.value}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Footer note */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span>{lastUpdate ? t("utilities.stock_last_update").replace("{{time}}", lastUpdate) : ""}</span>
+        <Badge variant="secondary" className="text-[10px]">VNDIRECT</Badge>
+      </div>
     </div>
   );
 };
