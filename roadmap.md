@@ -1,5 +1,7 @@
 # Tasks
 
+- [ ] Complete Stock Market utility: repair verified live market-data sources and test the edge proxy; add missing labels in vi/en/zh/ja.
+
 - [x] Make Fanpage replies accessible without scrolling through the full conversation on desktop and mobile.
 - [x] Notify incoming messages through Realtime with sound and a sync fallback.
 - [x] Handle old Messenger replies within Meta's permitted window; block expired replies with a clear explanation.
