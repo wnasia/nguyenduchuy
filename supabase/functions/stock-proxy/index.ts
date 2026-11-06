@@ -30,7 +30,13 @@ const fail = (reason: string) => json({ ok: false, reason })
 
 async function upstreamJson(url: string): Promise<unknown> {
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': UA,
+        Accept: '*/*',
+        Referer: 'https://dstock.vndirect.com.vn/',
+      },
+    })
     if (!res.ok) return null
     return await res.json()
   } catch {
