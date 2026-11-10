@@ -1,6 +1,7 @@
 # Tasks
 
-- [ ] Complete Stock Market utility: repair verified live market-data sources and test the edge proxy; add missing labels in vi/en/zh/ja.
+- [x] Expand Stock Market utility with a persistent user-editable watchlist and a transparent technical analysis signal (Buy/Sell/Watch) for selected symbols.
+- [x] Complete Stock Market utility: repair verified live market-data sources and test the edge proxy; add missing labels in vi/en/zh/ja.
 
 - [x] Make Fanpage replies accessible without scrolling through the full conversation on desktop and mobile.
 - [x] Notify incoming messages through Realtime with sound and a sync fallback.
@@ -12,4 +13,4 @@
 - [x] Add message deletion synced with Facebook (Graph delete for page-moderable comments, plus local row removal) in the inbox UI.
 - [ ] Apply for the HUMAN_AGENT permission in Meta App Review to unlock 24h–7 day replies (requires the user's Meta developer account; beyond 7 days Meta blocks all replies).- [x] Store AI chat sessions and messages in ai_chat_sessions/ai_chat_messages with contact extraction (working, verified end-to-end via live chat test).
 - [x] Add "Chat AI" module to the admin sidebar with a Messenger-style inbox (realtime, sound alerts, unread badges, contact copy).
-- [ ] Send the thank-you email when a customer leaves an email — blocked: Gmail rejects SMTP_USER/SMTP_PASS (535 BadCredentials); needs a new Gmail App Password from the user.
+- [x] Send the thank-you email when a customer leaves an email — verified with the updated Gmail App Password and shared email template.
