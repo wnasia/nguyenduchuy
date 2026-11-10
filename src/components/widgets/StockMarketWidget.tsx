@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, RefreshCw, ArrowUpRight, ArrowDownRight, Minus, Search, Wifi, WifiOff } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCw, ArrowUpRight, ArrowDownRight, Minus, Search, Wifi, WifiOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -18,6 +18,7 @@ import {
   type Candle,
   type MatchOrder,
 } from "@/services/marketData";
+import StockAnalysisPanel from "@/components/widgets/StockAnalysisPanel";
 
 const UP_COLOR = "#16a34a";
 const DOWN_COLOR = "#dc2626";
@@ -29,7 +30,21 @@ const INDEX_SYMBOLS = [
   { code: "UPCOM", name: "UPCOM" },
 ];
 
-const QUICK_STOCKS = ["FPT", "TCB", "HPG", "VCB", "VNM", "SSI"];
+const DEFAULT_WATCHLIST = ["FPT", "TCB", "HPG", "VCB", "VNM", "SSI"];
+const WATCHLIST_STORAGE_KEY = "huyblogs-stock-watchlist-v1";
+
+const readWatchlist = () => {
+  try {
+    const stored: unknown = JSON.parse(localStorage.getItem(WATCHLIST_STORAGE_KEY) ?? "null");
+    if (Array.isArray(stored)) {
+      const valid = stored.filter((value): value is string => typeof value === "string" && /^[A-Z0-9_]{1,15}$/.test(value));
+      return Array.from(new Set(valid));
+    }
+  } catch {
+    // Use the default symbols when browser storage is unavailable or unreadable.
+  }
+  return DEFAULT_WATCHLIST;
+};
 
 const isMarketOpen = () => {
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -62,9 +77,19 @@ const StockMarketWidget = () => {
   const { t } = useI18n();
   const [symbol, setSymbol] = useState("VNINDEX");
   const [symbolInput, setSymbolInput] = useState("");
+  const [watchlist, setWatchlist] = useState<string[]>(readWatchlist);
+  const [symbolMessage, setSymbolMessage] = useState("");
   const [rangeDays, setRangeDays] = useState(90);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<string>("");
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(watchlist));
+    } catch {
+      // Keep the active list usable for this visit if browser storage is blocked.
+    }
+  }, [watchlist]);
 
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -237,8 +262,17 @@ const StockMarketWidget = () => {
     const code = symbolInput.trim().toUpperCase();
     if (/^[A-Z0-9_]{1,15}$/.test(code)) {
       setSymbol(code);
+      setWatchlist((current) => current.includes(code) ? current : [...current, code]);
+      setSymbolMessage("");
       setSymbolInput("");
+    } else {
+      setSymbolMessage(t("utilities.stock_symbol_invalid"));
     }
+  };
+
+  const removeWatchlistSymbol = (code: string) => {
+    setWatchlist((current) => current.filter((item) => item !== code));
+    setSymbolMessage("");
   };
 
   const renderIndexStrip = () => {
@@ -322,23 +356,25 @@ const StockMarketWidget = () => {
             value={symbolInput}
             onChange={(e) => setSymbolInput(e.target.value)}
             placeholder={t("utilities.stock_symbol_placeholder")}
+            aria-label={t("utilities.stock_symbol_placeholder")}
             className="pl-9 bg-muted/50 border-0 h-10"
           />
         </div>
         <Button type="submit" size="sm" className="h-10">
-          {t("utilities.stock_view")}
+          {t("utilities.stock_add")}
         </Button>
       </form>
-      <div className="flex flex-wrap gap-2">
-        {QUICK_STOCKS.map((code) => (
-          <Badge
-            key={code}
-            variant={symbol === code ? "default" : "secondary"}
-            className="cursor-pointer"
-            onClick={() => setSymbol(code)}
-          >
-            {code}
-          </Badge>
+      {symbolMessage && <p className="text-sm text-destructive" role="alert">{symbolMessage}</p>}
+      <div className="flex flex-wrap gap-2 items-center">
+        {watchlist.map((code) => (
+          <div key={code} className="inline-flex items-center rounded-md border border-border">
+            <Button type="button" variant={symbol === code ? "default" : "ghost"} size="sm" className="rounded-r-none" onClick={() => setSymbol(code)}>
+              {code}
+            </Button>
+            <Button type="button" variant="ghost" size="icon" className="h-9 w-8 rounded-l-none" aria-label={`${t("utilities.stock_remove")} ${code}`} title={t("utilities.stock_remove")} onClick={() => removeWatchlistSymbol(code)}>
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         ))}
       </div>
 
@@ -393,6 +429,8 @@ const StockMarketWidget = () => {
           )}
         </CardContent>
       </Card>
+
+      <StockAnalysisPanel candles={historyQuery.data?.data ?? []} isLoading={historyQuery.isPending} />
 
       {/* Order flow panel */}
       <Card className="border-0 shadow-md">

@@ -1,6 +1,6 @@
 # Tasks
 
-- [ ] Expand Stock Market utility with a persistent user-editable watchlist and a transparent technical analysis signal (Buy/Sell/Watch) for selected symbols.
+- [x] Expand Stock Market utility with a persistent user-editable watchlist and a transparent technical analysis signal (Buy/Sell/Watch) for selected symbols.
 - [x] Complete Stock Market utility: repair verified live market-data sources and test the edge proxy; add missing labels in vi/en/zh/ja.
 
 - [x] Make Fanpage replies accessible without scrolling through the full conversation on desktop and mobile.
